@@ -1,35 +1,37 @@
-import { updatePreview } from "./preview"
-
 let worker = null
 let previewContainer = null
+let pushEvent = null
 
 export function initTypstWorker(hook) {
   if (typeof Worker !== "undefined") {
+    if (hook && typeof hook.pushEvent === "function") {
+      pushEvent = hook.pushEvent.bind(hook)
+    }
+
     previewContainer = hook ? hook.el : document.getElementById("preview-container")
 
-    if (worker) {
-      return worker
-    }
+    if (!worker) {
+      worker = new Worker("/assets/js/typst_worker_impl.js", { type: "module" })
 
-    worker = new Worker("/assets/js/typst_worker_impl.js", { type: "module" })
+      worker.onmessage = (event) => {
+        const { type, data } = event.data
 
-    worker.onmessage = (event) => {
-      const { type, data } = event.data
-
-      if (type === "render") {
-        if (previewContainer) {
-          updatePreview(previewContainer, data.svg)
+        if (type === "render") {
+          if (typeof pushEvent === "function") {
+            pushEvent("update_preview", { svg: data.svg })
+          }
+        } else if (type === "error") {
+          console.error("Typst compilation error:", data)
         }
-      } else if (type === "error") {
-        console.error("Typst compilation error:", data)
       }
+
+      worker.onerror = (error) => {
+        console.error("Typst worker error:", error)
+      }
+
+      window.typstWorker = worker
     }
 
-    worker.onerror = (error) => {
-      console.error("Typst worker error:", error)
-    }
-
-    window.typstWorker = worker
     return worker
   } else {
     console.warn("Web Workers are not supported in this browser")
@@ -38,14 +40,8 @@ export function initTypstWorker(hook) {
 }
 
 export function compileTypst(content) {
-  if (!previewContainer) {
-    previewContainer = document.getElementById("preview-container")
-  }
-
-  if (!worker && previewContainer) {
-    const hookEl = previewContainer
-    const hook = hookEl.__liveSocketHook || null
-    initTypstWorker({ el: hookEl, pushEvent: hook?.pushEvent })
+  if (!worker) {
+    initTypstWorker(null)
   }
 
   if (worker && worker.readyState !== Worker.CLOSED) {
@@ -70,6 +66,7 @@ export function destroyTypstWorker() {
     worker.terminate()
     worker = null
     previewContainer = null
+    pushEvent = null
     window.typstWorker = null
   }
 }
