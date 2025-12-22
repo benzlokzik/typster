@@ -1,6 +1,58 @@
 import { EditorView, basicSetup } from "codemirror"
 import { EditorState } from "@codemirror/state"
-import { markdown } from "@codemirror/lang-markdown"
+import { typst } from "./typst_syntax"
+import { compileTypst } from "./typst_worker"
+
+const monokaiTheme = EditorView.theme({
+  "&": {
+    backgroundColor: "#272822",
+    color: "#f8f8f2",
+    fontSize: "14px",
+    fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
+  },
+  ".cm-content": {
+    padding: "16px",
+    minHeight: "100%",
+    lineHeight: "1.6"
+  },
+  ".cm-focused": {
+    outline: "none"
+  },
+  ".cm-editor": {
+    height: "100%"
+  },
+  ".cm-scroller": {
+    fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
+  },
+  ".cm-gutters": {
+    backgroundColor: "#272822",
+    color: "#75715e",
+    border: "none"
+  },
+  ".cm-lineNumbers .cm-gutterElement": {
+    minWidth: "3ch",
+    padding: "0 8px 0 16px"
+  },
+  ".cm-activeLine": {
+    backgroundColor: "#3e3d32"
+  },
+  ".cm-activeLineGutter": {
+    backgroundColor: "#3e3d32",
+    color: "#f8f8f2"
+  },
+  ".cm-selectionMatch": {
+    backgroundColor: "#49483e"
+  },
+  "&.cm-focused .cm-selectionBackground": {
+    backgroundColor: "#49483e"
+  },
+  ".cm-cursor": {
+    borderLeftColor: "#f8f8f2"
+  },
+  ".cm-selectionBackground": {
+    backgroundColor: "#49483e"
+  }
+})
 
 export function initEditor(container, initialContent, socket, fileId) {
   let autosaveTimer = null
@@ -9,7 +61,8 @@ export function initEditor(container, initialContent, socket, fileId) {
     doc: initialContent || "",
     extensions: [
       basicSetup,
-      markdown(),
+      monokaiTheme,
+      typst(),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           clearTimeout(autosaveTimer)
@@ -25,12 +78,7 @@ export function initEditor(container, initialContent, socket, fileId) {
             }, 500)
           }
 
-          if (window.typstWorker) {
-            window.typstWorker.postMessage({
-              type: "compile",
-              content: content
-            })
-          }
+          compileTypst(content)
         }
       })
     ]
@@ -40,6 +88,10 @@ export function initEditor(container, initialContent, socket, fileId) {
     state: state,
     parent: container
   })
+
+  if (initialContent) {
+    compileTypst(initialContent)
+  }
 
   return { editor, destroy: () => {
     if (autosaveTimer) {

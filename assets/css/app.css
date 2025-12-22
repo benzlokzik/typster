@@ -102,4 +102,20 @@
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
+/* CodeMirror editor styling */
+#editor-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#editor-container .cm-editor {
+  height: 100%;
+  width: 100%;
+}
+
+#editor-container .cm-scroller {
+  overflow: auto;
+}
+
 /* This file is for your main application CSS */

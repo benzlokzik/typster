@@ -2,10 +2,16 @@ import { initEditor, updateEditorContent, destroyEditor } from "./editor"
 import { initTypstWorker, destroyTypstWorker } from "./typst_worker"
 import { updatePreview } from "./preview"
 
+function parseContent(content) {
+  if (!content) return ""
+  return content.replace(/\\n/g, "\n")
+}
+
 export const CodeMirror = {
   mounted() {
     const container = this.el
-    const content = this.el.dataset.content || ""
+    const rawContent = this.el.dataset.content || ""
+    const content = parseContent(rawContent)
     const fileId = this.el.dataset.fileId || null
 
     if (!container) return
@@ -25,7 +31,8 @@ export const CodeMirror = {
   },
 
   updated() {
-    const newContent = this.el.dataset.content || ""
+    const rawContent = this.el.dataset.content || ""
+    const newContent = parseContent(rawContent)
     const newFileId = this.el.dataset.fileId || null
 
     if (this.editorInstance) {
@@ -51,9 +58,9 @@ export const CodeMirror = {
 
 export const Preview = {
   mounted() {
-    initTypstWorker()
+    initTypstWorker(this)
 
-    this.handleEvent("preview_updated", ({ svg }) => {
+    this.handleEvent("update_preview", ({ svg }) => {
       updatePreview(this.el, svg)
     })
   },

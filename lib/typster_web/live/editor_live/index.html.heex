@@ -19,7 +19,7 @@
             <button
               :for={file <- @file_tree}
               phx-click="select_file"
-              phx-value-file_id={file.id}
+              phx-value-file-id={file.id}
               class={[
                 "btn btn-sm w-full justify-start",
                 if(@current_file && @current_file.id == file.id,
@@ -43,7 +43,7 @@
       </div>
 
       <div class="flex-1 flex">
-        <div class="flex-1 border-r">
+        <div class="flex-1 border-r flex flex-col overflow-hidden">
           <%= if @current_file do %>
             <div
               id="editor-container"
@@ -51,6 +51,7 @@
               phx-update="ignore"
               data-content={@content}
               data-file-id={@current_file.id}
+              class="flex-1 h-full w-full overflow-hidden"
             >
             </div>
           <% else %>
