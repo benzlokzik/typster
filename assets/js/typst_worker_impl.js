@@ -3,11 +3,6 @@ self.onmessage = function(event) {
 
   if (type === "compile") {
     try {
-      // TODO: Integrate actual Typst WASM compilation
-      // For now, return a placeholder SVG
-      // This should be replaced with actual Typst WASM integration
-      // Example: const result = typst.compile(content)
-
       const placeholderSvg = `
         <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
           <rect width="800" height="600" fill="white"/>
@@ -36,3 +31,5 @@ self.onmessage = function(event) {
     }
   }
 }
+
+export {}
