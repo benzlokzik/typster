@@ -299,3 +299,19 @@ And **never** do this:
 - **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset
 <!-- phoenix:liveview-end -->
 <!-- usage-rules-end -->
+
+<!-- development-guidelines-start -->
+## Development guidelines
+
+- Use the `mix precommit` alias when you are done with all changes and fix any pending issues
+- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
+- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
+
+## Security & safety
+
+- Do not commit API keys, cookies, or private endpoints.
+- If using external data providers, keep credentials in environment variables.
+- Be careful with scraping limits and TOS.
+- Make regular commits to the repository using for commit messages template: `feat/core/bug/chore/etc: short description (#<issue number>)`
+
+<!-- development-guidelines-end -->
