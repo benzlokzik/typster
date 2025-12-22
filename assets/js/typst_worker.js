@@ -1,9 +1,11 @@
+import { updatePreview } from "./preview"
+
 let worker = null
-let previewHook = null
+let previewContainer = null
 
 export function initTypstWorker(hook) {
   if (typeof Worker !== "undefined") {
-    previewHook = hook
+    previewContainer = hook ? hook.el : document.getElementById("preview-container")
 
     if (worker) {
       return worker
@@ -15,20 +17,8 @@ export function initTypstWorker(hook) {
       const { type, data } = event.data
 
       if (type === "render") {
-        if (previewHook && previewHook.pushEvent) {
-          previewHook.pushEvent("update_preview", {
-            svg: data.svg
-          })
-        } else if (window.liveSocket) {
-          const view = document.querySelector("[data-phx-view]")
-          if (view) {
-            const viewId = view.getAttribute("data-phx-view")
-            if (viewId) {
-              window.liveSocket.pushEventTo(viewId, "update_preview", {
-                svg: data.svg
-              })
-            }
-          }
+        if (previewContainer) {
+          updatePreview(previewContainer, data.svg)
         }
       } else if (type === "error") {
         console.error("Typst compilation error:", data)
@@ -48,21 +38,30 @@ export function initTypstWorker(hook) {
 }
 
 export function compileTypst(content) {
+  if (!previewContainer) {
+    previewContainer = document.getElementById("preview-container")
+  }
+
+  if (!worker && previewContainer) {
+    const hookEl = previewContainer
+    const hook = hookEl.__liveSocketHook || null
+    initTypstWorker({ el: hookEl, pushEvent: hook?.pushEvent })
+  }
+
   if (worker && worker.readyState !== Worker.CLOSED) {
     worker.postMessage({
       type: "compile",
       content: content
     })
-  } else if (!worker && previewHook) {
-    initTypstWorker(previewHook)
-    if (worker) {
-      setTimeout(() => {
+  } else if (!worker && previewContainer) {
+    setTimeout(() => {
+      if (worker && worker.readyState !== Worker.CLOSED) {
         worker.postMessage({
           type: "compile",
           content: content
         })
-      }, 100)
-    }
+      }
+    }, 100)
   }
 }
 
@@ -70,7 +69,7 @@ export function destroyTypstWorker() {
   if (worker) {
     worker.terminate()
     worker = null
-    previewHook = null
+    previewContainer = null
     window.typstWorker = null
   }
 }
