@@ -16,5 +16,27 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: typster_app
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "ecto://postgres:postgres@db:5432/typster_dev"
+      SECRET_KEY_BASE: "${SECRET_KEY_BASE:-w9b1aegdeG114HtynjDGhLb5d7y+BTt6SD+Aiafb+yVksjwlb03IVaj+T5Raf6ir}"
+      PHX_HOST: "localhost"
+      PORT: "4000"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-minioadmin}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-minioadmin}"
+      AWS_REGION: "${AWS_REGION:-us-east-1}"
+      S3_BUCKET: "${S3_BUCKET:-typster-assets}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://localhost:9000}"
+    restart: unless-stopped
+
 volumes:
   postgres_data:

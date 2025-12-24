@@ -1,0 +1,46 @@
+# Build artifacts
+_build/
+deps/
+*.beam
+
+# Test files
+test/
+
+# Development files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+*.tmp
+
+# Node modules (will be installed in container)
+assets/node_modules/
+
+# Docker files
+docker-compose.yaml
+Dockerfile*
