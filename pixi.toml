@@ -1,12 +1,15 @@
 [workspace]
 authors = ["benzlokzik <121052717+benzlokzik@users.noreply.github.com>"]
-channels = ["conda-forge"]
-name = "workspace"
-platforms = ["linux-aarch64", "linux-64"]
+channels = ["conda-forge", "https://prefix.dev/benzlokzik-public"]
+name = "typster"
+platforms = ["linux-aarch64", "linux-64", "osx-arm64", "osx-64"]
 version = "0.1.0"
 
 [tasks]
+runserver = { cmd = "mix phx.server", description = "Run the Elixir server" }
+setup = { cmd = "mix setup", description = "Setup the Elixir project" }
 
 [dependencies]
 elixir = ">=1.19.4,<1.20"
 prek = ">=0.2.21,<0.3"
+erlang = ">=28.3,<29"
