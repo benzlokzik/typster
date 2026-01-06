@@ -88,17 +88,16 @@ defmodule TypsterWeb do
       import TypsterWeb.CoreComponents
 
       # Import SaladUI components
-      import SaladUI.Button
-      import SaladUI.Card
-      import SaladUI.Input
-      import SaladUI.Dialog
-      import SaladUI.Label
-      import SaladUI.Badge
-      import SaladUI.Separator
-      import SaladUI.Tabs
-      import SaladUI.DropdownMenu
-      import SaladUI.Popover
-      import SaladUI.Tooltip
+      import TypsterWeb.Components.UI.Button
+      import TypsterWeb.Components.UI.Card
+      import TypsterWeb.Components.UI.Input
+      import TypsterWeb.Components.UI.Dialog
+      import TypsterWeb.Components.UI.Badge
+      import TypsterWeb.Components.UI.Separator
+      import TypsterWeb.Components.UI.Skeleton
+      import TypsterWeb.Components.UI.Toast
+      import TypsterWeb.Components.UI.Breadcrumb
+      import TypsterWeb.Components.UI.Tooltip
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

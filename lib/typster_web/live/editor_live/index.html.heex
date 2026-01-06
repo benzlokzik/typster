@@ -1,7 +1,7 @@
 <Layouts.app flash={@flash}>
-  <div class="flex flex-col h-[calc(100vh-12rem)] -mx-4 -my-20 sm:-mx-6 lg:-mx-8 max-w-none">
-    <div class="flex items-center justify-between p-4 border-b border-base-300 bg-base-100">
-      <h1 class="text-xl font-bold">{@project.name}</h1>
+  <div class="flex flex-col h-[calc(100vh-4rem)]">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0">
+      <h1 class="text-lg font-semibold text-gray-900">{@project.name}</h1>
       <div class="flex items-center gap-2">
         <span class="text-sm" id="save-status" phx-hook="SaveStatus">
           {@save_status}
@@ -10,40 +10,47 @@
     </div>
 
     <div class="flex flex-1 overflow-hidden min-h-0">
-      <div class="w-64 border-r border-base-300 p-4 overflow-y-auto flex-shrink-0">
-        <h2 class="font-semibold mb-2">Files</h2>
-        <div class="space-y-1">
+      <div class="w-64 border-r border-gray-200 bg-gray-50/50 flex-shrink-0 flex flex-col">
+        <div class="p-3 border-b border-gray-200 flex-shrink-0">
+          <h2 class="text-sm font-semibold text-gray-900">Explorer</h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2">
           <%= if Enum.empty?(@file_tree) do %>
-            <p class="text-sm text-base-content/60 mb-2">No files yet</p>
+            <p class="text-sm text-gray-500 mb-2">No files yet</p>
           <% else %>
-            <button
-              :for={file <- @file_tree}
-              phx-click="select_file"
-              phx-value-file-id={file.id}
-              class={[
-                "btn btn-sm w-full justify-start",
-                if(@current_file && @current_file.id == file.id,
-                  do: "btn-active",
-                  else: "btn-ghost"
-                )
-              ]}
-            >
-              {file.path}
-            </button>
+            <div class="space-y-1">
+              <button
+                :for={file <- @file_tree}
+                phx-click="select_file"
+                phx-value-file-id={file.id}
+                class={[
+                  "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                  "hover:bg-gray-100",
+                  if(@current_file && @current_file.id == file.id,
+                    do: "bg-indigo-50 text-indigo-700 font-medium",
+                    else: "text-gray-700"
+                  )
+                ]}
+              >
+                {file.path}
+              </button>
+            </div>
           <% end %>
         </div>
-        <button
-          phx-click="create_file"
-          phx-value-path="main.typ"
-          phx-value-content="#set page(margin: 2cm)\n\n= Introduction\n\nHello, Typst!"
-          class="btn btn-sm btn-primary w-full mt-2"
-        >
-          New File
-        </button>
+        <div class="p-3 border-t border-gray-200 flex-shrink-0">
+          <button
+            phx-click="create_file"
+            phx-value-path="main.typ"
+            phx-value-content="#set page(margin: 2cm)\n\n= Introduction\n\nHello, Typst!"
+            class="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
+          >
+            New File
+          </button>
+        </div>
       </div>
 
       <div class="flex flex-1 min-w-0">
-        <div class="flex-1 border-r border-base-300 flex flex-col overflow-hidden min-w-0">
+        <div class="flex-1 border-r border-gray-200 flex flex-col overflow-hidden min-w-0">
           <%= if @current_file do %>
             <div
               id="editor-container"
@@ -56,20 +63,20 @@
             </div>
           <% else %>
             <div class="flex-1 flex items-center justify-center p-4">
-              <p class="text-center text-base-content/60">
+              <p class="text-center text-gray-500">
                 No file selected. Create a new file to start editing.
               </p>
             </div>
           <% end %>
         </div>
 
-        <div class="flex-1 overflow-auto p-4 min-w-0">
-          <div id="preview-container" phx-hook="Preview">
+        <div class="flex-1 overflow-auto bg-gray-50 min-w-0">
+          <div id="preview-container" phx-hook="Preview" class="min-h-full">
             <%= if @preview_svg do %>
               {raw(@preview_svg)}
             <% else %>
               <div class="flex items-center justify-center h-full">
-                <p class="text-base-content/60">Preview will appear here</p>
+                <p class="text-gray-500">Preview will appear here</p>
               </div>
             <% end %>
           </div>
