@@ -87,6 +87,19 @@ defmodule TypsterWeb do
       # Core UI components
       import TypsterWeb.CoreComponents
 
+      # Import SaladUI components
+      import SaladUI.Button
+      import SaladUI.Card
+      import SaladUI.Input
+      import SaladUI.Dialog
+      import SaladUI.Label
+      import SaladUI.Badge
+      import SaladUI.Separator
+      import SaladUI.Tabs
+      import SaladUI.DropdownMenu
+      import SaladUI.Popover
+      import SaladUI.Tooltip
+
       # Common modules used in templates
       alias Phoenix.LiveView.JS
       alias TypsterWeb.Layouts

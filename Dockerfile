@@ -1,6 +1,7 @@
 FROM elixir:1.19-alpine AS builder
 
-RUN apk add --no-cache build-base git npm
+RUN apk add --no-cache build-base git curl
+RUN curl -fsSL https://bun.sh/install | bash
 
 WORKDIR /app
 
@@ -22,8 +23,10 @@ COPY priv ./priv
 
 RUN mix compile
 
-COPY assets/package.json assets/package-lock.json ./assets/
-RUN cd assets && npm ci
+COPY assets/package.json assets/bun.lock ./assets/
+ENV BUN_INSTALL="/root/.bun"
+ENV PATH="$BUN_INSTALL/bin:$PATH"
+RUN cd assets && bun install
 
 COPY assets ./assets
 

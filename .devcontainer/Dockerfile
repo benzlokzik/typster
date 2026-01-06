@@ -5,8 +5,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     inotify-tools \
-    npm \
-    nodejs \
+    bun \
     postgresql-client \
     zsh \
     && rm -rf /var/lib/apt/lists/*

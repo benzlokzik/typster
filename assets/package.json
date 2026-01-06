@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch",
+    "build": "bun run"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +19,10 @@
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.39.4",
     "@lezer/highlight": "^1.2.3",
-    "codemirror": "^6.0.2"
-  }
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "codemirror": "^6.0.2",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {}
 }

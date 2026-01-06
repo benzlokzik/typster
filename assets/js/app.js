@@ -9,7 +9,7 @@
 //
 //     import "../vendor/some-package.js"
 //
-// Alternatively, you can `npm install some-package --prefix assets` and import
+// Alternatively, you can `bun add some-package --prefix assets` and import
 // them using a path starting with the package name:
 //
 //     import "some-package"
@@ -25,6 +25,7 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/typster"
 import topbar from "../vendor/topbar"
 import * as Hooks from "./hooks"
+import "@hugeicons/react"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {

@@ -69,7 +69,8 @@ defmodule Typster.MixProject do
       {:oban, "~> 2.17"},
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
-      {:hackney, "~> 1.20"}
+      {:hackney, "~> 1.20"},
+      {:salad_ui, "~> 1.0.0-beta.3"}
     ]
   end
 

@@ -18,7 +18,14 @@ defmodule Typster.Assets.Asset do
   def changeset(asset, attrs) do
     asset
     |> cast(attrs, [:object_key, :content_type, :size, :filename, :project_id, :inserted_at])
-    |> validate_required([:object_key, :content_type, :size, :filename, :project_id, :inserted_at])
+    |> validate_required([
+      :object_key,
+      :content_type,
+      :size,
+      :filename,
+      :project_id,
+      :inserted_at
+    ])
     |> unique_constraint([:project_id, :object_key])
   end
 end

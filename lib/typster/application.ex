@@ -8,6 +8,7 @@ defmodule Typster.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      TwMerge.Cache,
       TypsterWeb.Telemetry,
       Typster.Repo,
       {DNSCluster, query: Application.get_env(:typster, :dns_cluster_query) || :ignore},
