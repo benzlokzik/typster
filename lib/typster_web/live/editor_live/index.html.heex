@@ -83,13 +83,7 @@
                 ]}>
                   <.icon
                     name="hero-document-text"
-                    class={[
-                      "w-4 h-4",
-                      if(@current_file && @current_file.id == file.id,
-                        do: "text-indigo-600",
-                        else: "text-gray-500"
-                      )
-                    ]}
+                    class={"w-4 h-4 #{if(@current_file && @current_file.id == file.id, do: "text-indigo-600", else: "text-gray-500")}"}
                   />
                 </div>
                 <span class="truncate flex-1">{file.path}</span>

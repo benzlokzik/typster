@@ -22,12 +22,16 @@ defmodule TypsterWeb.Components.UI.Card do
         </.card_footer>
       </.card>
   """
+  attr :id, :string, default: nil
   attr :class, :string, default: ""
   slot :inner_block, required: true
 
   def card(assigns) do
     ~H"""
-    <div class={["rounded-lg border border-gray-200 bg-white text-gray-950 shadow-sm", @class]}>
+    <div
+      id={@id}
+      class={["rounded-lg border border-gray-200 bg-white text-gray-950 shadow-sm", @class]}
+    >
       {render_slot(@inner_block)}
     </div>
     """

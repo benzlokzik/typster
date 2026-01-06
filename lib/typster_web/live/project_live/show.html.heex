@@ -18,9 +18,11 @@
             Created {Calendar.strftime(@project.inserted_at, "%B %d, %Y")}
           </p>
         </div>
-        <.link navigate={~p"/projects/#{@project.id}/edit"} class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
-          <.icon name="hero-pencil" class="w-4 h-4" />
-          Open Editor
+        <.link
+          navigate={~p"/projects/#{@project.id}/edit"}
+          class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2"
+        >
+          <.icon name="hero-pencil" class="w-4 h-4" /> Open Editor
         </.link>
       </div>
     </div>
@@ -33,7 +35,7 @@
             <.card_title>Files</.card_title>
           </div>
           <span class="text-sm text-gray-600">
-            {length(@file_tree)} file<:if length(@file_tree) != 1, do: "s">
+            {length(@file_tree)} {if length(@file_tree) != 1, do: "file", else: "files"}
           </span>
         </div>
       </.card_header>

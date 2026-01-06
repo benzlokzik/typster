@@ -3,6 +3,7 @@ defmodule TypsterWeb.Components.UI.Toast do
   Toast notification component following the mira design system.
   """
   use Phoenix.Component
+  import TypsterWeb.CoreComponents, only: [icon: 1]
 
   @doc """
   Renders a toast notification container with toasts.
@@ -69,7 +70,10 @@ defmodule TypsterWeb.Components.UI.Toast do
     ~H"""
     <div
       id={@id}
-      phx-mounted={@duration > 0 && "setTimeout(() => window.dispatchEvent(new CustomEvent('dismiss-toast', { detail: { id: '#{@id}' } })), #{@duration})"}
+      phx-mounted={
+        @duration > 0 &&
+          "setTimeout(() => window.dispatchEvent(new CustomEvent('dismiss-toast', { detail: { id: '#{@id}' } })), #{@duration})"
+      }
       class={[
         "flex items-start gap-3 px-4 py-3 bg-white rounded-lg shadow-lg border",
         toast_kind_border(@kind),
@@ -80,9 +84,10 @@ defmodule TypsterWeb.Components.UI.Toast do
       <div class={[
         "w-2 h-2 rounded-full flex-shrink-0 mt-2",
         toast_kind_color(@kind)
-      ]}></div>
+      ]}>
+      </div>
       <div class="flex-1 min-w-0">
-        {if @title do %}
+        <%= if @title do %>
           <h4 class="text-sm font-semibold text-gray-900">{@title}</h4>
         <% end %>
         <p class="text-sm text-gray-600">{render_slot(@inner_block)}</p>

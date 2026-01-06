@@ -3,6 +3,7 @@ defmodule TypsterWeb.Components.UI.Dialog do
   Dialog (modal) component following the mira design system.
   """
   use Phoenix.Component
+  import TypsterWeb.CoreComponents, only: [icon: 1]
 
   @doc """
   Renders a dialog overlay and container.

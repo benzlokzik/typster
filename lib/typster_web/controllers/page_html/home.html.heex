@@ -13,17 +13,19 @@
           A modern web-based Typst editor with real-time preview, collaborative features, and seamless file management.
         </p>
         <div class="flex gap-4 justify-center items-center">
-          <.button navigate={~p"/projects"} class="px-8 py-3 text-base">
+          <.link
+            navigate={~p"/projects"}
+            class="px-8 py-3 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors inline-flex items-center justify-center"
+          >
             Get Started
-          </.button>
-          <.button
-            variant="outline"
+          </.link>
+          <.link
             navigate="https://typst.app/docs"
             target="_blank"
-            class="px-8 py-3 text-base"
+            class="px-8 py-3 border border-gray-200 bg-transparent hover:bg-gray-100 text-gray-700 text-sm font-medium rounded-md transition-colors inline-flex items-center justify-center"
           >
             Learn More
-          </.button>
+          </.link>
         </div>
       </div>
 
