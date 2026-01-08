@@ -5,10 +5,18 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     inotify-tools \
-    bun \
     postgresql-client \
     zsh \
     && rm -rf /var/lib/apt/lists/*
+
+
+# Add Bun
+RUN curl -fsSL https://bun.sh/install | bash
+
+ENV BUN_INSTALL="/root/.bun"
+ENV PATH="$BUN_INSTALL/bin:$PATH"
+
+# Build elixir app
 
 RUN mix local.hex --force && \
     mix local.rebar --force
