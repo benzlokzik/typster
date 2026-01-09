@@ -10,8 +10,14 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-ENV BUN_INSTALL=/usr/local
+
+# Add Bun
 RUN curl -fsSL https://bun.sh/install | bash
+
+ENV BUN_INSTALL="/root/.bun"
+ENV PATH="$BUN_INSTALL/bin:$PATH"
+
+# Build elixir app
 
 RUN mix local.hex --force && \
     mix local.rebar --force
