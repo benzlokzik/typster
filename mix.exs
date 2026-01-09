@@ -86,7 +86,11 @@ defmodule Typster.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.setup": [
+        "tailwind.install --if-missing",
+        "esbuild.install --if-missing",
+        "cmd --cd assets bun install"
+      ],
       "assets.build": ["tailwind typster", "esbuild typster", "esbuild typster_worker"],
       "assets.deploy": [
         "tailwind typster --minify",
