@@ -1,0 +1,23 @@
+name: Test DevContainer Config
+
+on:
+  push:
+    paths:
+      - '.devcontainer/**'
+      - '.github/workflows/test-devcontainer.yml'
+  pull_request:
+    paths:
+      - '.devcontainer/**'
+      - '.github/workflows/test-devcontainer.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Test devcontainer build
+        uses: devcontainers/ci@v0.3
+        with:
+          push: never
+          runCmd: echo "Config is valid!"
