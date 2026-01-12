@@ -27,6 +27,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   security-scan:
@@ -42,6 +43,8 @@ jobs:
         elixir: [1.19]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: erlef/setup-beam@v1.20.4
         with:
           otp-version: ${{matrix.otp}}
