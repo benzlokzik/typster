@@ -5,39 +5,45 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-
-  # Pixi / Conda
-  - package-ecosystem: "conda"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+    commit-message:
+      prefix: "chore(hex)"
 
   # Dockerfile
   - package-ecosystem: "docker"
-    directory: "/"
+    directories: ["/", ".devcontainer/"]
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "chore(docker)"
 
   # docker-compose.yaml
   - package-ecosystem: "docker-compose"
-    directory: "/"
+    directories: ["/", ".devcontainer/"]
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "chore(compose)"
 
   # Dev Containers (.devcontainer/**)
   - package-ecosystem: "devcontainers"
     directory: ".devcontainer/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "chore(devcont)"
 
-  # GitHub Actions (.github/workflows/**)
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "chore(ci)"
 
   # Bun (package.json + bun.lock)
   - package-ecosystem: "bun"
     directory: "/assets"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "chore(bun)"

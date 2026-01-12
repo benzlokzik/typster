@@ -1,5 +1,8 @@
 name: Test DevContainer Config
 
+permissions:
+  contents: read
+
 on:
   push:
     paths:
