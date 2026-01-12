@@ -1,0 +1,43 @@
+version: 2
+updates:
+  # Elixir / Hex
+  - package-ecosystem: "mix"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Pixi / Conda
+  - package-ecosystem: "conda"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # docker-compose.yaml
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Dev Containers (.devcontainer/**)
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # GitHub Actions (.github/workflows/**)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Bun (package.json + bun.lock)
+  - package-ecosystem: "bun"
+    directory: "/assets"
+    schedule:
+      interval: "weekly"
