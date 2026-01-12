@@ -56,25 +56,10 @@ jobs:
       - name: compile
         run: mix compile
       - name: credo-scan
-        id: credo
         run: |
           mix credo --format=sarif > credo_output.sarif
-          CREDO_EXIT_CODE=$?
-          echo "CREDO_EXIT_CODE=$CREDO_EXIT_CODE" >> $GITHUB_ENV
-          if [ "$CREDO_EXIT_CODE" -eq 0 ]; then
-            echo "credo_pass=true" >> $GITHUB_ENV
-          else
-            echo "credo_pass=false" >> $GITHUB_ENV
-          fi
-          echo "Credo completed with exit code: $CREDO_EXIT_CODE"
-        continue-on-error: true
       - name: upload sarif
+        if: always()
         uses: github/codeql-action/upload-sarif@v4
         with:
-          # Path to SARIF file relative to the root of the repository
           sarif_file: credo_output.sarif
-      - name: fail if credo found issues
-        if: env.credo_pass != 'true'
-        run: |
-          echo "Credo found issues (exit code: ${{ env.CREDO_EXIT_CODE }}). Workflow failing."
-          exit ${{ env.CREDO_EXIT_CODE }}
