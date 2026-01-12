@@ -42,7 +42,7 @@ jobs:
         otp: [28.3]
         elixir: [1.19]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: erlef/setup-beam@v1.20.4
