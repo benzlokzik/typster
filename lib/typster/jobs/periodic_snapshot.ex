@@ -8,14 +8,14 @@ defmodule Typster.Jobs.PeriodicSnapshot do
     files = Typster.Repo.all(Typster.Projects.File)
 
     Enum.each(files, fn file ->
-      revisions = Revisions.list_revisions(file.id)
+      case Revisions.list_revisions(file.id) do
+        [latest_revision | _rest] ->
+          if latest_revision.content != file.content do
+            Revisions.create_revision(file.id, file.content)
+          end
 
-      if length(revisions) > 0 do
-        latest_revision = List.first(revisions)
-
-        if latest_revision.content != file.content do
-          Revisions.create_revision(file.id, file.content)
-        end
+        [] ->
+          :ok
       end
     end)
 
