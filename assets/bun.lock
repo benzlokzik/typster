@@ -42,7 +42,7 @@
 
     "@codemirror/state": ["@codemirror/state@6.5.4", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-8y7xqG/hpB53l25CIoit9/ngxdfoG+fx+V3SHBrinnhOtLvKHRyAJJuHzkWrR4YXXLX8eXBsejgAAxHUOdW1yw=="],
 
-    "@codemirror/view": ["@codemirror/view@6.39.9", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-miGSIfBOKC1s2oHoa80dp+BjtsL8sXsrgGlQnQuOcfvaedcQUtqddTmKbJSDkLl4mkgPvZyXuKic2HDNYcJLYA=="],
+    "@codemirror/view": ["@codemirror/view@6.39.13", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-QBO8ZsgJLCbI28KdY0/oDy5NQLqOQVZCozBknxc2/7L98V+TVYFHnfaCsnGh1U+alpd2LOkStVwYY7nW2R1xbw=="],
 
     "@lezer/common": ["@lezer/common@1.5.0", "", {}, "sha512-PNGcolp9hr4PJdXR4ix7XtixDrClScvtSCYW3rQG106oVMOOI+jFb+0+J3mbeL/53g1Zd6s0kJzaw6Ri68GmAA=="],
 
@@ -111,8 +111,6 @@
     "@codemirror/search/@codemirror/state": ["@codemirror/state@6.5.3", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-MerMzJzlXogk2fxWFU1nKp36bY5orBG59HnPiz0G9nLRebWa0zXuv2siH6PLIHBvv5TH8CkQRqjBs0MlxCZu+A=="],
 
     "@codemirror/search/@codemirror/view": ["@codemirror/view@6.39.8", "", { "dependencies": { "@codemirror/state": "^6.5.0", "crelt": "^1.0.6", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-1rASYd9Z/mE3tkbC9wInRlCNyCkSn+nLsiQKZhEDUUJiUfs/5FHDpCUDaQpoTIaNGeDc6/bhaEAyLmeEucEFPw=="],
-
-    "@codemirror/view/@codemirror/state": ["@codemirror/state@6.5.3", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-MerMzJzlXogk2fxWFU1nKp36bY5orBG59HnPiz0G9nLRebWa0zXuv2siH6PLIHBvv5TH8CkQRqjBs0MlxCZu+A=="],
 
     "codemirror/@codemirror/state": ["@codemirror/state@6.5.3", "", { "dependencies": { "@marijn/find-cluster-break": "^1.0.0" } }, "sha512-MerMzJzlXogk2fxWFU1nKp36bY5orBG59HnPiz0G9nLRebWa0zXuv2siH6PLIHBvv5TH8CkQRqjBs0MlxCZu+A=="],
 
