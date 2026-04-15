@@ -23,7 +23,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ../:/workspace:cached
+      - ../:/workspace:cached,z
     command: sleep infinity
     depends_on:
       db:
