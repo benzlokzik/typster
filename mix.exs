@@ -71,7 +71,7 @@ defmodule Typster.MixProject do
       {:ex_aws_s3, "~> 2.5"},
       {:hackney, "~> 1.20"},
       {:salad_ui, "~> 1.0.0-beta.3"},
-      {:credo, "~> 1.7.0-rc.1", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.0-rc.1", only: [:dev, :test], runtime: false}
     ]
   end
 
