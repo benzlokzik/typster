@@ -1,5 +1,7 @@
 # Typster
 
+[![CLA assistant](https://cla-assistant.io/readme/badge/typster-io/typster)](https://cla-assistant.io/typster-io/typster)
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies
