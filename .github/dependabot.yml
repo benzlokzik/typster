@@ -7,8 +7,12 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 3
     groups:
-      hex-deps:
-        update-types: ["minor", "patch"]
+      hex-patch:
+        update-types: ["patch"]
+      hex-minor:
+        update-types: ["minor"]
+      hex-major:
+        update-types: ["major"]
     commit-message:
       prefix: "chore(hex)"
 
@@ -17,10 +21,14 @@ updates:
     directories: ["/", ".devcontainer/"]
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 4
     groups:
-      docker-images:
-        update-types: ["minor", "patch"]
+      docker-patch:
+        update-types: ["patch"]
+      docker-minor:
+        update-types: ["minor"]
+      docker-major:
+        update-types: ["major"]
     commit-message:
       prefix: "chore(docker)"
 
@@ -29,10 +37,14 @@ updates:
     directories: ["/", ".devcontainer/"]
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 4
     groups:
-      compose-images:
-        update-types: ["minor", "patch"]
+      compose-patch:
+        update-types: ["patch"]
+      compose-minor:
+        update-types: ["minor"]
+      compose-major:
+        update-types: ["major"]
     commit-message:
       prefix: "chore(compose)"
 
@@ -41,10 +53,14 @@ updates:
     directory: ".devcontainer/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 3
     groups:
-      devcontainer-features:
-        update-types: ["minor", "patch"]
+      devcontainer-patch:
+        update-types: ["patch"]
+      devcontainer-minor:
+        update-types: ["minor"]
+      devcontainer-major:
+        update-types: ["major"]
     commit-message:
       prefix: "chore(devcont)"
 
@@ -55,8 +71,12 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 3
     groups:
-      github-actions:
-        update-types: ["minor", "patch"]
+      github-actions-patch:
+        update-types: ["patch"]
+      github-actions-minor:
+        update-types: ["minor"]
+      github-actions-major:
+        update-types: ["major"]
     commit-message:
       prefix: "chore(ci)"
 
@@ -67,7 +87,11 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 3
     groups:
-      js-deps:
-        update-types: ["minor", "patch"]
+      js-patch:
+        update-types: ["patch"]
+      js-minor:
+        update-types: ["minor"]
+      js-major:
+        update-types: ["major"]
     commit-message:
       prefix: "chore(bun)"
