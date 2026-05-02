@@ -1,0 +1,4 @@
+interface:
+  display_name: "Typster Design"
+  short_description: "Typster frontend design system guidance"
+  default_prompt: "Use $typster-design to update this Typster UI while following the project design system."
