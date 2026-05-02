@@ -6,3 +6,21 @@ repos:
   - id: end-of-file-fixer
   - id: pretty-format-json
     args: ['--indent', '2', '--no-ensure-ascii', '--no-sort-keys']
+  - id: detect-private-key
+
+- repo: local
+  hooks:
+    - id: mix-format
+      name: mix format
+      entry: mix format --check-formatted
+      language: system
+      pass_filenames: false
+      files: '\.(ex|exs|heex)$'
+
+    - id: mix-precommit
+      name: mix precommit
+      entry: mix precommit
+      language: system
+      pass_filenames: false
+      stages: [pre-push]
+      exclude: '^(\.github/|.*\.md$)'
