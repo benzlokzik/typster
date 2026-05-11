@@ -1,0 +1,60 @@
+/* ── Status tones ───────────────────────────────────────────────────────── */
+/*
+ * Shared tone variables consumed by `_badge.css`, `_alert.css`, `_toast.css`.
+ * One source of truth for the success / warning / error / info palette so
+ * the four colored components can be re-skinned by setting `--tone-*` once
+ * per variant rather than four times per component × four tones.
+ *
+ *   --tone-fg       dim foreground for light backgrounds (uses the -h darker variant)
+ *   --tone-fg-bright brighter foreground for dark backgrounds
+ *   --tone-bg       soft fill background
+ *   --tone-bd       soft border
+ *   --tone-solid    full-saturation fill (solid badges, dots, progress bars)
+ */
+
+:is(.mk-badge-success, .mk-alert-success, .mk-toast-success) {
+  --tone-fg: var(--mk-success-h);
+  --tone-fg-bright: var(--mk-success);
+  --tone-bg: var(--mk-success-50);
+  --tone-bd: var(--mk-success-bd);
+  --tone-solid: var(--mk-success);
+}
+:is(.mk-badge-warning, .mk-alert-warning, .mk-toast-warning) {
+  --tone-fg: var(--mk-warning-h);
+  --tone-fg-bright: var(--mk-warning);
+  --tone-bg: var(--mk-warning-50);
+  --tone-bd: var(--mk-warning-bd);
+  --tone-solid: var(--mk-warning);
+}
+:is(.mk-badge-error, .mk-alert-error, .mk-toast-error) {
+  --tone-fg: var(--mk-error-h);
+  --tone-fg-bright: var(--mk-error);
+  --tone-bg: var(--mk-error-50);
+  --tone-bd: var(--mk-error-bd);
+  --tone-solid: var(--mk-error);
+}
+:is(.mk-badge-info, .mk-alert-info, .mk-toast-info) {
+  --tone-fg: var(--mk-info-h);
+  --tone-fg-bright: var(--mk-info);
+  --tone-bg: var(--mk-info-50);
+  --tone-bd: var(--mk-info-bd);
+  --tone-solid: var(--mk-info);
+}
+
+/* In dark mode the dim foregrounds are too low-contrast — promote to the
+   brighter variant in one rule rather than 12 individual overrides.
+   Intentionally excludes toasts: they use --tone-solid for dot/icon, not --tone-fg. */
+[data-theme="dark"] :is(
+  .mk-badge-success, .mk-badge-warning, .mk-badge-error, .mk-badge-info,
+  .mk-alert-success, .mk-alert-warning, .mk-alert-error, .mk-alert-info
+) {
+  --tone-fg: var(--tone-fg-bright);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) :is(
+    .mk-badge-success, .mk-badge-warning, .mk-badge-error, .mk-badge-info,
+    .mk-alert-success, .mk-alert-warning, .mk-alert-error, .mk-alert-info
+  ) {
+    --tone-fg: var(--tone-fg-bright);
+  }
+}

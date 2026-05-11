@@ -1,3 +1,5 @@
+default_install_hook_types: [pre-commit, pre-push, commit-msg]
+
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v6.0.0
@@ -6,10 +8,20 @@ repos:
   - id: end-of-file-fixer
   - id: pretty-format-json
     args: ['--indent', '2', '--no-ensure-ascii', '--no-sort-keys']
+  - id: check-yaml
+    args: ['--allow-multiple-documents']
   - id: detect-private-key
 
 - repo: local
   hooks:
+    - id: commit-message-style
+      name: commit message style
+      language: pygrep
+      entry: '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-zA-Z0-9\-._]+\))?(!)?: [A-Za-z0-9](?:[^\n]*(?:\.\.\.|\.[a-zA-Z0-9]|[^\n.][^\n.])|[^\n.])?(\n[\s\S]*)?$'
+      args: [--multiline, --negate]
+      stages: [commit-msg]
+      always_run: true
+
     - id: mix-format
       name: mix format
       entry: mix format --check-formatted

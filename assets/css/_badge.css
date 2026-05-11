@@ -1,0 +1,48 @@
+/* ── Badge / Status chip ────────────────────────────────────────────────── */
+/* Tone variables come from `_status.css`. */
+
+.mk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font: 500 11px/1 'Inter', sans-serif;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.mk-badge-sm  { padding: 1px 6px; font-size: 10px; }
+.mk-badge-lg  { padding: 4px 12px; font-size: 12px; }
+.mk-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+/* Soft variants — colored text on tinted bg, colored border. */
+.mk-badge-default { background: var(--mk-bd2);    color: var(--mk-fg3);   border-color: var(--mk-bd); }
+.mk-badge-primary { background: var(--mk-pri-50); color: var(--mk-pri);   border-color: var(--mk-pri-100); }
+.mk-badge-accent  { background: var(--mk-acc-50); color: var(--mk-pri-h); border-color: var(--mk-acc); }
+:is(.mk-badge-success, .mk-badge-warning, .mk-badge-error, .mk-badge-info) {
+  background: var(--tone-bg);
+  color: var(--tone-fg);
+  border-color: var(--tone-bd);
+}
+
+/* Solid variants — saturated fill, white text. */
+.mk-badge-solid { font-weight: 600; border-color: transparent; }
+.mk-badge-solid.mk-badge-default { background: var(--mk-fg); color: var(--mk-bg); }
+:is(.mk-badge-solid.mk-badge-success,
+    .mk-badge-solid.mk-badge-warning,
+    .mk-badge-solid.mk-badge-error,
+    .mk-badge-solid.mk-badge-info) {
+  background: var(--tone-solid);
+  color: #fff;
+}
+[data-theme="dark"] .mk-badge-solid.mk-badge-warning { color: #18181b; }
+[data-theme="dark"] .mk-badge-solid.mk-badge-default { background: var(--mk-fg); color: var(--mk-bg); }

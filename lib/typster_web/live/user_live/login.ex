@@ -6,89 +6,90 @@ defmodule TypsterWeb.UserLive.Login do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm space-y-4">
-        <div class="text-center">
-          <.header>
-            <p>Log in</p>
-            <:subtitle>
-              <%= if @current_scope do %>
-                You need to reauthenticate to perform sensitive actions on your account.
-              <% else %>
-                Don't have an account? <.link
-                  navigate={~p"/users/register"}
-                  class="font-semibold text-brand hover:underline"
-                  phx-no-format
-                >Sign up</.link> for an account now.
-              <% end %>
-            </:subtitle>
-          </.header>
+    <Layouts.auth flash={@flash} current_scope={@current_scope}>
+      <h1>Log in to <em>Typster</em></h1>
+      <p class="auth-subtitle">
+        <%= if @current_scope do %>
+          Reauthenticate to access sensitive account settings.
+        <% else %>
+          No account? <.link navigate={~p"/users/register"}>Sign up</.link>
+        <% end %>
+      </p>
+
+      <div :if={local_mail_adapter?()} class="mk-alert mk-alert-info">
+        <span class="mk-alert-icon">
+          <.icon name="hero-information-circle" class="size-4" />
+        </span>
+        <div class="mk-alert-body">
+          Local mail adapter is active.
+          View sent emails in <.link href="/dev/mailbox">the mailbox</.link>.
         </div>
-
-        <div :if={local_mail_adapter?()} class="alert alert-info">
-          <.icon name="hero-information-circle" class="size-6 shrink-0" />
-          <div>
-            <p>You are running the local mail adapter.</p>
-            <p>
-              To see sent emails, visit <.link href="/dev/mailbox" class="underline">the mailbox page</.link>.
-            </p>
-          </div>
-        </div>
-
-        <.form
-          :let={f}
-          for={@form}
-          id="login_form_magic"
-          action={~p"/users/log-in"}
-          phx-submit="submit_magic"
-        >
-          <.input
-            readonly={!!@current_scope}
-            field={f[:email]}
-            type="email"
-            label="Email"
-            autocomplete="email"
-            required
-            phx-mounted={JS.focus()}
-          />
-          <.button class="btn btn-primary w-full">
-            Log in with email <span aria-hidden="true">→</span>
-          </.button>
-        </.form>
-
-        <div class="divider">or</div>
-
-        <.form
-          :let={f}
-          for={@form}
-          id="login_form_password"
-          action={~p"/users/log-in"}
-          phx-submit="submit_password"
-          phx-trigger-action={@trigger_submit}
-        >
-          <.input
-            readonly={!!@current_scope}
-            field={f[:email]}
-            type="email"
-            label="Email"
-            autocomplete="email"
-            required
-          />
-          <.input
-            field={@form[:password]}
-            type="password"
-            label="Password"
-            autocomplete="current-password"
-          />
-          <.button class="btn btn-primary w-full" name={@form[:remember_me].name} value="true">
-            Log in and stay logged in <span aria-hidden="true">→</span>
-          </.button>
-          <.button class="btn btn-primary btn-soft w-full mt-2">
-            Log in only this time
-          </.button>
-        </.form>
       </div>
-    </Layouts.app>
+
+      <.form
+        :let={f}
+        for={@form}
+        id="login_form_magic"
+        action={~p"/users/log-in"}
+        phx-submit="submit_magic"
+      >
+        <.input
+          readonly={!!@current_scope}
+          field={f[:email]}
+          type="email"
+          label="Email"
+          autocomplete="email"
+          required
+          class="auth-input"
+          error_class="auth-input auth-input--error"
+          phx-mounted={JS.focus()}
+        />
+        <button type="submit" class="mk-btn mk-btn-primary">
+          Email me a link <span aria-hidden="true">→</span>
+        </button>
+      </.form>
+
+      <div class="auth-divider">or</div>
+
+      <.form
+        :let={f}
+        for={@form}
+        id="login_form_password"
+        action={~p"/users/log-in"}
+        phx-submit="submit_password"
+        phx-trigger-action={@trigger_submit}
+      >
+        <.input
+          readonly={!!@current_scope}
+          field={f[:email]}
+          type="email"
+          label="Email"
+          autocomplete="email"
+          required
+          class="auth-input"
+          error_class="auth-input auth-input--error"
+        />
+        <.input
+          field={@form[:password]}
+          type="password"
+          label="Password"
+          autocomplete="current-password"
+          class="auth-input"
+          error_class="auth-input auth-input--error"
+        />
+        <button
+          type="submit"
+          class="mk-btn mk-btn-primary"
+          name={@form[:remember_me].name}
+          value="true"
+        >
+          Stay signed in
+        </button>
+        <button type="submit" class="mk-btn mk-btn-outline">
+          This session only
+        </button>
+      </.form>
+    </Layouts.auth>
     """
   end
 

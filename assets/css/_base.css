@@ -1,0 +1,157 @@
+@layer tokens, base, effects;
+
+/* ── Tokens ────────────────────────────────────────────────────────────── */
+
+@layer tokens {
+  :root {
+    color-scheme: light;
+
+    --mk-bg: #eef0f4;
+    --mk-fg: #171725;
+
+    --mk-font-sans:
+      "Inter",
+      system-ui,
+      -apple-system,
+      blinkmacsystemfont,
+      "Segoe UI",
+      sans-serif;
+
+    --mk-noise-image: url("/images/noise-light.svg");
+    --mk-pattern-rgb: 120 128 148;
+    --mk-pattern-alpha-1: 0.022;
+    --mk-pattern-alpha-2: 0.014;
+    --mk-surface-overlay-opacity: 0.9;
+    --mk-surface-overlay-blend: multiply;
+
+    --mk-page-texture-height: 800px;
+    --mk-page-texture-solid-stop: 500px;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --mk-bg: #0c0a14;
+    --mk-fg: #f4f1ff;
+
+    --mk-noise-image: url("/images/noise-dark.svg");
+    --mk-pattern-rgb: 180 185 210;
+    --mk-pattern-alpha-1: 0.018;
+    --mk-pattern-alpha-2: 0.012;
+    --mk-surface-overlay-opacity: 0.35;
+    --mk-surface-overlay-blend: screen;
+  }
+}
+
+/* ── Base / Body ───────────────────────────────────────────────────────── */
+
+@layer base {
+  html {
+    min-block-size: 100%;
+    overscroll-behavior: none;
+    background-color: var(--mk-bg);
+  }
+
+  body {
+    min-block-size: 100%;
+    margin: 0;
+  }
+
+  .mk-body {
+    position: relative;
+    min-block-size: 100svh;
+    overflow-x: clip;
+    background-color: var(--mk-bg);
+    color: var(--mk-fg);
+    font: 14px/1.5 var(--mk-font-sans);
+    text-rendering: optimizelegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    isolation: isolate;
+  }
+
+  .mk-body,
+  .mk-body::before,
+  .mk-body::after,
+  .mk-body * {
+    box-sizing: border-box;
+  }
+
+  .mk-body a:not(.mk-btn) {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .mk-body a:not(.mk-btn):hover {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+}
+
+/* ── Page Texture ──────────────────────────────────────────────────────── */
+
+@layer effects {
+  .mk-body::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: var(--mk-page-texture-height);
+    pointer-events: none;
+    opacity: var(--mk-surface-overlay-opacity);
+    mix-blend-mode: var(--mk-surface-overlay-blend);
+
+    background-image:
+      var(--mk-noise-image),
+      repeating-linear-gradient(
+        115deg,
+        rgb(var(--mk-pattern-rgb) / 0) 0,
+        rgb(var(--mk-pattern-rgb) / 0) 3px,
+        rgb(var(--mk-pattern-rgb) / var(--mk-pattern-alpha-1)) 3px,
+        rgb(var(--mk-pattern-rgb) / var(--mk-pattern-alpha-1)) 6px
+      ),
+      repeating-linear-gradient(
+        118deg,
+        rgb(var(--mk-pattern-rgb) / 0) 0,
+        rgb(var(--mk-pattern-rgb) / 0) 8px,
+        rgb(var(--mk-pattern-rgb) / var(--mk-pattern-alpha-2)) 8px,
+        rgb(var(--mk-pattern-rgb) / var(--mk-pattern-alpha-2)) 14px
+      );
+
+    background-size: 240px 240px, auto, auto;
+
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 var(--mk-page-texture-solid-stop),
+      transparent var(--mk-page-texture-height)
+    );
+
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 var(--mk-page-texture-solid-stop),
+      transparent var(--mk-page-texture-height)
+    );
+  }
+
+  /* Theme pour: only the new layer is animated (clip-path keyframes from
+     `assets/js/app.js`). The old layer is left untouched — any transform
+     on it would expose the new layer at the viewport edges and paint an
+     opposite-color border during the transition. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-new(root) { z-index: 1; }
+  ::view-transition-old(root) { z-index: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.001ms;
+    }
+  }
+}

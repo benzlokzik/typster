@@ -166,8 +166,22 @@
                 {@preview_error}
               </div>
             <% else %>
-              <%= if @preview_svg do %>
-                {raw(@preview_svg)}
+              <%= if @preview_stats do %>
+                <div
+                  id="preview-placeholder"
+                  class="flex flex-col items-center justify-center h-full p-6"
+                >
+                  <div class="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center mb-4">
+                    <.icon name="hero-eye" class="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p class="text-gray-700 text-sm font-medium">
+                    Typst compilation will appear here
+                  </p>
+                  <p class="text-gray-500 text-xs mt-2">
+                    Project context: {@preview_stats.source_count} text files, {@preview_stats.asset_count} assets
+                  </p>
+                  <p class="text-gray-400 text-xs mt-1">Typst WASM integration pending</p>
+                </div>
               <% else %>
                 <div class="flex flex-col items-center justify-center h-full">
                   <div class="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center mb-4">

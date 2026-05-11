@@ -18,7 +18,10 @@ export function initTypstWorker(hook) {
 
       if (type === "render") {
           if (typeof pushEvent === "function") {
-            pushEvent("update_preview", { svg: data.svg })
+            pushEvent("update_preview", {
+              source_count: data.sourceCount,
+              asset_count: data.assetCount
+            })
           } else {
             console.warn("pushEvent not available, preview won't update")
         }

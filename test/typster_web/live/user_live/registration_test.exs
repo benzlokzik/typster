@@ -8,7 +8,7 @@ defmodule TypsterWeb.UserLive.RegistrationTest do
     test "renders registration page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
-      assert html =~ "Register"
+      assert html =~ "Write with"
       assert html =~ "Log in"
     end
 
@@ -30,7 +30,7 @@ defmodule TypsterWeb.UserLive.RegistrationTest do
         |> element("#registration_form")
         |> render_change(user: %{"email" => "with spaces"})
 
-      assert result =~ "Register"
+      assert result =~ "Write with"
       assert result =~ "must have the @ sign and no spaces"
     end
   end

@@ -12,6 +12,74 @@ defmodule TypsterWeb.Layouts do
   embed_templates "layouts/*"
 
   @doc """
+  Renders the auth layout used by login and registration pages.
+  Shares the same floating nav, background, and font system as the marketing page.
+  """
+  attr :flash, :map, required: true, doc: "the map of flash messages"
+
+  attr :current_scope, :map,
+    default: nil,
+    doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
+
+  slot :inner_block, required: true
+
+  def auth(assigns) do
+    ~H"""
+    <div class="mk-body auth-page">
+      <.mk_nav current_scope={@current_scope} />
+      <main class="auth-main">
+        <div class="auth-card">
+          {render_slot(@inner_block)}
+        </div>
+      </main>
+      <.flash_group flash={@flash} />
+    </div>
+    """
+  end
+
+  @doc """
+  Shared floating nav used by both the marketing layout and the auth layout.
+  Pass a `:nav_links` slot to render the section-link bar (marketing only).
+  """
+  attr :current_scope, :map, default: nil
+  slot :nav_links
+
+  def mk_nav(assigns) do
+    ~H"""
+    <header class="mk-nav">
+      <a href={~p"/"} class="mk-brand">
+        <div class="mk-brand-mark">T</div>
+        <span>Typster</span>
+      </a>
+      <nav :if={@nav_links != []} class="mk-nav-links">
+        {render_slot(@nav_links)}
+      </nav>
+      <div class="mk-nav-cta">
+        <button
+          class="mk-btn mk-btn-ghost mk-btn-sm mk-theme-toggle"
+          onclick="toggleMkTheme(this)"
+          aria-label="Toggle theme"
+        >
+          <i data-lucide="moon" class="mk-icon-moon" aria-hidden="true"></i>
+          <i data-lucide="sun" class="mk-icon-sun" aria-hidden="true"></i>
+        </button>
+        <%= if @current_scope && @current_scope.user do %>
+          <a href={~p"/projects"} class="mk-btn mk-btn-ghost mk-btn-sm">My projects</a>
+          <.link href={~p"/users/log-out"} method="delete" class="mk-btn mk-btn-ghost mk-btn-sm">
+            Log out
+          </.link>
+        <% else %>
+          <.link href={~p"/users/log-in"} class="mk-btn mk-btn-ghost mk-btn-sm">Log in</.link>
+          <.link href={~p"/users/register"} class="mk-btn mk-btn-primary mk-btn-sm">
+            Sign up free
+          </.link>
+        <% end %>
+      </div>
+    </header>
+    """
+  end
+
+  @doc """
   Renders your app layout.
 
   This function is typically invoked from every template,
@@ -80,11 +148,11 @@ defmodule TypsterWeb.Layouts do
       <.flash_group flash={@flash} />
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
-  attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
+  attr :id, :string, default: "mk-toast-stack", doc: "the optional id of flash container"
 
   def flash_group(assigns) do
     ~H"""
-    <div id={@id} aria-live="polite">
+    <div id={@id} class="mk-toast-stack" aria-live="polite" aria-atomic="false">
       <.flash kind={:info} flash={@flash} />
       <.flash kind={:error} flash={@flash} />
 

@@ -7,50 +7,54 @@
     <.live_title default="Typster" suffix=" · Phoenix Framework">
       {assigns[:page_title]}
     </.live_title>
+    <script>
+      (() => {
+        const key = "phx:theme";
+        const root = document.documentElement;
+
+        const getStoredTheme = () => {
+          try {
+            return localStorage.getItem(key);
+          } catch {
+            return null;
+          }
+        };
+
+        const storeTheme = (theme) => {
+          try {
+            if (theme === "system") {
+              localStorage.removeItem(key);
+            } else {
+              localStorage.setItem(key, theme);
+            }
+          } catch {}
+        };
+
+        const setTheme = (theme) => {
+          const next = theme === "light" || theme === "dark" ? theme : "system";
+
+          if (next === "system") {
+            root.removeAttribute("data-theme");
+          } else {
+            root.setAttribute("data-theme", next);
+          }
+
+          storeTheme(next);
+        };
+
+        setTheme(getStoredTheme());
+        window.addEventListener("storage", (e) => e.key === key && setTheme(e.newValue));
+        window.addEventListener("phx:set-theme", (e) => {
+          const source = e.target instanceof Element ? e.target.closest("[data-phx-theme]") : null;
+          setTheme(source && source.dataset.phxTheme);
+        });
+      })();
+    </script>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="module" src={~p"/assets/js/app.js"}>
     </script>
-    <script>
-      (() => {
-        const setTheme = (theme) => {
-          if (theme === "system") {
-            localStorage.removeItem("phx:theme");
-            document.documentElement.removeAttribute("data-theme");
-          } else {
-            localStorage.setItem("phx:theme", theme);
-            document.documentElement.setAttribute("data-theme", theme);
-          }
-        };
-        if (!document.documentElement.hasAttribute("data-theme")) {
-          setTheme(localStorage.getItem("phx:theme") || "system");
-        }
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-
-        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
-      })();
-    </script>
   </head>
   <body>
-    <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-      <%= if @current_scope do %>
-        <li>
-          {@current_scope.user.email}
-        </li>
-        <li>
-          <.link href={~p"/users/settings"}>Settings</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/log-out"} method="delete">Log out</.link>
-        </li>
-      <% else %>
-        <li>
-          <.link href={~p"/users/register"}>Register</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/log-in"}>Log in</.link>
-        </li>
-      <% end %>
-    </ul>
     {@inner_content}
   </body>
 </html>

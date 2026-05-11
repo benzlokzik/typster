@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test",
+    "test:e2e:theme": "playwright test e2e/theme_stability.spec.cjs e2e/theme_pour.spec.cjs",
     "dev": "bun run --watch",
     "build": "bun run"
   },
@@ -26,5 +27,8 @@
     "codemirror": "^6.0.2",
     "tailwind-merge": "^3.4.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "playwright": "1.59.1"
+  }
 }

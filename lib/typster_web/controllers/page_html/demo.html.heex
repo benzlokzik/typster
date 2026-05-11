@@ -1,0 +1,272 @@
+<section class="mk-section mk-section-tinted mk-demo-section">
+  <div class="mk-container">
+    <p class="mk-eyebrow mk-reveal">See it in action</p>
+    <h2 class="mk-section-h mk-reveal">
+      Papers, CVs, reports, invoices — Typster handles them all.
+    </h2>
+    <div class="mk-demo-tabs mk-reveal">
+      <button class="mk-demo-tab is-active" data-tab="report" onclick="mkSwitchTab(this)">
+        Quarterly Report
+      </button>
+      <button class="mk-demo-tab" data-tab="cv" onclick="mkSwitchTab(this)">CV / Resume</button>
+      <button class="mk-demo-tab" data-tab="paper" onclick="mkSwitchTab(this)">
+        Research Paper
+      </button>
+      <button class="mk-demo-tab" data-tab="invoice" onclick="mkSwitchTab(this)">Invoice</button>
+    </div>
+    <div class="mk-demo-art mk-reveal">
+      <%!-- Report --%>
+      <div class="mk-demo-panel is-active" data-panel="report">
+        <div class="mk-demo-split">
+          <div class="mk-demo-src">
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">1</span><span class="mk-tok-keyword">#set</span><span> page(margin: </span><span class="mk-tok-string">1in</span><span>, paper: </span><span class="mk-tok-string">"a4"</span><span>)</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">2</span><span class="mk-tok-keyword">#set</span><span> text(font: </span><span class="mk-tok-string">"Inter"</span><span>, size: </span><span class="mk-tok-string">11pt</span><span>)</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">3</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">4</span><span class="mk-tok-heading">= Q2 2026 Report</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">5</span><span class="mk-tok-keyword">#datetime</span><span>.today().display()</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">6</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">7</span><span class="mk-tok-heading">== Executive Summary</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">8</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">9</span><span>Revenue grew </span><span class="mk-tok-em">*34%*</span><span> YoY.</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">10</span><span>Churn remained below 3%.</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">11</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">12</span><span class="mk-tok-heading">== Metrics</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">13</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">14</span><span class="mk-tok-keyword">#table</span><span>(columns: 2,</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">15</span><span> </span><span class="mk-tok-string">[Metric]</span><span>, </span><span class="mk-tok-string">[Value]</span><span>,</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">16</span><span> </span><span class="mk-tok-string">[MRR]</span><span>, </span><span class="mk-tok-string">[$48k]</span><span>,</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">17</span><span> </span><span class="mk-tok-string">[Users]</span><span>, </span><span class="mk-tok-string">[2,400]</span><span>)</span>
+            </div>
+          </div>
+          <div class="mk-demo-preview">
+            <div class="mk-mock-pdf-page">
+              <div class="mk-mock-pdf-h1">Q2 2026 Report</div>
+              <div class="mk-mock-pdf-date">April 30, 2026</div>
+              <div class="mk-mock-pdf-h2">Executive Summary</div>
+              <p class="mk-mock-pdf-p">Revenue grew <b>34%</b> YoY. Churn remained below 3%.</p>
+              <div class="mk-mock-pdf-h2">Metrics</div>
+              <table class="mk-demo-table">
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                </tr>
+                <tr>
+                  <td>MRR</td>
+                  <td>$48k</td>
+                </tr>
+                <tr>
+                  <td>Users</td>
+                  <td>2,400</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%!-- CV --%>
+      <div class="mk-demo-panel" data-panel="cv">
+        <div class="mk-demo-split">
+          <div class="mk-demo-src">
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">1</span><span class="mk-tok-keyword">#set</span><span> text(font: </span><span class="mk-tok-string">"IBM Plex Sans"</span><span>)</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">2</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">3</span><span class="mk-tok-heading">= Jane Smith</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">4</span><span>jane@example.com · github.com/jsmith</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">5</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">6</span><span class="mk-tok-heading">== Experience</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">7</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">8</span><span class="mk-tok-em">*Senior Engineer*</span><span> — Acme Corp</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">9</span><span class="mk-tok-comment">// 2022 – present</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">10</span><span>- Led backend rewrite, cut p99 by 60%</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">11</span><span>- Hired and grew team to 8 engineers</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">12</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">13</span><span class="mk-tok-heading">== Education</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">14</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">15</span><span>BSc Computer Science, MIT, 2019</span>
+            </div>
+          </div>
+          <div class="mk-demo-preview">
+            <div class="mk-mock-pdf-page">
+              <div class="mk-mock-pdf-h1">Jane Smith</div>
+              <div class="mk-mock-pdf-date">jane@example.com · github.com/jsmith</div>
+              <div class="mk-mock-pdf-h2">Experience</div>
+              <p class="mk-mock-pdf-p">
+                <b>Senior Engineer</b>
+                — Acme Corp <span style="color:#71717a;font-size:9pt">2022–present</span>
+                <br />• Led backend rewrite, cut p99 by 60%<br />• Hired and grew team to 8 engineers
+              </p>
+              <div class="mk-mock-pdf-h2">Education</div>
+              <p class="mk-mock-pdf-p">BSc Computer Science, MIT, 2019</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%!-- Paper --%>
+      <div class="mk-demo-panel" data-panel="paper">
+        <div class="mk-demo-split">
+          <div class="mk-demo-src">
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">1</span><span class="mk-tok-keyword">#set</span><span> page(columns: </span><span class="mk-tok-string">2</span><span>, margin: </span><span class="mk-tok-string">.8in</span><span>)</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">2</span><span class="mk-tok-keyword">#set</span><span> par(justify: </span><span class="mk-tok-string">true</span><span>)</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">3</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">4</span><span class="mk-tok-heading">= Attention Is All You Need</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">5</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">6</span><span class="mk-tok-em">*Abstract*</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">7</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">8</span><span>We propose a new architecture</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">9</span><span>based solely on attention mechanisms,</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">10</span><span>dispensing with recurrence entirely.</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">11</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">12</span><span class="mk-tok-heading">== 1. Introduction</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">13</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">14</span><span>Recurrent models have long dominated</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">15</span><span>sequence transduction tasks @vaswani2017.</span>
+            </div>
+          </div>
+          <div class="mk-demo-preview">
+            <div class="mk-mock-pdf-page" style="font-size:8.5pt">
+              <div class="mk-mock-pdf-h1" style="font-size:13pt;text-align:center">
+                Attention Is All You Need
+              </div>
+              <div class="mk-mock-pdf-date" style="text-align:center">Vaswani et al. · 2017</div>
+              <p class="mk-mock-pdf-p">
+                <b>Abstract.</b>
+                We propose a new architecture based solely on attention mechanisms, dispensing with recurrence entirely. Experiments on two machine translation tasks show it to be superior in quality.
+              </p>
+              <div class="mk-mock-pdf-h2">1. Introduction</div>
+              <p class="mk-mock-pdf-p">
+                Recurrent models have long dominated sequence transduction tasks. The Transformer allows for significantly more parallelization.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%!-- Invoice --%>
+      <div class="mk-demo-panel" data-panel="invoice">
+        <div class="mk-demo-split">
+          <div class="mk-demo-src">
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">1</span><span class="mk-tok-heading">= Invoice #042</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">2</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">3</span><span class="mk-tok-em">*From:*</span><span> Jane Smith Consulting</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">4</span><span class="mk-tok-em">*To:*</span><span> Acme Corp</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">5</span><span class="mk-tok-em">*Date:*</span><span> </span><span class="mk-tok-keyword">#datetime</span><span>.today().display()</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">6</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">7</span><span class="mk-tok-keyword">#table</span><span>(columns: (1fr, auto, auto),</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">8</span><span> </span><span class="mk-tok-string">[Description]</span><span>, </span><span class="mk-tok-string">[Qty]</span><span>, </span><span class="mk-tok-string">[Amount]</span><span>,</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">9</span><span> </span><span class="mk-tok-string">[Design work]</span><span>, </span><span class="mk-tok-string">[8h]</span><span>, </span><span class="mk-tok-string">[$960]</span><span>,</span>
+            </div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">10</span><span> </span><span class="mk-tok-string">[Development]</span><span>, </span><span class="mk-tok-string">[16h]</span><span>, </span><span class="mk-tok-string">[$2,400]</span><span>,</span>
+            </div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">11</span><span>)</span></div>
+            <div class="mk-mock-ln"><span class="mk-mock-gn">12</span></div>
+            <div class="mk-mock-ln">
+              <span class="mk-mock-gn">13</span><span class="mk-tok-em">*Total: $3,360*</span>
+            </div>
+          </div>
+          <div class="mk-demo-preview">
+            <div class="mk-mock-pdf-page">
+              <div class="mk-mock-pdf-h1">Invoice #042</div>
+              <div class="mk-mock-pdf-date">April 30, 2026</div>
+              <p class="mk-mock-pdf-p" style="margin-bottom:4px">
+                <b>From:</b> Jane Smith Consulting<br /><b>To:</b> Acme Corp
+              </p>
+              <table class="mk-demo-table" style="margin-top:12px">
+                <tr>
+                  <th>Description</th>
+                  <th>Qty</th>
+                  <th>Amount</th>
+                </tr>
+                <tr>
+                  <td>Design work</td>
+                  <td>8h</td>
+                  <td>$960</td>
+                </tr>
+                <tr>
+                  <td>Development</td>
+                  <td>16h</td>
+                  <td>$2,400</td>
+                </tr>
+              </table>
+              <p class="mk-mock-pdf-p" style="margin-top:12px;font-weight:700;font-size:11pt">
+                Total: $3,360
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

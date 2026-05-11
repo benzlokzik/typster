@@ -1,0 +1,119 @@
+/* ── Dialog / Modal ─────────────────────────────────────────────────────── */
+
+.mk-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9,9,11,.48);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: mkDialogBdIn 0.22s var(--mk-ease-out) both;
+}
+.mk-dialog-backdrop.is-leaving {
+  animation: mkDialogBdOut 0.18s var(--mk-ease) both;
+}
+[data-theme="dark"] .mk-dialog-backdrop {
+  background: rgba(0,0,0,.65);
+}
+
+.mk-dialog {
+  width: 100%;
+  max-width: 480px;
+  background: var(--mk-bg);
+  border: 1px solid var(--mk-bd);
+  border-radius: var(--mk-r-lg);
+  box-shadow: var(--mk-sh-2xl);
+  padding: 28px 32px 32px;
+  position: relative;
+  animation: mkDialogIn 0.26s var(--mk-ease-out) both;
+}
+.mk-dialog-backdrop.is-leaving .mk-dialog {
+  animation: mkDialogOut 0.18s var(--mk-ease) both;
+}
+
+.mk-dialog-sm { max-width: 360px; }
+.mk-dialog-lg { max-width: 640px; }
+.mk-dialog-xl { max-width: 800px; }
+
+.mk-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.mk-dialog-title {
+  font: 700 20px/1.15 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--mk-fg);
+  margin: 0;
+}
+.mk-dialog-sub {
+  font: 14px/1.55 'Inter', sans-serif;
+  color: var(--mk-fg3);
+  margin: 6px 0 24px;
+}
+.mk-dialog-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--mk-r-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--mk-fg4);
+  transition: background 120ms var(--mk-ease-out), color 120ms var(--mk-ease-out);
+  padding: 0;
+  margin: -2px -4px 0 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .mk-dialog-close:hover { background: var(--mk-bd2); color: var(--mk-fg); }
+}
+.mk-dialog-close svg { width: 14px; height: 14px; stroke-width: 2; display: block; }
+
+.mk-dialog-body {
+  font: 14px/1.6 'Inter', sans-serif;
+  color: var(--mk-fg2);
+}
+.mk-dialog-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--mk-bd);
+}
+.mk-dialog-footer-left { justify-content: flex-start; }
+
+/* Click-outside affordance */
+.mk-dialog-backdrop[data-dismiss-on-backdrop] { cursor: pointer; }
+.mk-dialog-backdrop[data-dismiss-on-backdrop] .mk-dialog { cursor: default; }
+
+.mk-dialog-danger .mk-dialog-title { color: var(--mk-error); }
+
+@keyframes mkDialogBdIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mkDialogBdOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes mkDialogIn    { from { opacity: 0; transform: scale(0.95) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes mkDialogOut   { from { opacity: 1; transform: scale(1) translateY(0);      } to { opacity: 0; transform: scale(0.96) translateY(6px); } }
+
+@media (max-width: 480px) {
+  .mk-dialog-backdrop { padding: 0; align-items: flex-end; }
+  .mk-dialog {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    max-width: 100%;
+  }
+  @keyframes mkDialogIn  { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mkDialogOut { from { opacity: 1; transform: translateY(0);    } to { opacity: 0; transform: translateY(24px); } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mk-dialog-backdrop, .mk-dialog-backdrop.is-leaving,
+  .mk-dialog, .mk-dialog-backdrop.is-leaving .mk-dialog { animation: none; }
+}

@@ -1,0 +1,10 @@
+project_type: elixir
+
+exclude:
+  - "_build"
+  - "deps"
+  - "preview-export"
+  - ".elixir_ls"
+  - ".pixi"
+  - ".ruff_cache"
+  - "assets/vendor"

@@ -18,7 +18,7 @@
 // To load it, simply add a second `<link>` to your `root.html.heex` file.
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
-import { createIcons, ArrowRight, BookText, ChartNoAxesColumn, CloudUpload, Command, Eye, File, FileInput, FileText, GraduationCap, Image, Moon, NotebookPen, PenLine, ReceiptText, Share2, Sparkles, Sun, Type, Users, Zap } from "lucide"
+import { createIcons, ArrowRight, Bell, BookText, ChartNoAxesColumn, CircleCheck, CircleX, CloudUpload, Command, Eye, File, FileInput, FileText, GraduationCap, Image, Info, Moon, NotebookPen, PenLine, ReceiptText, Share2, Sparkles, Sun, TriangleAlert, Type, Users, X as XIcon, Zap } from "lucide"
 import { siGithub } from "simple-icons"
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
@@ -27,7 +27,6 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/typster"
 import topbar from "../vendor/topbar"
 import * as Hooks from "./hooks"
-import "@hugeicons/react"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
@@ -44,7 +43,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
-window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
+window.addEventListener("phx:page-loading-stop", () => { topbar.hide(); mkIcons(); })
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
@@ -56,8 +55,67 @@ liveSocket.connect()
 window.liveSocket = liveSocket
 
 const Github = [["path", { d: siGithub.path, fill: "currentColor", stroke: "none" }]]
+const mkIconSet = { ArrowRight, Bell, BookText, ChartNoAxesColumn, CircleCheck, CircleX, CloudUpload, Command, Eye, File, FileInput, FileText, GraduationCap, Image, Info, Moon, NotebookPen, PenLine, ReceiptText, Share2, Sparkles, Sun, TriangleAlert, Type, Users, X: XIcon, Zap, Github }
+const mkIcons = (root = document) => {
+  createIcons({ icons: mkIconSet, root })
+  root.querySelectorAll("svg[data-lucide]").forEach((svg) => svg.removeAttribute("data-lucide"))
+}
+mkIcons()
 
-createIcons({ icons: { ArrowRight, BookText, ChartNoAxesColumn, CloudUpload, Command, Eye, File, FileInput, FileText, GraduationCap, Image, Moon, NotebookPen, PenLine, ReceiptText, Share2, Sparkles, Sun, Type, Users, Zap, Github } })
+// ── Theme toggle (view-transition pour reveal) ────────────────────────────
+// The button "pours" the next theme into the page: a round-shaped clip-path
+// reveal grows from the toggle's center and drifts a touch downward so it
+// reads as liquid spreading by gravity. The outgoing layer is gently lifted
+// to feel displaced. While the pour is in flight, the button gains
+// `.is-pouring` and tilts like a teapot (CSS keyframes in `_nav.css`).
+window.toggleMkTheme = (btn) => {
+  const cur = document.documentElement.getAttribute("data-theme")
+    ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark";
+
+  const apply = () => {
+    localStorage.setItem("phx:theme", next);
+    document.documentElement.setAttribute("data-theme", next);
+  };
+
+  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    apply(); return;
+  }
+  if (window.__mkPouring) return;
+  window.__mkPouring = true;
+
+  const r = btn.getBoundingClientRect();
+  const x = r.left + r.width / 2;
+  const y = r.top + r.height / 2;
+  const endRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+
+  btn.style.setProperty("--mk-pour-x", `${r.width / 2}px`);
+  btn.classList.add("is-pouring");
+  setTimeout(() => btn.classList.remove("is-pouring"), 900);
+
+  const t = document.startViewTransition(apply);
+  t.ready.then(() => {
+    // New theme pours in: round-shaped reveal anchored on the toggle, drifting
+    // downward through three keyframes for an organic spread.
+    //
+    // We deliberately do NOT animate the old layer (no scale/translate/fade):
+    // any transform on `::view-transition-old(root)` exposes the new layer
+    // beneath at the viewport edges, producing a visible opposite-color
+    // border during the transition.
+    document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius * 0.18}px at ${x}px ${y + 4}px)`,
+          `circle(${endRadius}px at ${x}px ${y + 14}px)`,
+        ],
+        offset: [0, 0.22, 1],
+      },
+      { duration: 760, easing: "cubic-bezier(.65, 0, .15, 1)", pseudoElement: "::view-transition-new(root)" }
+    );
+  });
+  t.finished.finally(() => { window.__mkPouring = false; });
+};
 
 // ── Nav scroll state ─────────────────────────────────────────────────────
 (function initNav() {
@@ -96,6 +154,90 @@ createIcons({ icons: { ArrowRight, BookText, ChartNoAxesColumn, CloudUpload, Com
     observer.observe(el);
   });
 })();
+
+// ── Floating notifications (toast) ───────────────────────────────────────
+(function initToasts() {
+  const ICONS = {
+    success: "circle-check",
+    error: "circle-x",
+    warning: "triangle-alert",
+    info: "info",
+    default: "bell",
+  };
+
+  let stack = null;
+  const getStack = () => {
+    if (!stack) {
+      stack = document.getElementById('mk-toast-stack');
+    }
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = 'mk-toast-stack';
+      stack.className = 'mk-toast-stack';
+      stack.setAttribute('aria-live', 'polite');
+      stack.setAttribute('aria-atomic', 'false');
+      document.body.appendChild(stack);
+    }
+    return stack;
+  };
+
+  const dismiss = (toast) => {
+    if (toast.dataset.dismissed) return;
+    toast.dataset.dismissed = '1';
+    toast.classList.add('is-leaving');
+    setTimeout(() => toast.remove(), 240);
+  };
+
+  window.mkToast = (message, { type = 'default', title, duration = 4000 } = {}) => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const icon = ICONS[type] ?? ICONS.default;
+    const titleHtml = title ? `<span class="mk-toast-title">${title}</span>` : '';
+    const progressHtml = (!reduced && duration > 0)
+      ? `<span class="mk-toast-progress" style="animation-duration:${duration}ms"></span>`
+      : '';
+
+    const el = document.createElement('div');
+    el.className = `mk-toast mk-toast-${type}`;
+    el.setAttribute('role', 'status');
+    el.innerHTML = `
+      <span class="mk-toast-icon"><i data-lucide="${icon}" aria-hidden="true"></i></span>
+      <div class="mk-toast-body">${titleHtml}<p class="mk-toast-msg">${message}</p></div>
+      <button class="mk-toast-close" aria-label="Dismiss"><i data-lucide="x" aria-hidden="true"></i></button>
+      ${progressHtml}
+    `;
+    mkIcons(el);
+
+    el.querySelector('.mk-toast-close').addEventListener('click', () => dismiss(el));
+    getStack().appendChild(el);
+
+    if (duration > 0) setTimeout(() => dismiss(el), duration);
+    return () => dismiss(el);
+  };
+})();
+
+// ── Dialog helpers ────────────────────────────────────────────────────────
+window.mkDialogOpen = (backdropEl) => {
+  if (!backdropEl) return;
+  backdropEl.classList.remove('is-leaving');
+  backdropEl.style.display = 'flex';
+  const focusable = backdropEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (focusable.length) setTimeout(() => focusable[0].focus(), 50);
+
+  if (backdropEl.hasAttribute('data-dismiss-on-backdrop')) {
+    backdropEl.addEventListener('click', (e) => {
+      if (e.target === backdropEl) window.mkDialogClose(backdropEl);
+    }, { once: true });
+  }
+};
+
+window.mkDialogClose = (backdropEl) => {
+  if (!backdropEl) return;
+  backdropEl.classList.add('is-leaving');
+  backdropEl.addEventListener('animationend', () => {
+    backdropEl.style.display = 'none';
+    backdropEl.classList.remove('is-leaving');
+  }, { once: true });
+};
 
 // The lines below enable quality of life phoenix_live_reload
 // development features:

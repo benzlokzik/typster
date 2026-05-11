@@ -1,0 +1,144 @@
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+
+:root {
+  --mk-pri: #4f46e5;
+  --mk-pri-h: #4338ca;
+  --mk-pri-50: #eef2ff;
+  --mk-pri-100: #e0e7ff;
+  --mk-fg: #09090b;
+  --mk-fg2: #3f3f46;
+  --mk-fg3: #71717a;
+  --mk-fg4: #a1a1aa;
+  --mk-bd: #e4e4e7;
+  --mk-bd2: #f4f4f5;
+  --mk-bg: #ffffff;
+  --mk-bg2: #fafafa;
+  --mk-r: 0.75rem;
+  --mk-r-sm: 0.5rem;
+  --mk-r-lg: 1rem;
+  --mk-acc: #c4b5fd;
+  --mk-acc-h: #a78bfa;
+  --mk-acc-50: #f5f3ff;
+  --mk-sh-sm: 0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.06);
+  --mk-sh-md: 0 4px 6px -1px rgba(0,0,0,.07), 0 2px 4px -2px rgba(0,0,0,.05);
+  --mk-sh-lg: 0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.05);
+  --mk-sh-2xl: 0 25px 50px -12px rgba(0,0,0,.22);
+  --mk-ease: cubic-bezier(.4, 0, .2, 1);
+  --mk-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --mk-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Semantic color tokens — light */
+  --mk-success:    #16a34a;
+  --mk-success-h:  #15803d;
+  --mk-success-50: #f0fdf4;
+  --mk-success-bd: #bbf7d0;
+  --mk-warning:    #d97706;
+  --mk-warning-h:  #b45309;
+  --mk-warning-50: #fffbeb;
+  --mk-warning-bd: #fde68a;
+  --mk-error:      #dc2626;
+  --mk-error-h:    #b91c1c;
+  --mk-error-50:   #fef2f2;
+  --mk-error-bd:   #fecaca;
+  --mk-info:       #0369a1;
+  --mk-info-h:     #075985;
+  --mk-info-50:    #f0f9ff;
+  --mk-info-bd:    #bae6fd;
+
+  /* Spacing scale */
+  --mk-sp-1:  4px;
+  --mk-sp-2:  8px;
+  --mk-sp-3:  12px;
+  --mk-sp-4:  16px;
+  --mk-sp-5:  20px;
+  --mk-sp-6:  24px;
+  --mk-sp-8:  32px;
+  --mk-sp-10: 40px;
+  --mk-sp-12: 48px;
+  --mk-sp-16: 64px;
+  --mk-sp-24: 96px;
+}
+
+[data-theme="dark"] {
+  --mk-pri: #6366f1;
+  --mk-pri-h: #4f46e5;
+  --mk-pri-50: rgba(99,102,241,.12);
+  --mk-pri-100: rgba(99,102,241,.25);
+  --mk-fg: #fafafa;
+  --mk-fg2: #d4d4d8;
+  --mk-fg3: #a1a1aa;
+  --mk-fg4: #71717a;
+  --mk-bd: #27272a;
+  --mk-bd2: #1f1f23;
+  --mk-bg: #0a0a0b;
+  --mk-bg2: #111114;
+  --mk-sh-sm: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.35);
+  --mk-sh-md: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -2px rgba(0,0,0,.3);
+  --mk-sh-lg: 0 10px 15px -3px rgba(0,0,0,.5), 0 4px 6px -4px rgba(0,0,0,.3);
+  --mk-sh-2xl: 0 25px 50px -12px rgba(0,0,0,.7);
+
+  /* Semantic color tokens — dark */
+  --mk-success:    #4ade80;
+  --mk-success-h:  #86efac;
+  --mk-success-50: rgba(74, 222, 128, 0.12);
+  --mk-success-bd: rgba(74, 222, 128, 0.28);
+  --mk-warning:    #fbbf24;
+  --mk-warning-h:  #fcd34d;
+  --mk-warning-50: rgba(251, 191, 36, 0.12);
+  --mk-warning-bd: rgba(251, 191, 36, 0.28);
+  --mk-error:      #f87171;
+  --mk-error-h:    #fca5a5;
+  --mk-error-50:   rgba(248, 113, 113, 0.12);
+  --mk-error-bd:   rgba(248, 113, 113, 0.28);
+  --mk-info:       #38bdf8;
+  --mk-info-h:     #7dd3fc;
+  --mk-info-50:    rgba(56, 189, 248, 0.12);
+  --mk-info-bd:    rgba(56, 189, 248, 0.28);
+}
+
+/* System dark preference fallback — applies when data-theme is absent but OS is dark */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --mk-pri: #6366f1;
+    --mk-pri-h: #4f46e5;
+    --mk-pri-50: rgba(99,102,241,.12);
+    --mk-pri-100: rgba(99,102,241,.25);
+    --mk-fg: #fafafa;
+    --mk-fg2: #d4d4d8;
+    --mk-fg3: #a1a1aa;
+    --mk-fg4: #71717a;
+    --mk-bd: #27272a;
+    --mk-bd2: #1f1f23;
+    --mk-bg: #0a0a0b;
+    --mk-bg2: #111114;
+    --mk-sh-sm: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.35);
+    --mk-sh-md: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -2px rgba(0,0,0,.3);
+    --mk-sh-lg: 0 10px 15px -3px rgba(0,0,0,.5), 0 4px 6px -4px rgba(0,0,0,.3);
+    --mk-sh-2xl: 0 25px 50px -12px rgba(0,0,0,.7);
+  }
+  /* show sun (go-light affordance) when system is dark and no explicit light override */
+  :root:not([data-theme="light"]) .mk-icon-sun  { display: block; }
+  :root:not([data-theme="light"]) .mk-icon-moon { display: none; }
+  html:not([data-theme="light"]) { background-color: #0c0a14; color-scheme: dark; }
+}
+
+/* Dark mode token overrides scoped to .mk-body (landing page dark mode) */
+[data-theme="dark"] .mk-body {
+  --mk-fg: #fafafa;
+  --mk-fg2: #e4e4e7;
+  --mk-fg3: #a1a1aa;
+  --mk-fg4: #52525b;
+  --mk-bd: #27272a;
+  --mk-bd2: #1c1c1f;
+  --mk-bg: #0a0a0b;
+  --mk-bg2: #111114;
+  --mk-pri: #818cf8;
+  --mk-pri-h: #a5b4fc;
+  --mk-pri-50: rgba(99,102,241,.22);
+  --mk-pri-100: rgba(129,140,248,.40);
+  --mk-acc: #a78bfa;
+  --mk-acc-h: #8b5cf6;
+  --mk-acc-50: rgba(167, 139, 250, 0.12);
+  --mk-sh-md: 0 4px 6px -1px rgba(0,0,0,.5), 0 2px 4px -2px rgba(0,0,0,.35);
+  --mk-sh-2xl: 0 25px 50px -12px rgba(0,0,0,.75);
+}

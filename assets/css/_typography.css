@@ -1,0 +1,16 @@
+/* ── Shared typography ──────────────────────────────────────────────────── */
+
+/*
+ * The Instrument Serif italic <em> accent appears in every "hero" heading
+ * across the site — landing hero, dialog titles, auth card headers. Defined
+ * once here so all three render identically and the rule isn't duplicated
+ * in each component file.
+ */
+:is(.mk-hero h1, .mk-dialog-title, .auth-card h1) em {
+  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--mk-pri);
+  letter-spacing: -0.01em;
+}
+.mk-hero h1 em { vertical-align: -0.02em; }

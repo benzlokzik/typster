@@ -1,0 +1,136 @@
+name: Commit message style
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+  push:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: commit-message-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commit-message:
+    name: commit-message
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    env:
+      COMMIT_MESSAGE_PATTERN: '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-zA-Z0-9\-._]+\))?(!)?: [A-Za-z0-9](?:[^\n]*(?:\.\.\.|\.[a-zA-Z0-9]|[^\n.][^\n.])|[^\n.])?(\n[\s\S]*)?$'
+
+    steps:
+      - name: Validate commit messages
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+
+          const eventPath = process.env.GITHUB_EVENT_PATH;
+          const repo = process.env.GITHUB_REPOSITORY;
+          const token = process.env.GITHUB_TOKEN;
+          const pattern = new RegExp(process.env.COMMIT_MESSAGE_PATTERN, "u");
+
+          if (!eventPath) {
+            throw new Error("GITHUB_EVENT_PATH is empty. Cannot read GitHub event payload.");
+          }
+
+          const event = JSON.parse(fs.readFileSync(eventPath, "utf8"));
+          const failures = [];
+
+          function normalizeMessage(message) {
+            return String(message ?? "").replace(/\r\n/g, "\n").trimEnd();
+          }
+
+          function checkCommit(sha, message) {
+            const normalized = normalizeMessage(message);
+
+            if (/^Merge /.test(normalized)) {
+              return;
+            }
+
+            if (!pattern.test(normalized)) {
+              failures.push({
+                sha: String(sha ?? "").slice(0, 7),
+                subject: normalized.split("\n", 1)[0] || "<empty message>",
+              });
+            }
+          }
+
+          async function githubJson(url) {
+            const response = await fetch(url, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": "commit-message-style-check",
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error(`${response.status} ${response.statusText}: ${await response.text()}`);
+            }
+
+            return response.json();
+          }
+
+          async function getPullRequestCommits() {
+            const commits = [];
+            const baseUrl = event.pull_request.commits_url;
+
+            for (let page = 1; ; page += 1) {
+              const separator = baseUrl.includes("?") ? "&" : "?";
+              const pageCommits = await githubJson(`${baseUrl}${separator}per_page=100&page=${page}`);
+
+              commits.push(...pageCommits);
+
+              if (pageCommits.length < 100) {
+                return commits;
+              }
+            }
+          }
+
+          async function main() {
+            let commits = [];
+
+            if (event.pull_request) {
+              commits = await getPullRequestCommits();
+
+              for (const commit of commits) {
+                checkCommit(commit.sha, commit.commit?.message);
+              }
+            } else {
+              commits = event.commits ?? [];
+
+              for (const commit of commits) {
+                checkCommit(commit.id, commit.message);
+              }
+            }
+
+            if (failures.length > 0) {
+              console.error("");
+              console.error("Invalid commit message(s):");
+
+              for (const failure of failures) {
+                console.error(`- ${failure.sha}: ${failure.subject}`);
+              }
+
+              console.error("");
+              console.error("Expected pattern:");
+              console.error(process.env.COMMIT_MESSAGE_PATTERN);
+              console.error("");
+              process.exit(1);
+            }
+
+            console.log(`Validated ${commits.length} commit message(s).`);
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

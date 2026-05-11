@@ -29,6 +29,24 @@ defmodule TypsterWeb.UserSessionController do
     end
   end
 
+  # magic link request — no-JS fallback when the email-only form is submitted
+  defp create(conn, %{"user" => %{"email" => email} = user_params}, _info)
+       when not is_map_key(user_params, "password") do
+    if user = Accounts.get_user_by_email(email) do
+      Accounts.deliver_login_instructions(
+        user,
+        &url(~p"/users/log-in/#{&1}")
+      )
+    end
+
+    conn
+    |> put_flash(
+      :info,
+      "If your email is in our system, you will receive instructions for logging in shortly."
+    )
+    |> redirect(to: ~p"/users/log-in")
+  end
+
   # email + password login
   defp create(conn, %{"user" => user_params}, info) do
     %{"email" => email, "password" => password} = user_params

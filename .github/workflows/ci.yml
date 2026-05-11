@@ -3,8 +3,29 @@ name: CI
 on:
   push:
     branches: ["main"]
+    paths:
+      - "lib/**"
+      - "test/**"
+      - "config/**"
+      - "priv/**"
+      - "assets/**"
+      - "mix.exs"
+      - "mix.lock"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/ci.yml"
   pull_request:
-    branches: ["main"]
+    paths:
+      - "lib/**"
+      - "test/**"
+      - "config/**"
+      - "priv/**"
+      - "assets/**"
+      - "mix.exs"
+      - "mix.lock"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/ci.yml"
 
 permissions:
   contents: read
@@ -13,7 +34,46 @@ env:
   MIX_ENV: test
 
 jobs:
-  test:
+  static:
+    name: Static checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: prefix-dev/setup-pixi@v0.9.5
+        with:
+          cache: true
+          pixi-version: v0.68.0
+
+      - name: Cache deps
+        uses: actions/cache@v5
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: Cache build
+        uses: actions/cache@v5
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-${{ hashFiles('pixi.lock', '**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-build-
+
+      - name: Install deps
+        run: pixi run mix deps.get
+
+      - name: Compile (warnings as errors)
+        run: pixi run mix compile --warnings-as-errors
+
+      - name: Check formatting
+        run: pixi run mix format --check-formatted
+
+      - name: Credo
+        run: pixi run mix credo
+
+  tests:
+    name: Elixir tests
     runs-on: ubuntu-latest
 
     services:
@@ -31,18 +91,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    strategy:
-      matrix:
-        otp: ["28.3"]
-        elixir: ["1.19"]
-
     steps:
       - uses: actions/checkout@v6
 
-      - uses: erlef/setup-beam@v1
+      - uses: prefix-dev/setup-pixi@v0.9.0
         with:
-          otp-version: ${{ matrix.otp }}
-          elixir-version: ${{ matrix.elixir }}
+          cache: true
 
       - name: Cache deps
         uses: actions/cache@v5
@@ -55,20 +109,84 @@ jobs:
         uses: actions/cache@v5
         with:
           path: _build
-          key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-
+          key: ${{ runner.os }}-build-${{ hashFiles('pixi.lock', '**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-build-
 
       - name: Install deps
-        run: mix deps.get
-
-      - name: Compile (warnings as errors)
-        run: mix compile --warnings-as-errors
-
-      - name: Check formatting
-        run: mix format --check-formatted
-
-      - name: Credo
-        run: mix credo
+        run: pixi run mix deps.get
 
       - name: Run tests
-        run: mix test
+        run: pixi run mix test
+
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: prefix-dev/setup-pixi@v0.9.0
+        with:
+          cache: true
+
+      - name: Cache deps
+        uses: actions/cache@v5
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: Cache build
+        uses: actions/cache@v5
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-${{ hashFiles('pixi.lock', '**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-build-
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('assets/bun.lock') }}
+          restore-keys: ${{ runner.os }}-playwright-
+
+      - name: Install Bun deps
+        working-directory: assets
+        run: pixi run bun install --frozen-lockfile
+
+      - name: Install deps
+        run: pixi run mix deps.get
+
+      - name: Build assets
+        run: pixi run mix assets.build
+
+      - name: Install Playwright browser
+        working-directory: assets
+        run: pixi run bun run playwright install --with-deps chromium
+
+      - name: Run browser tests
+        working-directory: assets
+        run: pixi run bun run test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: assets/playwright-report/
+          if-no-files-found: ignore

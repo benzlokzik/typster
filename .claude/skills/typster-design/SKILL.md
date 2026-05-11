@@ -28,9 +28,15 @@ The page must read as *trustworthy enough to commit a dissertation to* before it
 
 **Both themes, always.** Every new component must work in light *and* dark. New tokens get declared in both `:root` and `[data-theme="dark"]`. Dark mode is the more striking of the two — researchers write late.
 
-**Reach for existing components first.** `.mk-btn`, `.mk-pill`, `.mk-feat`, `.mk-section`, and friends exist — extend before inventing. New components go into `app.css` under the `--mk-` namespace.
+**Reach for existing components first.** `.mk-btn`, `.mk-pill`, `.mk-badge`, `.mk-alert`, `.mk-toast`, `.mk-dialog`, `.mk-feat`, `.mk-section`, and friends exist — extend before inventing. New components go into `app.css` under the `--mk-` namespace.
+
+**Semantic color tokens exist.** Use `--mk-success`, `--mk-warning`, `--mk-error`, `--mk-info` (and their `-50`/`-bd`/`-h` variants) for any status UI — never hardcode green/red/amber. Both themes are covered.
+
+**Spacing scale exists.** `--mk-sp-1` through `--mk-sp-24` (4px–96px). Use them in new components instead of raw pixel values.
 
 **No inline styles.** `style=""` is banned except for CSS custom property injection (e.g., `--i` stagger index on reveal groups).
+
+**No raw SVG injection.** Never paste or generate raw `<svg>` markup inside JS, CSS, HEEx, or HTML. For icons, first search and prefer existing icon packs: `lucide` and `simple-icons` are already in `assets/package.json`, and existing app icons can be rendered with `<.mk_icon name="..." class="..."/>`. Only create a new standalone `.svg` asset when no suitable package or existing app icon exists.
 
 **Reduced motion is not optional.** Every animation or transition needs a `@media (prefers-reduced-motion: reduce)` counterpart. It's already wired up — keep it that way.
 
@@ -46,6 +52,18 @@ Typster copy lives at the intersection of a citation style guide and a group cha
 - **Sentence case everywhere.** Headlines, buttons, labels. All of it.
 - **No corpo filler.** On sight: delete "seamlessly", "powerful", "intuitive", "robust", "world-class", "cutting-edge". Each one is a confession that you ran out of things to say.
 - **Academic register, gen-z cadence.** Think: "the document compiles. you're cooked if it doesn't."
+
+## Component inventory
+
+| Component      | Class(es)                          | JS API                                           |
+| -------------- | ---------------------------------- | ------------------------------------------------ |
+| Badge          | `.mk-badge`, `.mk-badge-{variant}` | —                                                |
+| Inline alert   | `.mk-alert`, `.mk-alert-{variant}` | —                                                |
+| Floating toast | `.mk-toast`, `.mk-toast-stack`     | `mkToast(msg, { type, title, duration })`        |
+| Dialog         | `.mk-dialog-backdrop`, `.mk-dialog`| `mkDialogOpen(el)` / `mkDialogClose(el)`         |
+
+Toast returns a dismiss function. Duration `0` = persistent. Type: `default` | `success` | `warning` | `error` | `info`.
+Dialog titles support `<em>` for Instrument Serif italic — consistent with hero and auth card.
 
 ## Updating the guides
 

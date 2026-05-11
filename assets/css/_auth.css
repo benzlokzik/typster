@@ -1,0 +1,107 @@
+/* ── Auth pages ─────────────────────────────────────────────────────────── */
+/* Background, nav, and fonts come from .mk-body — no overrides needed.    */
+
+.auth-page { min-height: 100dvh; display: flex; flex-direction: column; }
+
+.auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 94px 16px 40px; /* 14px nav offset + 56px nav + 24px gap */
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--mk-bg);
+  border: 1px solid var(--mk-bd);
+  border-radius: var(--mk-r-lg);
+  padding: 36px 40px 40px;
+  box-shadow: var(--mk-sh-lg);
+  box-sizing: border-box;
+}
+
+/* Heading — Inter 700 body + Instrument Serif italic for the brand name */
+.auth-card h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--mk-fg);
+  margin: 0 0 8px;
+}
+
+/* `.auth-card h1 em` (Instrument Serif accent) lives in `_typography.css`. */
+
+.auth-subtitle {
+  font-size: 13.5px;
+  color: var(--mk-fg3);
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.auth-subtitle a { color: var(--mk-pri); text-decoration: none; }
+.auth-subtitle a:hover { text-decoration: underline; }
+
+/* Neutralize DaisyUI fieldset/label inside auth card */
+.auth-card .fieldset { padding: 0; border: none; margin-bottom: 14px; }
+.auth-card .label { font-size: 13px; font-weight: 500; color: var(--mk-fg2); padding: 0; margin-bottom: 5px; display: block; }
+
+/* Auth input */
+.auth-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--mk-bd);
+  border-radius: var(--mk-r-sm);
+  background: var(--mk-bg);
+  color: var(--mk-fg);
+  font: 14px/1 'Inter', system-ui, sans-serif;
+  transition: border-color 150ms var(--mk-ease-out), box-shadow 150ms var(--mk-ease-out);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+.auth-input:focus {
+  border-color: var(--mk-pri);
+  box-shadow: 0 0 0 3px var(--mk-pri-50);
+}
+
+.auth-input[readonly] { opacity: 0.55; cursor: not-allowed; }
+
+/* Input sits one step darker than the card for depth */
+[data-theme="dark"] .auth-input { background: #16161f; }
+
+.auth-input--error { border-color: #ef4444; }
+.auth-input--error:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+
+/* Auth divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  font-size: 11px;
+  color: var(--mk-fg4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.auth-divider::before,
+.auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--mk-bd); }
+
+/* Auth info alert — uses .mk-alert.mk-alert-info */
+.mk-alert { margin-bottom: 18px; }
+.mk-alert a { color: currentColor; text-decoration: underline; }
+
+/* Auth buttons */
+.auth-card .mk-btn { width: 100%; justify-content: center; }
+.auth-card form .mk-btn + .mk-btn { margin-top: 8px; }
+.auth-card form > .mk-btn { margin-top: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-input { transition: none; }
+}

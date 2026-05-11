@@ -1,6 +1,5 @@
 import { initEditor, updateEditorContent, destroyEditor } from "./editor"
 import { initTypstWorker, destroyTypstWorker, compileTypst } from "./typst_worker"
-import { updatePreview } from "./preview"
 
 function parseContent(content) {
   return content || ""
@@ -194,10 +193,6 @@ export const CodeMirror = {
 export const Preview = {
   mounted() {
     initTypstWorker(this)
-
-    this.handleEvent("update_preview", ({ svg }) => {
-      updatePreview(this.el, svg)
-    })
 
     const editorContainer = document.getElementById("editor-container")
     if (editorContainer) {

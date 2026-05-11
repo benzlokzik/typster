@@ -40,8 +40,9 @@ defmodule Typster.Assets do
     filename = Map.fetch!(entry, :client_name)
     content_type = Map.get(entry, :client_type) || MIME.from_path(filename)
     object_key = object_key(project_id, filename)
-    size = File.stat!(path).size
-    body = File.read!(path)
+    safe_path = safe_upload_path!(path)
+    size = File.stat!(safe_path).size
+    body = File.read!(safe_path)
 
     with {:ok, _response} <- put_object(object_key, body, content_type) do
       upload_asset(scope, project_id, object_key, %{
@@ -90,6 +91,17 @@ defmodule Typster.Assets do
   end
 
   def reference_path(%Asset{} = asset), do: "assets/#{asset.filename}"
+
+  defp safe_upload_path!(path) do
+    expanded = Path.expand(path)
+    tmp_dir = Path.expand(System.tmp_dir!())
+
+    unless String.starts_with?(expanded, tmp_dir <> "/") do
+      raise ArgumentError, "upload path is outside the system temp directory"
+    end
+
+    expanded
+  end
 
   defp object_key(project_id, filename) do
     safe_name =

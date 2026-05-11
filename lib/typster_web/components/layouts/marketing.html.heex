@@ -10,88 +10,72 @@
     >
       {assigns[:page_title]}
     </.live_title>
+    <script>
+      (() => {
+        const key = "phx:theme";
+        const root = document.documentElement;
+
+        const getStoredTheme = () => {
+          try {
+            return localStorage.getItem(key);
+          } catch {
+            return null;
+          }
+        };
+
+        const storeTheme = (theme) => {
+          try {
+            if (theme === "system") {
+              localStorage.removeItem(key);
+            } else {
+              localStorage.setItem(key, theme);
+            }
+          } catch {}
+        };
+
+        const setTheme = (theme) => {
+          const next = theme === "light" || theme === "dark" ? theme : "system";
+
+          if (next === "system") {
+            root.removeAttribute("data-theme");
+          } else {
+            root.setAttribute("data-theme", next);
+          }
+
+          storeTheme(next);
+        };
+
+        setTheme(getStoredTheme());
+        window.addEventListener("storage", (e) => e.key === key && setTheme(e.newValue));
+        window.addEventListener("phx:set-theme", (e) => {
+          const source = e.target instanceof Element ? e.target.closest("[data-phx-theme]") : null;
+          setTheme(source && source.dataset.phxTheme);
+        });
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="module" src={~p"/assets/js/app.js"}>
     </script>
     <script>
       (() => {
-        const setTheme = (theme) => {
-          if (theme === "system") {
-            localStorage.removeItem("phx:theme");
-            document.documentElement.removeAttribute("data-theme");
-          } else {
-            localStorage.setItem("phx:theme", theme);
-            document.documentElement.setAttribute("data-theme", theme);
-          }
-        };
-        if (!document.documentElement.hasAttribute("data-theme")) {
-          setTheme(localStorage.getItem("phx:theme") || "system");
-        }
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
-
         window.mkSwitchTab = function(btn) {
           const key = btn.dataset.tab;
           document.querySelectorAll('.mk-demo-tab').forEach(t => t.classList.toggle('is-active', t === btn));
           document.querySelectorAll('.mk-demo-panel').forEach(p => p.classList.toggle('is-active', p.dataset.panel === key));
         };
-        window.toggleMkTheme = (btn) => {
-          const cur = document.documentElement.getAttribute("data-theme");
-          const next = cur === "dark" ? "light" : "dark";
-          if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            setTheme(next);
-            return;
-          }
-          const r = btn ? btn.getBoundingClientRect() : { left: window.innerWidth - 80, top: 18, width: 34, height: 34 };
-          const x = r.left + r.width / 2;
-          const y = r.top + r.height / 2;
-          const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-          const t = document.startViewTransition(() => setTheme(next));
-          t.ready.then(() => {
-            document.documentElement.animate(
-              { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-              { duration: 480, easing: "cubic-bezier(.4,0,.2,1)", pseudoElement: "::view-transition-new(root)" }
-            );
-          });
-        };
       })();
     </script>
   </head>
   <body class="mk-body">
-    <header class="mk-nav">
-      <a href={~p"/"} class="mk-brand">
-        <div class="mk-brand-mark">T</div>
-        <span>Typster</span>
-      </a>
-      <nav class="mk-nav-links">
+    <.mk_nav current_scope={@current_scope}>
+      <:nav_links>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
         <a href="#faq">FAQ</a>
         <a href="https://typst.app/docs" target="_blank">Docs</a>
-      </nav>
-      <div class="mk-nav-cta">
-        <button
-          class="mk-btn mk-btn-ghost mk-btn-sm mk-theme-toggle"
-          onclick="toggleMkTheme(this)"
-          aria-label="Toggle theme"
-        >
-          <i data-lucide="moon" class="mk-icon-moon"></i>
-          <i data-lucide="sun" class="mk-icon-sun"></i>
-        </button>
-        <%= if @current_scope do %>
-          <a href={~p"/projects"} class="mk-btn mk-btn-ghost mk-btn-sm">My projects</a>
-          <.link href={~p"/users/log-out"} method="delete" class="mk-btn mk-btn-ghost mk-btn-sm">
-            Log out
-          </.link>
-        <% else %>
-          <.link href={~p"/users/log-in"} class="mk-btn mk-btn-ghost mk-btn-sm">Log in</.link>
-          <.link href={~p"/users/register"} class="mk-btn mk-btn-primary mk-btn-sm">
-            Sign up free
-          </.link>
-        <% end %>
-      </div>
-    </header>
+      </:nav_links>
+    </.mk_nav>
     {@inner_content}
   </body>
 </html>

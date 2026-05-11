@@ -27,9 +27,9 @@ defmodule TypsterWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, _lv, html} = live(conn, ~p"/users/log-in/#{token}")
+      {:ok, lv, html} = live(conn, ~p"/users/log-in/#{token}")
       refute html =~ "Confirm my account"
-      assert html =~ "Keep me logged in on this device"
+      assert has_element?(lv, ~s|#login_form button[name="user[remember_me]"]|)
     end
 
     test "renders login page for already logged in user", %{conn: conn, confirmed_user: user} do

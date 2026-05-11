@@ -7,37 +7,28 @@ defmodule TypsterWeb.UserLive.Registration do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
-        <div class="text-center">
-          <.header>
-            Register for an account
-            <:subtitle>
-              Already registered?
-              <.link navigate={~p"/users/log-in"} class="font-semibold text-brand hover:underline">
-                Log in
-              </.link>
-              to your account now.
-            </:subtitle>
-          </.header>
-        </div>
+    <Layouts.auth flash={@flash} current_scope={@current_scope}>
+      <h1>Write with <em>Typster</em></h1>
+      <p class="auth-subtitle">
+        Already have one? <.link navigate={~p"/users/log-in"}>Log in</.link>
+      </p>
 
-        <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
-          <.input
-            field={@form[:email]}
-            type="email"
-            label="Email"
-            autocomplete="username"
-            required
-            phx-mounted={JS.focus()}
-          />
-
-          <.button phx-disable-with="Creating account..." class="btn btn-primary w-full">
-            Create an account
-          </.button>
-        </.form>
-      </div>
-    </Layouts.app>
+      <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
+        <.input
+          field={@form[:email]}
+          type="email"
+          label="Email"
+          autocomplete="username"
+          required
+          class="auth-input"
+          error_class="auth-input auth-input--error"
+          phx-mounted={JS.focus()}
+        />
+        <button type="submit" class="mk-btn mk-btn-primary" phx-disable-with="Creating account...">
+          Create account
+        </button>
+      </.form>
+    </Layouts.auth>
     """
   end
 

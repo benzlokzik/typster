@@ -25,7 +25,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:project_sources, project_sources(file_tree))
      |> assign(:project_assets, project_assets(assets))
      |> assign(:save_status, "saved")
-     |> assign(:preview_svg, nil)
+     |> assign(:preview_stats, nil)
      |> assign(:preview_error, nil)
      |> assign(:page_title, project.name)
      |> allow_upload(:asset,
@@ -73,8 +73,16 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   @impl true
-  def handle_event("update_preview", %{"svg" => svg}, socket) do
-    {:noreply, assign(socket, preview_svg: svg, preview_error: nil)}
+  def handle_event(
+        "update_preview",
+        %{"source_count" => source_count, "asset_count" => asset_count},
+        socket
+      ) do
+    {:noreply,
+     assign(socket,
+       preview_stats: %{source_count: source_count, asset_count: asset_count},
+       preview_error: nil
+     )}
   end
 
   @impl true

@@ -1,0 +1,163 @@
+/* ── Navigation ─────────────────────────────────────────────────────────── */
+
+.mk-nav {
+  position: fixed;
+  top: 14px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: calc(100% - 24px);
+  max-width: 1100px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 12px 0 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(255,255,255,.5);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.6) inset,
+    0 8px 24px -8px rgba(15,12,40,.18),
+    0 2px 6px -2px rgba(15,12,40,.08);
+  transition: background 250ms var(--mk-ease-out), box-shadow 250ms var(--mk-ease-out);
+}
+.mk-nav.is-scrolled {
+  background: rgba(255,255,255,.82);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.7) inset,
+    0 12px 32px -10px rgba(15,12,40,.22),
+    0 3px 8px -3px rgba(15,12,40,.10);
+}
+[data-theme="dark"] .mk-nav {
+  background: rgba(10,10,11,.88);
+  border-color: rgba(255,255,255,.08);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.06) inset,
+    0 8px 24px -8px rgba(0,0,0,.5),
+    0 2px 6px -2px rgba(0,0,0,.3);
+}
+[data-theme="dark"] .mk-nav.is-scrolled {
+  background: rgba(20,18,32,.78);
+}
+.mk-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 32px;
+}
+.mk-nav-links a {
+  padding: 6px 12px;
+  border-radius: var(--mk-r-sm);
+  font: 500 13px 'Inter', sans-serif;
+  color: var(--mk-fg3);
+  transition: background 150ms var(--mk-ease-out), color 150ms var(--mk-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .mk-nav-links a:hover { background: var(--mk-bd2); color: var(--mk-fg); }
+}
+.mk-nav-cta { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+
+/* ── Brand ──────────────────────────────────────────────────────────────── */
+
+.mk-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 600 15px 'Inter', sans-serif;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  color: var(--mk-fg);
+}
+.mk-brand-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--mk-pri);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font: 700 15px 'JetBrains Mono', monospace;
+  letter-spacing: -.04em;
+  flex-shrink: 0;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: var(--mk-r-sm);
+  font: 500 13px 'Inter', sans-serif;
+  transition: background 160ms var(--mk-ease-out), color 160ms var(--mk-ease-out),
+              transform 120ms var(--mk-ease-out), box-shadow 160ms var(--mk-ease-out);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mk-btn:active { transform: scale(0.97); }
+.mk-btn-lg { height: 48px; padding: 0 24px; font-size: 14px; font-weight: 600; border-radius: var(--mk-r); }
+.mk-btn-sm { height: 34px; padding: 0 14px; font-size: 12.5px; }
+.mk-btn-primary { background: var(--mk-pri); color: #fff; }
+.mk-btn-light { background: #fff; color: #09090b; }
+.mk-btn-outline { border-color: var(--mk-bd); color: var(--mk-fg2); background: var(--mk-bg); }
+.mk-btn-ghost { color: var(--mk-fg2); }
+@media (hover: hover) and (pointer: fine) {
+  .mk-btn-primary:hover { background: var(--mk-pri-h); }
+  .mk-btn-outline:hover { background: var(--mk-bd2); color: var(--mk-fg); }
+  .mk-btn-ghost:hover { background: var(--mk-bd2); color: var(--mk-fg); }
+  .mk-btn-light:hover { background: #f4f4f5; }
+}
+
+/* ── Theme toggle ───────────────────────────────────────────────────────── */
+
+.mk-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  padding: 0;
+}
+.mk-theme-toggle svg { width: 16px; height: 16px; transition: transform 200ms var(--mk-ease-out); }
+/* While the pour is in flight, the toggle tilts like a vessel being emptied
+   and the icon swings back upright. Origin is the button's spout side. */
+.mk-theme-toggle.is-pouring {
+  animation: mk-pour-tilt 760ms cubic-bezier(.4, 0, .2, 1) both;
+  transform-origin: var(--mk-pour-x, 50%) 100%;
+}
+.mk-theme-toggle.is-pouring svg { transform: rotate(8deg); }
+@keyframes mk-pour-tilt {
+  0%   { transform: rotate(0) translateY(0); }
+  18%  { transform: rotate(-14deg) translateY(-1px); }
+  55%  { transform: rotate(-10deg) translateY(0); }
+  100% { transform: rotate(0) translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mk-theme-toggle.is-pouring,
+  .mk-theme-toggle.is-pouring svg { animation: none; transform: none; }
+}
+.mk-icon-12 { width: 12px; height: 12px; }
+.mk-icon-14 { width: 14px; height: 14px; }
+.mk-icon-16 { width: 16px; height: 16px; }
+/* show moon in light mode (to indicate you can go dark), sun in dark mode */
+.mk-icon-sun  { display: none; }
+.mk-icon-moon { display: block; }
+[data-theme="dark"] .mk-icon-sun  { display: block; }
+[data-theme="dark"] .mk-icon-moon { display: none; }
+
+/* responsive */
+@media (max-width: 900px) {
+  .mk-nav-links { display: none; }
+}
+@media (max-width: 480px) {
+  .mk-nav { top: 8px; width: calc(100% - 16px); height: 52px; padding: 0 10px 0 14px; border-radius: 14px; }
+  .mk-brand span { display: none; }
+}

@@ -1,0 +1,160 @@
+name: SAST
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "lib/**"
+      - "test/**"
+      - "config/**"
+      - "mix.exs"
+      - "mix.lock"
+      - "assets/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "lib/**"
+      - "test/**"
+      - "config/**"
+      - "mix.exs"
+      - "mix.lock"
+      - "assets/**"
+      - ".github/workflows/**"
+  schedule:
+    - cron: "45 7 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  MIX_ENV: test
+
+jobs:
+  security-scan:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [28.3]
+        elixir: [1.19]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: erlef/setup-beam@v1.24.0
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: get dependencies
+        run: mix deps.get
+      - name: compile dependencies
+        run: mix deps.compile
+      - name: compile
+        run: mix compile
+      - name: credo-scan
+        run: |
+          mix credo --format=sarif > credo_output.sarif
+      - name: upload sarif
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: credo_output.sarif
+
+  sobelow:
+    name: Sobelow security scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [28.3]
+        elixir: [1.19]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: erlef/setup-beam@v1.24.0
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: get dependencies
+        run: mix deps.get
+      - name: compile
+        run: mix compile
+      - name: sobelow
+        run: mix sobelow --skip --ignore Config.HTTPS,Config.CSP --exit Medium --format sarif > sobelow_output.sarif
+      - name: upload sarif
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: sobelow_output.sarif
+
+  dialyzer:
+    name: Dialyzer type check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      MIX_ENV: dev
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: [28.3]
+        elixir: [1.19]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: erlef/setup-beam@v1.24.0
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: Cache assay PLT
+        uses: actions/cache@v5
+        with:
+          path: _build/assay
+          key: ${{ runner.os }}-assay-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-assay-
+      - name: get dependencies
+        run: mix deps.get
+      - name: compile
+        run: mix compile
+      - name: dialyzer
+        run: mix assay --format github --format sarif | grep '^{' > assay_output.sarif || true
+      - name: upload sarif
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: assay_output.sarif
+
+  trivy:
+    name: Trivy vulnerability scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif

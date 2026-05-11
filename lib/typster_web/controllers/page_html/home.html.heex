@@ -1,127 +1,4 @@
-<%!-- Hero ─────────────────────────────────────────────────────────── --%>
-<section class="mk-hero">
-  <div class="mk-pill">
-    <span class="mk-pill-dot"></span> v1.0 · Public beta
-  </div>
-  <h1>Write Typst.<br /><em>Typster</em> handles the rest.</h1>
-  <p class="mk-hero-sub">
-    Three panes, live preview, every command on a key combo.
-    Lock in, write Typst, render PDFs in milliseconds.
-  </p>
-  <div class="mk-hero-ctas">
-    <.link navigate={~p"/users/register"} class="mk-btn mk-btn-primary mk-btn-lg">
-      Start writing — free <i data-lucide="arrow-right" class="mk-icon-14"></i>
-    </.link>
-    <a href="https://github.com/typster-io/typster" class="mk-btn mk-btn-outline mk-btn-lg">
-      <i data-lucide="github" class="mk-icon-16"></i> Star on GitHub
-    </a>
-  </div>
-  <p class="mk-hero-fine">No card · 3 free projects · 100 MB storage</p>
-
-  <%!-- Mock editor --%>
-  <div class="mk-art">
-    <div class="mk-mock">
-      <div class="mk-mock-bar">
-        <span class="mk-mock-dot" style="background:#fb7185"></span>
-        <span class="mk-mock-dot" style="background:#fbbf24"></span>
-        <span class="mk-mock-dot" style="background:#34d399"></span>
-        <span style="margin-left:10px;font-size:12px">quarterly-report / main.typ</span>
-        <span style="margin-left:auto;display:flex;gap:6px">
-          <span style="padding:2px 8px;border-radius:4px;background:#eef2ff;color:#4f46e5;font-size:11px;font-weight:500">
-            Auto-saved
-          </span>
-          <span style="padding:2px 8px;border-radius:4px;background:#f0fdf4;color:#16a34a;font-size:11px;font-weight:500">
-            ● Compiled
-          </span>
-        </span>
-      </div>
-      <aside class="mk-mock-side">
-        <div class="mk-mock-side-h">Files</div>
-        <div class="mk-mock-row active">
-          <i data-lucide="file" class="mk-icon-12"></i> main.typ
-        </div>
-        <div class="mk-mock-row">
-          <i data-lucide="file" class="mk-icon-12"></i> sections/intro.typ
-        </div>
-        <div class="mk-mock-row">
-          <i data-lucide="file" class="mk-icon-12"></i> sections/data.typ
-        </div>
-        <div class="mk-mock-row">
-          <i data-lucide="file" class="mk-icon-12"></i> refs.bib
-        </div>
-        <div class="mk-mock-side-h" style="margin-top:12px">Assets</div>
-        <div class="mk-mock-row">
-          <i data-lucide="image" class="mk-icon-12"></i> cover.png
-        </div>
-      </aside>
-      <div class="mk-mock-src">
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">1</span><span class="mk-tok-comment">// main.typ — quarterly report</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">2</span><span class="mk-tok-keyword">#set</span><span> page(margin: </span><span class="mk-tok-string">1in</span><span>, paper: </span><span class="mk-tok-string">"a4"</span><span>)</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">3</span><span class="mk-tok-keyword">#set</span><span> text(font: </span><span class="mk-tok-string">"Inter"</span><span>, size: </span><span class="mk-tok-string">11pt</span><span>)</span>
-        </div>
-        <div class="mk-mock-ln"><span class="mk-mock-gn">4</span></div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">5</span><span class="mk-tok-heading">= Quarterly Report</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">6</span><span class="mk-tok-keyword">#datetime</span><span>.today().display()</span>
-        </div>
-        <div class="mk-mock-ln"><span class="mk-mock-gn">7</span></div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">8</span><span class="mk-tok-heading">== Summary</span>
-        </div>
-        <div class="mk-mock-ln"><span class="mk-mock-gn">9</span></div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">10</span><span>This quarter, </span><span class="mk-tok-em">*Typster*</span><span> launched</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">11</span><span>its first public beta. We grew</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">12</span><span>to </span><span class="mk-tok-em">_2,400 weekly users_</span><span> and</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">13</span><span>processed 18k compile jobs.</span>
-        </div>
-        <div class="mk-mock-ln"><span class="mk-mock-gn">14</span></div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">15</span><span class="mk-tok-heading">== Highlights</span>
-        </div>
-        <div class="mk-mock-ln"><span class="mk-mock-gn">16</span></div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">17</span><span>- Three-pane editor</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">18</span><span>- Live preview</span>
-        </div>
-        <div class="mk-mock-ln">
-          <span class="mk-mock-gn">19</span><span>- Magic-link auth</span>
-        </div>
-      </div>
-      <div class="mk-mock-pdf">
-        <div class="mk-mock-pdf-page">
-          <div class="mk-mock-pdf-h1">Quarterly Report</div>
-          <div class="mk-mock-pdf-date">April 30, 2026</div>
-          <div class="mk-mock-pdf-h2">Summary</div>
-          <p class="mk-mock-pdf-p">
-            This quarter, <b>Typster</b>
-            launched its first public beta. We grew to <i>2,400 weekly users</i>
-            and processed over 18k compile jobs.
-          </p>
-          <div class="mk-mock-pdf-h2">Highlights</div>
-          <p class="mk-mock-pdf-p">
-            • Three-pane editor with live preview<br />• Magic-link authentication<br />• Keyboard-first command palette<br />• Cloud projects &amp; auto-save
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+<.hero />
 
 <%!-- Stats ────────────────────────────────────────────────────────── --%>
 <div class="mk-stats mk-reveal">
@@ -185,42 +62,42 @@
       All the rigor of LaTeX. None of the package hell. None of the waiting.
     </p>
     <div class="mk-feat-grid mk-reveal-group">
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="zap"></i></div>
-        <h3>Compile in milliseconds</h3>
-        <p>Edge-rendered Typst compilation. Save → see the PDF before your finger leaves ⌘S.</p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="command"></i></div>
-        <h3>Keyboard-first</h3>
-        <p>
+      <.icon_card icon="zap">
+        <:title>Compile in milliseconds</:title>
+        <:body>
+          Edge-rendered Typst compilation. Save → see the PDF before your finger leaves ⌘S.
+        </:body>
+      </.icon_card>
+      <.icon_card icon="command">
+        <:title>Keyboard-first</:title>
+        <:body>
           Every action lives behind ⌘⇧P. Save, search, switch, share — your hands stay on home row.
-        </p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="eye"></i></div>
-        <h3>Live three-pane layout</h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card icon="eye">
+        <:title>Live three-pane layout</:title>
+        <:body>
           Files · source · preview, all on screen. Resize once — Typster remembers next time you open the project.
-        </p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="cloud-upload"></i></div>
-        <h3>Cloud projects</h3>
-        <p>Auto-saved, auto-synced. Open any project on any device, exactly where you left it.</p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="share-2"></i></div>
-        <h3>Shareable links</h3>
-        <p>Send a read-only link. Recipients open the PDF in-browser, no account needed.</p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="type"></i></div>
-        <h3>Bring your fonts</h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card icon="cloud-upload">
+        <:title>Cloud projects</:title>
+        <:body>
+          Auto-saved, auto-synced. Open any project on any device, exactly where you left it.
+        </:body>
+      </.icon_card>
+      <.icon_card icon="share-2">
+        <:title>Shareable links</:title>
+        <:body>
+          Send a read-only link. Recipients open the PDF in-browser, no account needed.
+        </:body>
+      </.icon_card>
+      <.icon_card icon="type">
+        <:title>Bring your fonts</:title>
+        <:body>
           Upload TTF/OTF per project. Typster reads them on every compile — exactly as authored, no substitutions.
-        </p>
-      </div>
+        </:body>
+      </.icon_card>
     </div>
   </div>
 </section>
@@ -272,324 +149,47 @@
   </div>
 </section>
 
-<%!-- ── SECTION 3: Snippet switcher — remove this block if cutting ──── --%>
-<section class="mk-section mk-section-tinted mk-demo-section">
-  <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">See it in action</p>
-    <h2 class="mk-section-h mk-reveal">
-      Papers, CVs, reports, invoices — Typster handles them all.
-    </h2>
-    <div class="mk-demo-tabs mk-reveal">
-      <button class="mk-demo-tab is-active" data-tab="report" onclick="mkSwitchTab(this)">
-        Quarterly Report
-      </button>
-      <button class="mk-demo-tab" data-tab="cv" onclick="mkSwitchTab(this)">CV / Resume</button>
-      <button class="mk-demo-tab" data-tab="paper" onclick="mkSwitchTab(this)">
-        Research Paper
-      </button>
-      <button class="mk-demo-tab" data-tab="invoice" onclick="mkSwitchTab(this)">Invoice</button>
-    </div>
-    <div class="mk-demo-art mk-reveal">
-      <%!-- Report --%>
-      <div class="mk-demo-panel is-active" data-panel="report">
-        <div class="mk-demo-split">
-          <div class="mk-demo-src">
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">1</span><span class="mk-tok-keyword">#set</span><span> page(margin: </span><span class="mk-tok-string">1in</span><span>, paper: </span><span class="mk-tok-string">"a4"</span><span>)</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">2</span><span class="mk-tok-keyword">#set</span><span> text(font: </span><span class="mk-tok-string">"Inter"</span><span>, size: </span><span class="mk-tok-string">11pt</span><span>)</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">3</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">4</span><span class="mk-tok-heading">= Q2 2026 Report</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">5</span><span class="mk-tok-keyword">#datetime</span><span>.today().display()</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">6</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">7</span><span class="mk-tok-heading">== Executive Summary</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">8</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">9</span><span>Revenue grew </span><span class="mk-tok-em">*34%*</span><span> YoY.</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">10</span><span>Churn remained below 3%.</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">11</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">12</span><span class="mk-tok-heading">== Metrics</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">13</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">14</span><span class="mk-tok-keyword">#table</span><span>(columns: 2,</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">15</span><span> </span><span class="mk-tok-string">[Metric]</span><span>, </span><span class="mk-tok-string">[Value]</span><span>,</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">16</span><span> </span><span class="mk-tok-string">[MRR]</span><span>, </span><span class="mk-tok-string">[$48k]</span><span>,</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">17</span><span> </span><span class="mk-tok-string">[Users]</span><span>, </span><span class="mk-tok-string">[2,400]</span><span>)</span>
-            </div>
-          </div>
-          <div class="mk-demo-preview">
-            <div class="mk-mock-pdf-page">
-              <div class="mk-mock-pdf-h1">Q2 2026 Report</div>
-              <div class="mk-mock-pdf-date">April 30, 2026</div>
-              <div class="mk-mock-pdf-h2">Executive Summary</div>
-              <p class="mk-mock-pdf-p">Revenue grew <b>34%</b> YoY. Churn remained below 3%.</p>
-              <div class="mk-mock-pdf-h2">Metrics</div>
-              <table class="mk-demo-table">
-                <tr>
-                  <th>Metric</th>
-                  <th>Value</th>
-                </tr>
-                <tr>
-                  <td>MRR</td>
-                  <td>$48k</td>
-                </tr>
-                <tr>
-                  <td>Users</td>
-                  <td>2,400</td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <%!-- CV --%>
-      <div class="mk-demo-panel" data-panel="cv">
-        <div class="mk-demo-split">
-          <div class="mk-demo-src">
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">1</span><span class="mk-tok-keyword">#set</span><span> text(font: </span><span class="mk-tok-string">"IBM Plex Sans"</span><span>)</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">2</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">3</span><span class="mk-tok-heading">= Jane Smith</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">4</span><span>jane@example.com · github.com/jsmith</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">5</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">6</span><span class="mk-tok-heading">== Experience</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">7</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">8</span><span class="mk-tok-em">*Senior Engineer*</span><span> — Acme Corp</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">9</span><span class="mk-tok-comment">// 2022 – present</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">10</span><span>- Led backend rewrite, cut p99 by 60%</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">11</span><span>- Hired and grew team to 8 engineers</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">12</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">13</span><span class="mk-tok-heading">== Education</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">14</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">15</span><span>BSc Computer Science, MIT, 2019</span>
-            </div>
-          </div>
-          <div class="mk-demo-preview">
-            <div class="mk-mock-pdf-page">
-              <div class="mk-mock-pdf-h1">Jane Smith</div>
-              <div class="mk-mock-pdf-date">jane@example.com · github.com/jsmith</div>
-              <div class="mk-mock-pdf-h2">Experience</div>
-              <p class="mk-mock-pdf-p">
-                <b>Senior Engineer</b>
-                — Acme Corp <span style="color:#71717a;font-size:9pt">2022–present</span>
-                <br />• Led backend rewrite, cut p99 by 60%<br />• Hired and grew team to 8 engineers
-              </p>
-              <div class="mk-mock-pdf-h2">Education</div>
-              <p class="mk-mock-pdf-p">BSc Computer Science, MIT, 2019</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <%!-- Paper --%>
-      <div class="mk-demo-panel" data-panel="paper">
-        <div class="mk-demo-split">
-          <div class="mk-demo-src">
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">1</span><span class="mk-tok-keyword">#set</span><span> page(columns: </span><span class="mk-tok-string">2</span><span>, margin: </span><span class="mk-tok-string">.8in</span><span>)</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">2</span><span class="mk-tok-keyword">#set</span><span> par(justify: </span><span class="mk-tok-string">true</span><span>)</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">3</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">4</span><span class="mk-tok-heading">= Attention Is All You Need</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">5</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">6</span><span class="mk-tok-em">*Abstract*</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">7</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">8</span><span>We propose a new architecture</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">9</span><span>based solely on attention mechanisms,</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">10</span><span>dispensing with recurrence entirely.</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">11</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">12</span><span class="mk-tok-heading">== 1. Introduction</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">13</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">14</span><span>Recurrent models have long dominated</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">15</span><span>sequence transduction tasks @vaswani2017.</span>
-            </div>
-          </div>
-          <div class="mk-demo-preview">
-            <div class="mk-mock-pdf-page" style="font-size:8.5pt">
-              <div class="mk-mock-pdf-h1" style="font-size:13pt;text-align:center">
-                Attention Is All You Need
-              </div>
-              <div class="mk-mock-pdf-date" style="text-align:center">Vaswani et al. · 2017</div>
-              <p class="mk-mock-pdf-p">
-                <b>Abstract.</b>
-                We propose a new architecture based solely on attention mechanisms, dispensing with recurrence entirely. Experiments on two machine translation tasks show it to be superior in quality.
-              </p>
-              <div class="mk-mock-pdf-h2">1. Introduction</div>
-              <p class="mk-mock-pdf-p">
-                Recurrent models have long dominated sequence transduction tasks. The Transformer allows for significantly more parallelization.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <%!-- Invoice --%>
-      <div class="mk-demo-panel" data-panel="invoice">
-        <div class="mk-demo-split">
-          <div class="mk-demo-src">
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">1</span><span class="mk-tok-heading">= Invoice #042</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">2</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">3</span><span class="mk-tok-em">*From:*</span><span> Jane Smith Consulting</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">4</span><span class="mk-tok-em">*To:*</span><span> Acme Corp</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">5</span><span class="mk-tok-em">*Date:*</span><span> </span><span class="mk-tok-keyword">#datetime</span><span>.today().display()</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">6</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">7</span><span class="mk-tok-keyword">#table</span><span>(columns: (1fr, auto, auto),</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">8</span><span> </span><span class="mk-tok-string">[Description]</span><span>, </span><span class="mk-tok-string">[Qty]</span><span>, </span><span class="mk-tok-string">[Amount]</span><span>,</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">9</span><span> </span><span class="mk-tok-string">[Design work]</span><span>, </span><span class="mk-tok-string">[8h]</span><span>, </span><span class="mk-tok-string">[$960]</span><span>,</span>
-            </div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">10</span><span> </span><span class="mk-tok-string">[Development]</span><span>, </span><span class="mk-tok-string">[16h]</span><span>, </span><span class="mk-tok-string">[$2,400]</span><span>,</span>
-            </div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">11</span><span>)</span></div>
-            <div class="mk-mock-ln"><span class="mk-mock-gn">12</span></div>
-            <div class="mk-mock-ln">
-              <span class="mk-mock-gn">13</span><span class="mk-tok-em">*Total: $3,360*</span>
-            </div>
-          </div>
-          <div class="mk-demo-preview">
-            <div class="mk-mock-pdf-page">
-              <div class="mk-mock-pdf-h1">Invoice #042</div>
-              <div class="mk-mock-pdf-date">April 30, 2026</div>
-              <p class="mk-mock-pdf-p" style="margin-bottom:4px">
-                <b>From:</b> Jane Smith Consulting<br /><b>To:</b> Acme Corp
-              </p>
-              <table class="mk-demo-table" style="margin-top:12px">
-                <tr>
-                  <th>Description</th>
-                  <th>Qty</th>
-                  <th>Amount</th>
-                </tr>
-                <tr>
-                  <td>Design work</td>
-                  <td>8h</td>
-                  <td>$960</td>
-                </tr>
-                <tr>
-                  <td>Development</td>
-                  <td>16h</td>
-                  <td>$2,400</td>
-                </tr>
-              </table>
-              <p class="mk-mock-pdf-p" style="margin-top:12px;font-weight:700;font-size:11pt">
-                Total: $3,360
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<%!-- ── END SECTION 3 ──────────────────────────────────────────────────── --%>
+<.demo />
 
-<%!-- ── SECTION 4: Use cases — remove this block if cutting ──────────── --%>
+<%!-- Use cases ─────────────────────────────────────────────────────── --%>
 <section class="mk-section mk-usecase-section">
   <div class="mk-container">
     <p class="mk-eyebrow mk-reveal">Use cases</p>
     <h2 class="mk-section-h mk-reveal">Whatever you're writing, <em>Typster</em> fits.</h2>
     <div class="mk-usecase-grid mk-reveal-group">
-      <div class="mk-usecase">
-        <div class="mk-usecase-icon"><i data-lucide="graduation-cap"></i></div>
-        <h3>Academic papers</h3>
-        <p>
+      <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="graduation-cap">
+        <:title>Academic papers</:title>
+        <:body>
           Multi-column layouts, citations, math equations, and bibliography — exactly as journals require.
-        </p>
-      </div>
-      <div class="mk-usecase">
-        <div class="mk-usecase-icon"><i data-lucide="file-text"></i></div>
-        <h3>CVs & Resumes</h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="file-text">
+        <:title>CVs & Resumes</:title>
+        <:body>
           Pixel-perfect one-pagers. Update once, every position reflows without fighting Word styles.
-        </p>
-      </div>
-      <div class="mk-usecase">
-        <div class="mk-usecase-icon"><i data-lucide="chart-no-axes-column"></i></div>
-        <h3>Technical reports</h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="chart-no-axes-column">
+        <:title>Technical reports</:title>
+        <:body>
           Tables, code blocks, cross-references, and version-controlled source. No more PDF drift.
-        </p>
-      </div>
-      <div class="mk-usecase">
-        <div class="mk-usecase-icon"><i data-lucide="receipt-text"></i></div>
-        <h3>Invoices & contracts</h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="receipt-text">
+        <:title>Invoices & contracts</:title>
+        <:body>
           Branded documents from structured data. Typster keeps every invoice consistent — no design tool required.
-        </p>
-      </div>
-      <div class="mk-usecase">
-        <div class="mk-usecase-icon"><i data-lucide="notebook-pen"></i></div>
-        <h3>Lecture notes</h3>
-        <p>Math-heavy handouts that don't look like they came from Word '97. PDF in seconds.</p>
-      </div>
+        </:body>
+      </.icon_card>
+      <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="notebook-pen">
+        <:title>Lecture notes</:title>
+        <:body>
+          Math-heavy handouts that don't look like they came from Word '97. PDF in seconds.
+        </:body>
+      </.icon_card>
     </div>
   </div>
 </section>
-<%!-- ── END SECTION 4 ──────────────────────────────────────────────────── --%>
 
 <%!-- Roadmap ──────────────────────────────────────────────────────── --%>
 <section class="mk-section mk-section-tinted">
@@ -600,116 +200,51 @@
       Already in the lab; landing over the next few quarters. Built in the open — no vapor.
     </p>
     <div class="mk-feat-grid mk-reveal-group">
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="users"></i></div>
-        <h3>Live collaboration <span class="mk-roadmap-tag">Soon</span></h3>
-        <p>
+      <.icon_card icon="users">
+        <:title>
+          Live collaboration <span class="mk-badge mk-badge-primary mk-badge-sm">Soon</span>
+        </:title>
+        <:body>
           Share an editing pane with co-authors. Cursors, selections, and inline comments — same keyboard-first flow, two writers.
-        </p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="book-text"></i></div>
-        <h3>Zotero sync <span class="mk-roadmap-tag">Soon</span></h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card icon="book-text">
+        <:title>
+          Zotero sync <span class="mk-badge mk-badge-primary mk-badge-sm">Soon</span>
+        </:title>
+        <:body>
           Connect your Zotero library to any project. Cite by hotkey, auto-import <code>.bib</code>, refs stay in sync — no more pasting keys by hand.
-        </p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="sparkles"></i></div>
-        <h3>AI writing assist <span class="mk-roadmap-tag">Soon</span></h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card icon="sparkles">
+        <:title>
+          AI writing assist <span class="mk-badge mk-badge-primary mk-badge-sm">Soon</span>
+        </:title>
+        <:body>
           Section drafts, citation suggestions, and Typst-aware refactors. Opt-in per project — your draft stays yours.
-        </p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="file-input"></i></div>
-        <h3>Project from source <span class="mk-roadmap-tag">Later</span></h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card icon="file-input">
+        <:title>
+          Project from source <span class="mk-badge mk-badge-default mk-badge-sm">Later</span>
+        </:title>
+        <:body>
           Drop a markdown bundle, paper PDF, or notes folder. Typster scaffolds a Typst project — chapters, refs, layout — that you own end-to-end.
-        </p>
-      </div>
-      <div class="mk-feat">
-        <div class="mk-feat-icon"><i data-lucide="pen-line"></i></div>
-        <h3>WYSIWYG mode <span class="mk-roadmap-tag">Later</span></h3>
-        <p>
+        </:body>
+      </.icon_card>
+      <.icon_card icon="pen-line">
+        <:title>
+          WYSIWYG mode <span class="mk-badge mk-badge-default mk-badge-sm">Later</span>
+        </:title>
+        <:body>
           Toggle into a rendered view to type, format, and place figures without touching markup. Switch back to source whenever the math gets serious.
-        </p>
-      </div>
+        </:body>
+      </.icon_card>
     </div>
   </div>
 </section>
 
-<%!-- Pricing ──────────────────────────────────────────────────────── --%>
-<section id="pricing" class="mk-section">
-  <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">Pricing</p>
-    <h2 class="mk-section-h mk-reveal">Simple plans. No surprises.</h2>
-    <p class="mk-section-sub mk-reveal">
-      Free covers most writers. Pro and Team unlock when you outgrow it.
-    </p>
-    <div class="mk-price-grid mk-reveal-group">
-      <div class="mk-price">
-        <p class="mk-price-name">Free</p>
-        <p class="mk-price-desc">Everything you need to start writing.</p>
-        <div class="mk-price-amt">$0 <small>forever</small></div>
-        <.link
-          navigate={~p"/users/register"}
-          class="mk-btn mk-btn-outline"
-          style="width:100%;justify-content:center;margin-top:18px"
-        >
-          Start free
-        </.link>
-        <ul class="mk-price-list">
-          <li><span class="mk-price-check">✓</span> 3 projects</li>
-          <li><span class="mk-price-check">✓</span> 100 MB asset storage</li>
-          <li><span class="mk-price-check">✓</span> Public share links</li>
-          <li><span class="mk-price-check">✓</span> Community support</li>
-        </ul>
-      </div>
-      <div class="mk-price mk-price-featured">
-        <div class="mk-price-pop">Most popular</div>
-        <p class="mk-price-name">Pro</p>
-        <p class="mk-price-desc">
-          For working writers — unlimited projects, custom fonts, private sharing.
-        </p>
-        <div class="mk-price-amt">$8 <small>per month</small></div>
-        <.link
-          navigate={~p"/users/register"}
-          class="mk-btn mk-btn-primary"
-          style="width:100%;justify-content:center;margin-top:18px"
-        >
-          Try Pro free
-        </.link>
-        <ul class="mk-price-list">
-          <li><span class="mk-price-check">✓</span> Unlimited projects</li>
-          <li><span class="mk-price-check">✓</span> 5 GB asset storage</li>
-          <li><span class="mk-price-check">✓</span> Private share links</li>
-          <li><span class="mk-price-check">✓</span> Custom fonts</li>
-          <li><span class="mk-price-check">✓</span> Email support</li>
-        </ul>
-      </div>
-      <div class="mk-price">
-        <p class="mk-price-name">Team</p>
-        <p class="mk-price-desc">For organizations producing documents at scale.</p>
-        <div class="mk-price-amt">$24 <small>per seat / mo</small></div>
-        <a
-          href="mailto:hello@typster.app"
-          class="mk-btn mk-btn-outline"
-          style="width:100%;justify-content:center;margin-top:18px"
-        >
-          Contact sales
-        </a>
-        <ul class="mk-price-list">
-          <li><span class="mk-price-check">✓</span> Everything in Pro</li>
-          <li><span class="mk-price-check">✓</span> Shared workspaces</li>
-          <li><span class="mk-price-check">✓</span> SSO + audit log</li>
-          <li><span class="mk-price-check">✓</span> Priority support</li>
-          <li><span class="mk-price-check">✓</span> 99.9% SLA</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+<.pricing_section />
 
 <%!-- FAQ ─────────────────────────────────────────────────────────── --%>
 <section id="faq" class="mk-section">

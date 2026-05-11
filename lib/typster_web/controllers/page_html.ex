@@ -6,5 +6,7 @@ defmodule TypsterWeb.PageHTML do
   """
   use TypsterWeb, :html
 
+  import TypsterWeb.MarketingComponents
+
   embed_templates "page_html/*"
 end
