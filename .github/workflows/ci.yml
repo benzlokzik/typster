@@ -94,7 +94,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: prefix-dev/setup-pixi@v0.9.0
+      - uses: prefix-dev/setup-pixi@v0.9.5
         with:
           cache: true
 
@@ -140,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: prefix-dev/setup-pixi@v0.9.0
+      - uses: prefix-dev/setup-pixi@v0.9.5
         with:
           cache: true
 
