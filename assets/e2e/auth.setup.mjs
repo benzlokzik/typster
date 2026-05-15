@@ -49,7 +49,7 @@ setup('authenticate', async ({ page }) => {
   }
 
   await page.waitForURL(/\/projects/, { timeout: 10_000 })
-  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), { timeout: 10_000 })
+  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
 
   fs.mkdirSync(path.dirname(authFile), { recursive: true })
   await page.context().storageState({ path: authFile })

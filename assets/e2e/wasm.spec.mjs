@@ -19,7 +19,7 @@ test.describe('WASM assets', () => {
 test.describe('Typst WASM compilation pipeline', () => {
   async function createProjectAndOpenEditor(page, name) {
     await page.goto('/projects')
-    await page.waitForFunction(() => window.liveSocket?.isConnected?.(), { timeout: 10_000 })
+    await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
     await page.locator('#new-project-button').click()
     await expect(page.locator('.ts-dialog')).toBeVisible()
     await page.locator('.ts-dialog input[name="name"]').fill(name)
@@ -46,7 +46,7 @@ test.describe('Typst WASM compilation pipeline', () => {
     })
 
     await createProjectAndOpenEditor(page, 'E2E WASM Test')
-    await page.waitForFunction(() => window.liveSocket?.isConnected?.(), { timeout: 10_000 })
+    await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
 
     await page.locator('#create-main-file-button').click()
     await expect(page.locator('.ts-dialog')).toBeVisible()

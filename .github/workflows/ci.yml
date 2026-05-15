@@ -165,12 +165,17 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('assets/bun.lock') }}
           restore-keys: ${{ runner.os }}-playwright-
 
+      # mix deps.get must run before bun install: assets/package.json declares
+      # `"workspaces": ["../deps/*"]` and pulls phoenix / phoenix_html /
+      # phoenix_live_view via `workspace:*`. Without populated `deps/` the
+      # workspace resolution diverges from bun.lock and `--frozen-lockfile`
+      # fails with "lockfile had changes".
+      - name: Install deps
+        run: pixi run mix deps.get
+
       - name: Install Bun deps
         working-directory: assets
         run: pixi run bun install --frozen-lockfile
-
-      - name: Install deps
-        run: pixi run mix deps.get
 
       - name: Build assets
         run: pixi run mix assets.build

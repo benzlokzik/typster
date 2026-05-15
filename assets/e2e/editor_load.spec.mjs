@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
 // Returns after the editor URL is confirmed.
 async function createProjectAndOpenEditor(page, name) {
   await page.goto('/projects')
-  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), { timeout: 10_000 })
+  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
   await page.locator('#new-project-button').click()
   await expect(page.locator('.ts-dialog')).toBeVisible()
 

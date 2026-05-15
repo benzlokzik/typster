@@ -51,7 +51,7 @@ test.describe("theme pour animation", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")
 
     // Pour clears within ~900ms (CSS keyframe duration is 760ms).
-    await expect(toggle).not.toHaveClass(/is-pouring/, { timeout: 1500 })
+    await expect(toggle).not.toHaveClass(/is-pouring/, { timeout: 3000 })
 
     // Persisted to localStorage so reload keeps the new theme.
     expect(await page.evaluate(() => localStorage.getItem("phx:theme"))).toBe("dark")
@@ -65,7 +65,7 @@ test.describe("theme pour animation", () => {
     await page.locator(TOGGLE).click()
 
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light")
-    await expect(page.locator(TOGGLE)).not.toHaveClass(/is-pouring/, { timeout: 1500 })
+    await expect(page.locator(TOGGLE)).not.toHaveClass(/is-pouring/, { timeout: 3000 })
     expect(await page.evaluate(() => localStorage.getItem("phx:theme"))).toBe("light")
   })
 

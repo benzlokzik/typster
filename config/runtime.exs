@@ -28,6 +28,13 @@ if System.get_env("PHX_SERVER") && config_env() == :test do
   config :typster, Typster.Repo,
     pool: DBConnection.ConnectionPool,
     pool_size: 10
+
+  # Playwright drives the server via http://127.0.0.1:4000 while the global
+  # endpoint config keeps url.host: "localhost", so Phoenix' default
+  # check_origin rejects the LiveView socket handshake. Disable origin
+  # checks for the loopback server — only enabled when the server is
+  # actually booted under MIX_ENV=test (i.e. by the E2E web server).
+  config :typster, TypsterWeb.Endpoint, check_origin: false
 end
 
 if config_env() == :prod do

@@ -4,7 +4,7 @@ test.setTimeout(60_000)
 
 async function createProjectAndOpenEditor(page, name) {
   await page.goto('/projects')
-  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), { timeout: 10_000 })
+  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
   await page.locator('#new-project-button').click()
   await expect(page.locator('.ts-dialog')).toBeVisible({ timeout: 10_000 })
   await page.locator('.ts-dialog input[name="name"]').fill(name)
@@ -14,7 +14,7 @@ async function createProjectAndOpenEditor(page, name) {
   await expect(row).toBeVisible()
   await row.getByRole('link', { name: 'Open' }).click()
   await expect(page).toHaveURL(/\/projects\/.+\/edit/)
-  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), { timeout: 10_000 })
+  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
 }
 
 async function createFileAndOpenEditor(page) {
