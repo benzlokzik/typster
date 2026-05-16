@@ -7,12 +7,13 @@ defmodule TypsterWeb.UserLive.Login do
   def render(assigns) do
     ~H"""
     <Layouts.auth flash={@flash} current_scope={@current_scope}>
-      <h1>Log in to <em>Typster</em></h1>
+      <h1>{gettext("login.title_prefix")} <em>Typster</em></h1>
       <p class="auth-subtitle">
         <%= if @current_scope do %>
-          Reauthenticate to access sensitive account settings.
+          {gettext("login.reauth")}
         <% else %>
-          No account? <.link navigate={~p"/users/register"}>Sign up</.link>
+          {gettext("login.no_account")}
+          <.link navigate={~p"/users/register"}>{gettext("auth.sign_up")}</.link>
         <% end %>
       </p>
 
@@ -21,8 +22,8 @@ defmodule TypsterWeb.UserLive.Login do
           <.icon name="hero-information-circle" class="size-4" />
         </span>
         <div class="mk-alert-body">
-          Local mail adapter is active.
-          View sent emails in <.link href="/dev/mailbox">the mailbox</.link>.
+          {gettext("login.local_mail.active")}
+          {gettext("login.local_mail.view_sent")} <.link href="/dev/mailbox">{gettext("login.local_mail.mailbox")}</.link>.
         </div>
       </div>
 
@@ -37,7 +38,7 @@ defmodule TypsterWeb.UserLive.Login do
           readonly={!!@current_scope}
           field={f[:email]}
           type="email"
-          label="Email"
+          label={gettext("common.email")}
           autocomplete="email"
           required
           class="auth-input"
@@ -45,11 +46,11 @@ defmodule TypsterWeb.UserLive.Login do
           phx-mounted={JS.focus()}
         />
         <button type="submit" class="mk-btn mk-btn-primary">
-          Email me a link <span aria-hidden="true">→</span>
+          {gettext("login.email_link")} <span aria-hidden="true">→</span>
         </button>
       </.form>
 
-      <div class="auth-divider">or</div>
+      <div class="auth-divider">{gettext("common.or")}</div>
 
       <.form
         :let={f}
@@ -63,7 +64,7 @@ defmodule TypsterWeb.UserLive.Login do
           readonly={!!@current_scope}
           field={f[:email]}
           type="email"
-          label="Email"
+          label={gettext("common.email")}
           autocomplete="email"
           required
           class="auth-input"
@@ -72,7 +73,7 @@ defmodule TypsterWeb.UserLive.Login do
         <.input
           field={@form[:password]}
           type="password"
-          label="Password"
+          label={gettext("common.password")}
           autocomplete="current-password"
           class="auth-input"
           error_class="auth-input auth-input--error"
@@ -83,10 +84,10 @@ defmodule TypsterWeb.UserLive.Login do
           name={@form[:remember_me].name}
           value="true"
         >
-          Stay signed in
+          {gettext("login.stay_signed_in")}
         </button>
         <button type="submit" class="mk-btn mk-btn-outline">
-          This session only
+          {gettext("login.session_only")}
         </button>
       </.form>
     </Layouts.auth>
@@ -118,7 +119,7 @@ defmodule TypsterWeb.UserLive.Login do
     end
 
     info =
-      "If your email is in our system, you will receive instructions for logging in shortly."
+      gettext("login.flash.instructions_sent")
 
     {:noreply,
      socket

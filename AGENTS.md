@@ -383,3 +383,81 @@ And **never** do this:
 - Make regular commits to the repository using for commit messages template: `feat/core/bug/chore/etc: short description (#<issue number>)`
 
 <!-- development-guidelines-end -->
+
+<!-- typster-project-guidelines-start -->
+## Typster project context
+
+- Typster is a Phoenix 1.8 + LiveView 1.1 app on Elixir 1.19 and Erlang/OTP 28
+- Core stack: PostgreSQL 16 through Ecto, MinIO/S3-compatible object storage, Oban background jobs, Bun-managed frontend assets, Tailwind CSS, salad_ui, CodeMirror, Playwright E2E tests, Pixi, prek, and Docker Compose
+- Project overview lives in [README.md](README.md). Contributor workflow lives in [CONTRIBUTING.md](CONTRIBUTING.md). Design guidance lives in [docs/landing-style.md](docs/landing-style.md) and [docs/landing-redesign-guide.md](docs/landing-redesign-guide.md)
+- Main code layout:
+  - `lib/typster/` contains business logic contexts such as Accounts, Projects, Files, Assets, and Revisions
+  - `lib/typster_web/` contains Phoenix controllers, LiveViews, router, layouts, and components
+  - `assets/css/` contains Tailwind entrypoint and Typster design-system partials
+  - `assets/js/` contains app JS, LiveView hooks, CodeMirror integration, file tree behavior, and Typst preview worker code
+  - `assets/e2e/` contains Playwright specs
+  - `priv/repo/` contains Ecto migrations and seeds
+  - `docs/` contains design docs and implementation plans
+
+## Tooling workflow
+
+- Pixi is the pinned, reproducible toolchain path. Prefer `pixi run setup`, `pixi run runserver`, and `pixi run test-e2e-theme` when that is the simplest way to use the project toolchain
+- Do not make commands harder just to use Pixi. If Elixir, Bun, prek, or other required tools are already globally available, raw commands such as `mix test`, `mix precommit`, `mix phx.server`, `prek run --all-files`, or `cd assets && bun run test:e2e` are fine
+- If Pixi is available and many commands are needed, it is fine to enter `pixi shell` once, then run normal `mix`, `bun`, and `prek` commands inside that shell
+- If Pixi is unavailable, use the manual workflow in [CONTRIBUTING.md](CONTRIBUTING.md): start backing services, then use regular `mix` and `bun` commands
+- `docker-compose.yaml` defines `db`, `minio`, and `app`. Use Docker Compose for backing services or for the full app stack when helpful
+- `prek` hooks are configured in [.pre-commit-config.yaml](.pre-commit-config.yaml). Pre-commit and pre-push checks must pass before finishing change work
+- `ast-index` is available for fast, structured code search across the codebase. Configuration lives in [.ast-index.yaml](.ast-index.yaml). Use `ast-index search MyModule.function_name` for symbol lookup and `ast-index map` for a project map when structured navigation is useful
+
+## Frontend guidelines
+
+- JS lives in `assets/js/`. LiveView hooks must be integrated through `assets/js/app.js` and `assets/js/hooks.js`
+- When a hook manages its own DOM, set `phx-update="ignore"` on the owning element
+- CSS lives in `assets/css/app.css` and its partials. Keep styling token-driven with `--mk-*` variables and preserve both light and dark themes
+- Preserve the CSS partial order in `assets/css/app.css`: tokens and base files must load before components that consume them
+- Use lucide, simple-icons, existing `<.icon>`, or existing `<.mk_icon>` helpers for icons. Do not paste raw inline SVG into JS, CSS, HEEx, or HTML
+- For frontend changes, add or update Playwright E2E coverage when behavior or rendered UI changes
+- Frontend verification must include relevant E2E tests. Use `cd assets && bun run test:e2e` for full E2E coverage, or `pixi run test-e2e-theme` for theme-only work
+
+## Backend, database, and storage guidelines
+
+- Backend data access uses Ecto with PostgreSQL. Migrations and seeds live in `priv/repo/`
+- Development defaults to the `typster_dev` database. Tests use `typster_test`
+- Local object storage is MinIO with S3-compatible APIs. Keep credentials, private endpoints, and bucket-specific secrets in environment variables
+- Oban is used for background jobs. Test config disables queues/plugins and uses manual testing mode
+- Backend changes must update or add Elixir tests for the changed behavior. Prefer focused test files first, then broader `mix test` or `mix precommit` when ready
+
+## Translation guidelines
+
+- Typster uses Phoenix/Gettext through `TypsterWeb.Gettext`
+- Supported locales are `en` and `ru`
+- Translation catalogs live in `priv/gettext/<locale>/LC_MESSAGES/`; templates live in `priv/gettext/*.pot`
+- Locale switching is session-based through `/locale/:locale`, with supported locales defined in `lib/typster_web/controllers/locale_controller.ex`
+- Wrap user-facing Elixir, HEEx, LiveView, and component copy in `gettext/1`, `gettext/2`, or `ngettext/3`
+- Prefer stable dotted keys such as `editor.compile`, `projects.index.title`, and `common.created_date`
+- Use interpolation placeholders instead of string concatenation, and keep placeholder names identical across locales
+- Use `ngettext/3` for plural text instead of hand-rolled count conditionals
+- After adding or changing gettext keys, run `mix gettext.extract --merge`
+- Fill both English and Russian `msgstr` values before handoff
+- Do not manually edit generated `msgid` values in `.po` files; update the source gettext call and re-run extraction
+- When adding a new locale, add its `priv/gettext/<locale>/LC_MESSAGES/` files, update `LocaleController.@supported`, and verify the locale route still works
+
+## Checks and quality gates
+
+- Run targeted tests while working, based on the files and behavior changed
+- For backend changes, run relevant `mix test` files and add or update ExUnit coverage
+- For frontend changes, run relevant Playwright E2E tests and keep tests passing
+- Use `mix assay --format llm` when Dialyzer-style type analysis is useful. `assay` is the project Dialyzer wrapper
+- Use `mix sobelow` when touching authentication, controllers, params, uploads, storage, or other risky web/security surfaces
+- Use `mix credo` when static code quality feedback is useful
+- Final verification for code changes is `mix precommit`. Fix failures before handoff unless the failure is unrelated and explicitly documented
+
+## Skills for agents
+
+- Use the `elixir-phoenix` skill for Phoenix, LiveView, Ecto, router, auth, tests, and Mix workflows
+- Use the `typster-design` skill for frontend, HEEx, CSS, marketing pages, tokens, dark mode, animation, copy, and component work
+- Use the `write-documentation` skill for README, CONTRIBUTING, AGENTS, docs, runbooks, and planning notes
+- Use the `playwright` skill or Browser plugin for rendered UI verification and Playwright-driven debugging
+- Use GitHub skills only for PR, issue, CI, review-comment, or publishing workflows
+- Any design-system decision that changes tokens, components, copy rules, or visual direction must update the relevant design docs named by the `typster-design` skill
+<!-- typster-project-guidelines-end -->

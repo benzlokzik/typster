@@ -1,0 +1,533 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: ru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100 != 11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+#: lib/typster_web/components/core_components.ex:334
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr "Действия"
+
+#: lib/typster_web/components/core_components.ex:67
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr "закрыть"
+
+#: lib/typster_web/components/layouts.ex:140
+#, elixir-autogen, elixir-format
+msgid "app.connection_lost"
+msgstr "Связь прервалась — переподключаемся"
+
+#: lib/typster_web/components/layouts.ex:87
+#: lib/typster_web/live/user_live/confirmation.ex:57
+#: lib/typster_web/live/user_live/registration.ex:14
+#, elixir-autogen, elixir-format
+msgid "auth.log_in"
+msgstr "Войти"
+
+#: lib/typster_web/components/layouts.ex:75
+#: lib/typster_web/components/layouts.ex:83
+#, elixir-autogen, elixir-format
+msgid "auth.log_out"
+msgstr "Выйти"
+
+#: lib/typster_web/live/user_live/confirmation.ex:54
+#: lib/typster_web/live/user_live/confirmation.ex:64
+#: lib/typster_web/live/user_live/confirmation.ex:71
+#, elixir-autogen, elixir-format
+msgid "auth.logging_in"
+msgstr "Вход…"
+
+#: lib/typster_web/live/user_live/login.ex:16
+#: lib/typster_web/components/layouts.ex:90
+#, elixir-autogen, elixir-format
+msgid "auth.sign_up"
+msgstr "Создать аккаунт"
+
+
+#: lib/typster_web/live/project_live/index.html.heex:98
+#, elixir-autogen, elixir-format
+msgid "common.cancel"
+msgstr "Не сейчас"
+
+#: lib/typster_web/live/project_live/index.html.heex:49
+#: lib/typster_web/live/project_live/show.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "common.created_date"
+msgstr "Создано %{date}"
+
+#: lib/typster_web/live/user_live/login.ex:41
+#: lib/typster_web/live/user_live/login.ex:67
+#: lib/typster_web/live/user_live/registration.ex:21
+#: lib/typster_web/live/user_live/settings.ex:31
+#: lib/typster_web/live/user_live/settings.ex:36
+#, elixir-autogen, elixir-format
+msgid "common.email"
+msgstr "Email"
+
+#: lib/typster_web/live/project_live/index.html.heex:59
+#, elixir-autogen, elixir-format
+msgid "common.open"
+msgstr "Открыть"
+
+#: lib/typster_web/live/user_live/login.ex:53
+#, elixir-autogen, elixir-format
+msgid "common.or"
+msgstr "или"
+
+#: lib/typster_web/live/user_live/login.ex:76
+#: lib/typster_web/live/user_live/settings.ex:76
+#, elixir-autogen, elixir-format
+msgid "common.password"
+msgstr "Пароль"
+
+#: lib/typster_web/live/user_live/settings.ex:106
+#, elixir-autogen, elixir-format
+msgid "common.saving"
+msgstr "Сохраняем…"
+
+#: lib/typster_web/live/user_live/confirmation.ex:37
+#, elixir-autogen, elixir-format
+msgid "confirmation.confirm_once"
+msgstr "Подтвердить один раз"
+
+#: lib/typster_web/live/user_live/confirmation.ex:30
+#, elixir-autogen, elixir-format
+msgid "confirmation.confirm_stay_logged_in"
+msgstr "Подтвердить и остаться в аккаунте"
+
+#: lib/typster_web/live/user_live/confirmation.ex:27
+#: lib/typster_web/live/user_live/confirmation.ex:34
+#, elixir-autogen, elixir-format
+msgid "confirmation.confirming"
+msgstr "Проверяем ссылку…"
+
+#: lib/typster_web/live/user_live/confirmation.ex:101
+#, elixir-autogen, elixir-format
+msgid "confirmation.flash.invalid_magic_link"
+msgstr "Magic link недействителен или уже истек."
+
+#: lib/typster_web/live/user_live/confirmation.ex:67
+#, elixir-autogen, elixir-format
+msgid "confirmation.keep_logged_in"
+msgstr "Остаться в аккаунте"
+
+#: lib/typster_web/live/user_live/confirmation.ex:74
+#, elixir-autogen, elixir-format
+msgid "confirmation.log_in_once"
+msgstr "Войти один раз"
+
+#: lib/typster_web/live/user_live/confirmation.ex:84
+#, elixir-autogen, elixir-format
+msgid "confirmation.password_tip"
+msgstr "После подтверждения можно включить вход по паролю в настройках."
+
+#: lib/typster_web/live/user_live/confirmation.ex:10
+#, elixir-autogen, elixir-format
+msgid "confirmation.welcome"
+msgstr "С возвращением"
+
+#: lib/typster_web/live/editor_live/index.html.heex:92
+#, elixir-autogen, elixir-format
+msgid "editor.asset"
+msgstr "ассет"
+
+#: lib/typster_web/live/editor_live/index.html.heex:71
+#, elixir-autogen, elixir-format
+msgid "editor.assets"
+msgstr "Ассеты"
+
+#: lib/typster_web/live/editor_live/index.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "editor.compile"
+msgstr "Скомпилировать"
+
+#: lib/typster_web/live/editor_live/index.html.heex:161
+#, elixir-autogen, elixir-format
+msgid "editor.download"
+msgstr "Скачать"
+
+#: lib/typster_web/live/editor_live/index.html.heex:32
+#, elixir-autogen, elixir-format
+msgid "editor.files"
+msgstr "Файлы"
+
+#: lib/typster_web/live/editor_live/index.ex:155
+#, elixir-autogen, elixir-format
+msgid "editor.flash.asset_upload_failed"
+msgstr "Ассет не загрузился."
+
+#: lib/typster_web/live/editor_live/index.ex:152
+#, elixir-autogen, elixir-format
+msgid "editor.flash.asset_uploaded"
+msgstr "Ассет на месте."
+
+#: lib/typster_web/live/editor_live/index.ex:112
+#, elixir-autogen, elixir-format
+msgid "editor.flash.binary_asset"
+msgstr "Бинарные ассеты нельзя открыть в редакторе."
+
+#: lib/typster_web/live/editor_live/index.ex:181
+#, elixir-autogen, elixir-format
+msgid "editor.flash.create_failed"
+msgstr "Файл не удалось создать."
+
+#: lib/typster_web/live/editor_live/index.ex:121
+#, elixir-autogen, elixir-format
+msgid "editor.flash.unsupported_file"
+msgstr "Неподдерживаемый формат файла."
+
+#: lib/typster_web/live/editor_live/index.html.heex:40
+#, elixir-autogen, elixir-format
+msgid "editor.create_file"
+msgstr "Создать"
+
+msgid "editor.file_name"
+msgstr "Имя файла"
+
+msgid "editor.new_file"
+msgstr "Новый файл"
+
+#: lib/typster_web/live/editor_live/index.html.heex:121
+#, elixir-autogen, elixir-format
+msgid "editor.no_file"
+msgstr "Файла нет"
+
+#: lib/typster_web/live/editor_live/index.html.heex:49
+#, elixir-autogen, elixir-format
+msgid "editor.no_files"
+msgstr "Файлов пока нет"
+
+#: lib/typster_web/live/editor_live/index.html.heex:157
+#, elixir-autogen, elixir-format
+msgid "editor.preview"
+msgstr "Превью"
+
+#: lib/typster_web/live/editor_live/index.html.heex:180
+#, elixir-autogen, elixir-format
+msgid "editor.preview_placeholder"
+msgstr "Превью появится здесь, когда Typst все посчитает"
+
+#: lib/typster_web/live/editor_live/index.html.heex:183
+#, elixir-autogen, elixir-format
+msgid "editor.preview_stats"
+msgstr "%{files} файлов · %{assets} ассетов"
+
+#: lib/typster_web/live/editor_live/index.html.heex:143
+#, elixir-autogen, elixir-format
+msgid "editor.select_file_placeholder"
+msgstr "Выбери файл, чтобы начать Typster-ить"
+
+#: lib/typster_web/live/editor_live/index.ex:195
+#, elixir-autogen, elixir-format
+msgid "editor.status.error"
+msgstr "Ошибка"
+
+#: lib/typster_web/live/editor_live/index.ex:193
+#, elixir-autogen, elixir-format
+msgid "editor.status.saved"
+msgstr "Сохранено"
+
+#: lib/typster_web/live/editor_live/index.ex:194
+#, elixir-autogen, elixir-format
+msgid "editor.status.saving"
+msgstr "Сохраняем"
+
+#: lib/typster_web/live/editor_live/index.html.heex:76
+#: lib/typster_web/live/editor_live/index.html.heex:110
+#, elixir-autogen, elixir-format
+msgid "editor.upload_asset"
+msgstr "Загрузить ассет"
+
+#: lib/typster_web/components/layouts.ex:195
+#, elixir-autogen, elixir-format
+msgid "layout.theme.dark"
+msgstr "Темная тема"
+
+#: lib/typster_web/components/layouts.ex:187
+#, elixir-autogen, elixir-format
+msgid "layout.theme.light"
+msgstr "Светлая тема"
+
+#: lib/typster_web/components/layouts.ex:179
+#, elixir-autogen, elixir-format
+msgid "layout.theme.system"
+msgstr "Как в системе"
+
+#: lib/typster_web/components/layouts.ex:63
+#, elixir-autogen, elixir-format
+msgid "layout.theme.toggle"
+msgstr "Переключить тему"
+
+#: lib/typster_web/live/user_live/login.ex:49
+#, elixir-autogen, elixir-format
+msgid "login.email_link"
+msgstr "Отправить ссылку на email"
+
+#: lib/typster_web/live/user_live/login.ex:122
+#, elixir-autogen, elixir-format
+msgid "login.flash.instructions_sent"
+msgstr "Если email есть в системе, инструкции для входа уже в пути."
+
+#: lib/typster_web/live/user_live/login.ex:25
+#, elixir-autogen, elixir-format
+msgid "login.local_mail.active"
+msgstr "Локальная почта включена."
+
+#: lib/typster_web/live/user_live/login.ex:26
+#, elixir-autogen, elixir-format
+msgid "login.local_mail.mailbox"
+msgstr "почтовом ящике"
+
+#: lib/typster_web/live/user_live/login.ex:26
+#, elixir-autogen, elixir-format
+msgid "login.local_mail.view_sent"
+msgstr "Отправленные письма лежат в"
+
+#: lib/typster_web/live/user_live/login.ex:15
+#, elixir-autogen, elixir-format
+msgid "login.no_account"
+msgstr "Аккаунта еще нет?"
+
+#: lib/typster_web/live/user_live/login.ex:13
+#, elixir-autogen, elixir-format
+msgid "login.reauth"
+msgstr "Войдите еще раз, чтобы открыть важные настройки аккаунта."
+
+#: lib/typster_web/live/user_live/login.ex:90
+#, elixir-autogen, elixir-format
+msgid "login.session_only"
+msgstr "Только эта сессия"
+
+#: lib/typster_web/live/user_live/login.ex:87
+#, elixir-autogen, elixir-format
+msgid "login.stay_signed_in"
+msgstr "Остаться в системе"
+
+#: lib/typster_web/live/user_live/login.ex:10
+#, elixir-autogen, elixir-format
+msgid "login.title_prefix"
+msgstr "Войти в"
+
+#: lib/typster_web/components/layouts.ex:80
+#, elixir-autogen, elixir-format
+msgid "nav.my_projects"
+msgstr "Мои проекты"
+
+#: lib/typster_web/components/layouts.ex:126
+#: lib/typster_web/live/editor_live/index.html.heex:6
+#: lib/typster_web/live/project_live/show.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "nav.projects"
+msgstr "Проекты"
+
+#: lib/typster_web/components/layouts.ex:128
+#, elixir-autogen, elixir-format
+msgid "nav.settings"
+msgstr "Настройки"
+
+#: lib/typster_web/live/project_live/show.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "project.entries.one"
+msgid_plural "project.entries.other"
+msgstr[0] "%{count} запись"
+msgstr[1] "%{count} записи"
+msgstr[2] "%{count} записей"
+
+#: lib/typster_web/live/project_live/show.html.heex:55
+#, elixir-autogen, elixir-format
+msgid "project.file.delete.confirm"
+msgstr "Удалить файл? Отката не будет."
+
+#: lib/typster_web/live/project_live/show.html.heex:57
+#, elixir-autogen, elixir-format
+msgid "project.file.delete.label"
+msgstr "Удалить файл"
+
+#: lib/typster_web/live/project_live/show.html.heex:27
+#, elixir-autogen, elixir-format
+msgid "project.files"
+msgstr "Файлы"
+
+#: lib/typster_web/live/project_live/show.html.heex:40
+#, elixir-autogen, elixir-format
+msgid "project.files.empty"
+msgstr "Открой редактор, чтобы создать первый файл"
+
+#: lib/typster_web/live/project_live/show.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "project.open_editor"
+msgstr "Открыть редактор"
+
+#: lib/typster_web/live/project_live/index.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "projects.count.one"
+msgid_plural "projects.count.other"
+msgstr[0] "%{count} проект"
+msgstr[1] "%{count} проекта"
+msgstr[2] "%{count} проектов"
+
+#: lib/typster_web/live/project_live/index.html.heex:101
+#, elixir-autogen, elixir-format
+msgid "projects.create"
+msgstr "Создать проект"
+
+#: lib/typster_web/live/project_live/index.html.heex:65
+#, elixir-autogen, elixir-format
+msgid "projects.delete.confirm"
+msgstr "Удалить проект? Отката не будет."
+
+#: lib/typster_web/live/project_live/index.html.heex:67
+#, elixir-autogen, elixir-format
+msgid "projects.delete.label"
+msgstr "Удалить проект"
+
+#: lib/typster_web/live/project_live/index.html.heex:82
+#, elixir-autogen, elixir-format
+msgid "projects.dialog.description"
+msgstr "Назови коротко, чтобы будущий ты сразу понял."
+
+#: lib/typster_web/live/project_live/index.html.heex:36
+#, elixir-autogen, elixir-format
+msgid "projects.empty"
+msgstr "Проектов пока нет. Чистый лист, слегка подозрительно. Пора начать новый? 🤔"
+
+#: lib/typster_web/live/project_live/index.html.heex:7
+#, elixir-autogen, elixir-format
+msgid "projects.index.subtitle"
+msgstr "Открой существующий проект или начни новый. Документ сам себя не соберет."
+
+#: lib/typster_web/live/project_live/index.ex:12
+#: lib/typster_web/live/project_live/index.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "projects.index.title"
+msgstr "Проекты"
+
+#: lib/typster_web/live/project_live/index.html.heex:87
+#, elixir-autogen, elixir-format
+msgid "projects.name.label"
+msgstr "Название проекта"
+
+#: lib/typster_web/live/project_live/index.html.heex:92
+#, elixir-autogen, elixir-format
+msgid "projects.name.placeholder"
+msgstr "Диплом без паники"
+
+#: lib/typster_web/live/project_live/index.html.heex:14
+#: lib/typster_web/live/project_live/index.html.heex:81
+#, elixir-autogen, elixir-format
+msgid "projects.new"
+msgstr "Новый проект"
+
+#: lib/typster_web/live/project_live/index.html.heex:25
+#, elixir-autogen, elixir-format
+msgid "projects.search.placeholder"
+msgstr "Найти проект"
+
+#: lib/typster_web/live/user_live/registration.ex:33
+#, elixir-autogen, elixir-format
+msgid "registration.create_account"
+msgstr "Создать аккаунт"
+
+#: lib/typster_web/live/user_live/registration.ex:31
+#, elixir-autogen, elixir-format
+msgid "registration.creating"
+msgstr "Собираем аккаунт…"
+
+#: lib/typster_web/live/user_live/registration.ex:66
+#, elixir-autogen, elixir-format
+msgid "registration.flash.instructions_sent"
+msgstr "Письмо ушло на %{email}. Открой ссылку с почты, чтобы подтвердить аккаунт."
+
+#: lib/typster_web/live/user_live/registration.ex:13
+#, elixir-autogen, elixir-format
+msgid "registration.have_account"
+msgstr "Аккаунт уже есть?"
+
+#: lib/typster_web/live/user_live/registration.ex:11
+#, elixir-autogen, elixir-format
+msgid "registration.title_prefix"
+msgstr "Пиши с"
+
+#: lib/typster_web/live/user_live/settings.ex:123
+#, elixir-autogen, elixir-format
+msgid "settings.danger.delete_account"
+msgstr "Удалить аккаунт"
+
+#: lib/typster_web/live/user_live/settings.ex:118
+#, elixir-autogen, elixir-format
+msgid "settings.danger.description"
+msgstr "Аккаунт и все связанные проекты исчезнут НАВСЕГДА."
+
+#: lib/typster_web/live/user_live/settings.ex:116
+#, elixir-autogen, elixir-format
+msgid "settings.danger.title"
+msgstr "Опасная зона"
+
+#: lib/typster_web/live/user_live/settings.ex:52
+#, elixir-autogen, elixir-format
+msgid "settings.email.change"
+msgstr "Сменить email"
+
+#: lib/typster_web/live/user_live/settings.ex:50
+#, elixir-autogen, elixir-format
+msgid "settings.email.changing"
+msgstr "Меняем…"
+
+#: lib/typster_web/live/user_live/settings.ex:32
+#, elixir-autogen, elixir-format
+msgid "settings.email.description"
+msgstr "Нужен для входа и писем аккаунта. Скучно, но важно."
+
+#: lib/typster_web/live/user_live/settings.ex:141
+#, elixir-autogen, elixir-format
+msgid "settings.flash.email_change_invalid"
+msgstr "Ссылка для смены email недействительна или уже истекла."
+
+#: lib/typster_web/live/user_live/settings.ex:188
+#, elixir-autogen, elixir-format
+msgid "settings.flash.email_change_sent"
+msgstr "Ссылка для смены email ушла на новый адрес."
+
+#: lib/typster_web/live/user_live/settings.ex:138
+#, elixir-autogen, elixir-format
+msgid "settings.flash.email_changed"
+msgstr "Email изменен."
+
+#: lib/typster_web/live/user_live/settings.ex:93
+#, elixir-autogen, elixir-format
+msgid "settings.password.confirm_label"
+msgstr "Повторите новый пароль"
+
+#: lib/typster_web/live/user_live/settings.ex:78
+#, elixir-autogen, elixir-format
+msgid "settings.password.description"
+msgstr "Перед сменой отправим письмо с подтверждением."
+
+#: lib/typster_web/live/user_live/settings.ex:83
+#, elixir-autogen, elixir-format
+msgid "settings.password.new_label"
+msgstr "Новый пароль"
+
+#: lib/typster_web/live/user_live/settings.ex:108
+#, elixir-autogen, elixir-format
+msgid "settings.password.save"
+msgstr "Сохранить пароль"
+
+#: lib/typster_web/live/user_live/settings.ex:18
+#, elixir-autogen, elixir-format
+msgid "settings.subtitle"
+msgstr "Держите email и пароль в порядке. Будущий Вы оценит!"
+
+#: lib/typster_web/live/user_live/settings.ex:16
+#, elixir-autogen, elixir-format
+msgid "settings.title"
+msgstr "Настройки аккаунта"

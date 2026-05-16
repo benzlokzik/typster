@@ -7,7 +7,7 @@ defmodule TypsterWeb.UserLive.Confirmation do
   def render(assigns) do
     ~H"""
     <Layouts.auth flash={@flash} current_scope={@current_scope}>
-      <h1>Welcome back</h1>
+      <h1>{gettext("confirmation.welcome")}</h1>
       <p class="auth-subtitle">{@user.email}</p>
 
       <.form
@@ -24,17 +24,17 @@ defmodule TypsterWeb.UserLive.Confirmation do
           type="submit"
           name={@form[:remember_me].name}
           value="true"
-          phx-disable-with="Confirming…"
+          phx-disable-with={gettext("confirmation.confirming")}
           class="mk-btn mk-btn-primary"
         >
-          Confirm and stay logged in
+          {gettext("confirmation.confirm_stay_logged_in")}
         </button>
         <button
           type="submit"
-          phx-disable-with="Confirming…"
+          phx-disable-with={gettext("confirmation.confirming")}
           class="mk-btn mk-btn-outline"
         >
-          Confirm once
+          {gettext("confirmation.confirm_once")}
         </button>
       </.form>
 
@@ -49,25 +49,29 @@ defmodule TypsterWeb.UserLive.Confirmation do
       >
         <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
         <%= if @current_scope do %>
-          <button type="submit" phx-disable-with="Logging in…" class="mk-btn mk-btn-primary">
-            Log in
+          <button
+            type="submit"
+            phx-disable-with={gettext("auth.logging_in")}
+            class="mk-btn mk-btn-primary"
+          >
+            {gettext("auth.log_in")}
           </button>
         <% else %>
           <button
             type="submit"
             name={@form[:remember_me].name}
             value="true"
-            phx-disable-with="Logging in…"
+            phx-disable-with={gettext("auth.logging_in")}
             class="mk-btn mk-btn-primary"
           >
-            Keep me logged in
+            {gettext("confirmation.keep_logged_in")}
           </button>
           <button
             type="submit"
-            phx-disable-with="Logging in…"
+            phx-disable-with={gettext("auth.logging_in")}
             class="mk-btn mk-btn-outline"
           >
-            Log in once
+            {gettext("confirmation.log_in_once")}
           </button>
         <% end %>
       </.form>
@@ -77,7 +81,7 @@ defmodule TypsterWeb.UserLive.Confirmation do
           <.icon name="hero-information-circle" class="size-4" />
         </span>
         <div class="mk-alert-body">
-          Tip: once confirmed, you can enable password login in settings.
+          {gettext("confirmation.password_tip")}
         </div>
       </div>
     </Layouts.auth>
@@ -89,12 +93,12 @@ defmodule TypsterWeb.UserLive.Confirmation do
     if user = Accounts.get_user_by_magic_link_token(token) do
       form = to_form(%{"token" => token}, as: "user")
 
-      {:ok, assign(socket, user: user, form: form, trigger_submit: false),
+      {:ok, assign(socket, user: user, form: form, trigger_submit: true),
        temporary_assigns: [form: nil]}
     else
       {:ok,
        socket
-       |> put_flash(:error, "Magic link is invalid or it has expired.")
+       |> put_flash(:error, gettext("confirmation.flash.invalid_magic_link"))
        |> push_navigate(to: ~p"/users/log-in")}
     end
   end

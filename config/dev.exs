@@ -20,14 +20,14 @@ config :typster, TypsterWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4000")],
+  url: [host: "127.0.0.1", port: String.to_integer(System.get_env("PORT") || "4000")],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "w9b1aegdeG114HtynjDGhLb5d7y+BTt6SD+Aiafb+yVksjwlb03IVaj+T5Raf6ir",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:typster, ~w(--sourcemap=inline --watch)]},
-    esbuild_worker:
-      {Esbuild, :install_and_run, [:typster_worker, ~w(--sourcemap=inline --watch)]},
+    bun_js: {Bun, :install_and_run, [:js, ~w(--sourcemap=inline --watch)]},
+    bun_worker: {Bun, :install_and_run, [:worker, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:typster, ~w(--watch)]}
   ]
 

@@ -43,6 +43,6 @@ defmodule TypsterWeb.ProjectLiveTest do
     {:ok, view, _html} = live(conn, ~p"/projects/#{project.id}")
 
     assert has_element?(view, "#project-files")
-    assert render(view) =~ "assets/diagram.png"
+    assert has_element?(view, "#project-files li", "diagram.png")
   end
 end

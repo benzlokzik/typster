@@ -44,21 +44,23 @@ config :typster, TypsterWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :typster, Typster.Mailer, adapter: Swoosh.Adapters.Local
 
-# Configure esbuild (the version is required)
-config :esbuild,
-  version: "0.25.4",
-  typster: [
+# Configure bun
+config :bun,
+  version: "1.3.11",
+  assets: [args: [], cd: Path.expand("../assets", __DIR__)],
+  js: [
     args:
-      ~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=. --format=esm),
-    cd: Path.expand("../assets", __DIR__),
-    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
+      ~w(build js/app.js --outdir=../priv/static/assets/js --external /fonts/* --external /images/*),
+    cd: Path.expand("../assets", __DIR__)
   ],
-  typster_worker: [
+  worker: [
     args:
-      ~w(js/typst_worker_impl.js --bundle --target=es2022 --outdir=../priv/static/assets/js --format=esm),
-    cd: Path.expand("../assets", __DIR__),
-    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
+      ~w(build js/typst_worker_impl.js --outdir=../priv/static/assets/js --external /fonts/* --external /images/*),
+    cd: Path.expand("../assets", __DIR__)
   ]
+
+config :phoenix_live_view, :colocated_js,
+  target_directory: Path.expand("../assets/node_modules/phoenix-colocated", __DIR__)
 
 # Configure tailwind (the version is required)
 config :tailwind,

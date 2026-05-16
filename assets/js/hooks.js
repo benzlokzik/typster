@@ -36,13 +36,15 @@ export const CodeMirror = {
 
     this.previousFileId = fileId
 
-    this.editorInstance = initEditor(
-      container,
-      content,
-      this.liveSocket || window.liveSocket,
-      fileId,
-      options
-    )
+    if (fileId) {
+      this.editorInstance = initEditor(
+        container,
+        content,
+        this,
+        fileId,
+        options
+      )
+    }
 
     this.handleEvent("content_updated", ({ content }) => {
       if (this.editorInstance) {
@@ -56,22 +58,30 @@ export const CodeMirror = {
       const options = editorOptions(this.el)
       options.language = language || options.language
 
+      this.el.style.display = newFileId ? "" : "none"
+
       if (this.previousFileId !== newFileId) {
         this.previousFileId = newFileId
         this.cleanupThemeHandlers()
         if (this.editorInstance) {
           destroyEditor(this.editorInstance)
+          this.editorInstance = null
         }
-        this.editorInstance = initEditor(
-          container,
-          newContent,
-          this.liveSocket || window.liveSocket,
-          newFileId,
-          options
-        )
-        this.setupThemeHandlers()
+        if (newFileId) {
+          this.editorInstance = initEditor(
+            container,
+            newContent,
+            this,
+            newFileId,
+            options
+          )
+          this.setupThemeHandlers()
+        }
       } else if (this.editorInstance) {
         updateEditorContent(this.editorInstance, newContent)
+        if (language && this.editorInstance.updateLanguage) {
+          this.editorInstance.updateLanguage(language)
+        }
       }
     })
 
@@ -139,47 +149,7 @@ export const CodeMirror = {
     }
   },
 
-  updated() {
-    const rawContent = this.el.dataset.content || ""
-    const newContent = parseContent(rawContent)
-    const newFileId = this.el.dataset.fileId || null
-    const options = editorOptions(this.el)
-
-    if (this.previousFileId === undefined) {
-      this.previousFileId = newFileId
-    }
-
-    if (this.editorInstance) {
-      if (this.previousFileId !== newFileId) {
-        this.previousFileId = newFileId
-        this.cleanupThemeHandlers()
-        destroyEditor(this.editorInstance)
-        const container = this.el
-        this.editorInstance = initEditor(
-          container,
-          newContent,
-          this.liveSocket || window.liveSocket,
-          newFileId,
-          options
-        )
-        this.setupThemeHandlers()
-      } else {
-        updateEditorContent(this.editorInstance, newContent)
-      }
-    } else if (newFileId) {
-      this.previousFileId = newFileId
-      this.cleanupThemeHandlers()
-      const container = this.el
-      this.editorInstance = initEditor(
-        container,
-        newContent,
-        this.liveSocket || window.liveSocket,
-        newFileId,
-        options
-      )
-      this.setupThemeHandlers()
-    }
-  },
+  updated() {},
 
   destroyed() {
     this.cleanupThemeHandlers()
@@ -218,14 +188,5 @@ export const Preview = {
 }
 
 export const SaveStatus = {
-  updated() {
-    const status = this.el.textContent.trim()
-    if (status === "saved") {
-      this.el.classList.remove("text-error")
-      this.el.classList.add("text-success")
-    } else if (status === "error") {
-      this.el.classList.remove("text-success")
-      this.el.classList.add("text-error")
-    }
-  }
+  updated() {}
 }

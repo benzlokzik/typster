@@ -1,7 +1,10 @@
 import { EditorView, basicSetup } from "codemirror"
-import { EditorState } from "@codemirror/state"
-import { Compartment } from "@codemirror/state"
+import { EditorState, Compartment } from "@codemirror/state"
+import { StreamLanguage } from "@codemirror/language"
 import { typst } from "./typst_syntax"
+import { markdown } from "@codemirror/lang-markdown"
+import { yaml } from "@codemirror/lang-yaml"
+import { stex } from "@codemirror/legacy-modes/mode/stex"
 import { compileTypst } from "./typst_worker"
 
 function getCurrentTheme() {
@@ -25,43 +28,19 @@ const lightTheme = EditorView.theme({
     minHeight: "100%",
     lineHeight: "1.6"
   },
-  ".cm-focused": {
-    outline: "none"
-  },
-  ".cm-editor": {
-    height: "100%"
-  },
+  ".cm-focused": { outline: "none" },
+  ".cm-editor": { height: "100%" },
   ".cm-scroller": {
     fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
   },
-  ".cm-gutters": {
-    backgroundColor: "#f4f4f5",
-    color: "#a1a1aa",
-    border: "none"
-  },
-  ".cm-lineNumbers .cm-gutterElement": {
-    minWidth: "3ch",
-    padding: "0 8px 0 16px"
-  },
-  ".cm-activeLine": {
-    backgroundColor: "#fafafa"
-  },
-  ".cm-activeLineGutter": {
-    backgroundColor: "#fafafa",
-    color: "#09090b"
-  },
-  ".cm-selectionMatch": {
-    backgroundColor: "rgba(79, 70, 229, 0.2)"
-  },
-  "&.cm-focused .cm-selectionBackground": {
-    backgroundColor: "rgba(79, 70, 229, 0.2)"
-  },
-  ".cm-cursor": {
-    borderLeftColor: "#09090b"
-  },
-  ".cm-selectionBackground": {
-    backgroundColor: "rgba(79, 70, 229, 0.2)"
-  }
+  ".cm-gutters": { backgroundColor: "#f4f4f5", color: "#a1a1aa", border: "none" },
+  ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
+  ".cm-activeLine": { backgroundColor: "#fafafa" },
+  ".cm-activeLineGutter": { backgroundColor: "#fafafa", color: "#09090b" },
+  ".cm-selectionMatch": { backgroundColor: "rgba(79, 70, 229, 0.2)" },
+  "&.cm-focused .cm-selectionBackground": { backgroundColor: "rgba(79, 70, 229, 0.2)" },
+  ".cm-cursor": { borderLeftColor: "#09090b" },
+  ".cm-selectionBackground": { backgroundColor: "rgba(79, 70, 229, 0.2)" }
 })
 
 const darkTheme = EditorView.theme({
@@ -76,52 +55,41 @@ const darkTheme = EditorView.theme({
     minHeight: "100%",
     lineHeight: "1.6"
   },
-  ".cm-focused": {
-    outline: "none"
-  },
-  ".cm-editor": {
-    height: "100%"
-  },
+  ".cm-focused": { outline: "none" },
+  ".cm-editor": { height: "100%" },
   ".cm-scroller": {
     fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
   },
-  ".cm-gutters": {
-    backgroundColor: "#18181b",
-    color: "#71717a",
-    border: "none"
-  },
-  ".cm-lineNumbers .cm-gutterElement": {
-    minWidth: "3ch",
-    padding: "0 8px 0 16px"
-  },
-  ".cm-activeLine": {
-    backgroundColor: "#27272a"
-  },
-  ".cm-activeLineGutter": {
-    backgroundColor: "#27272a",
-    color: "#fafafa"
-  },
-  ".cm-selectionMatch": {
-    backgroundColor: "rgba(99, 102, 241, 0.2)"
-  },
-  "&.cm-focused .cm-selectionBackground": {
-    backgroundColor: "rgba(99, 102, 241, 0.2)"
-  },
-  ".cm-cursor": {
-    borderLeftColor: "#fafafa"
-  },
-  ".cm-selectionBackground": {
-    backgroundColor: "rgba(99, 102, 241, 0.2)"
-  }
+  ".cm-gutters": { backgroundColor: "#18181b", color: "#71717a", border: "none" },
+  ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
+  ".cm-activeLine": { backgroundColor: "#27272a" },
+  ".cm-activeLineGutter": { backgroundColor: "#27272a", color: "#fafafa" },
+  ".cm-selectionMatch": { backgroundColor: "rgba(99, 102, 241, 0.2)" },
+  "&.cm-focused .cm-selectionBackground": { backgroundColor: "rgba(99, 102, 241, 0.2)" },
+  ".cm-cursor": { borderLeftColor: "#fafafa" },
+  ".cm-selectionBackground": { backgroundColor: "rgba(99, 102, 241, 0.2)" }
 })
 
 function getThemeExtension() {
   return getCurrentTheme() === "dark" ? darkTheme : lightTheme
 }
 
+function getLanguageExtension(lang) {
+  switch (lang) {
+    case "typst":    return typst()
+    case "markdown": return markdown()
+    case "yaml":     return yaml()
+    case "latex":
+    case "tex":      return StreamLanguage.define(stex)
+    default:         return []
+  }
+}
+
 export function initEditor(container, initialContent, socket, fileId, options = {}) {
   let autosaveTimer = null
+  let compileTimer = null
   const themeCompartment = new Compartment()
+  const languageCompartment = new Compartment()
   const language = options.language || "typst"
 
   const updateListener = EditorView.updateListener.of((update) => {
@@ -141,7 +109,8 @@ export function initEditor(container, initialContent, socket, fileId, options = 
       }
 
       if (language === "typst") {
-        compileTypst(content, options.project || {})
+        clearTimeout(compileTimer)
+        compileTimer = setTimeout(() => compileTypst(content, options.project || {}), 300)
       }
     }
   })
@@ -151,7 +120,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     extensions: [
       basicSetup,
       themeCompartment.of(getThemeExtension()),
-      language === "typst" ? typst() : [],
+      languageCompartment.of(getLanguageExtension(language)),
       updateListener
     ]
   })
@@ -166,19 +135,24 @@ export function initEditor(container, initialContent, socket, fileId, options = 
   }
 
   const updateTheme = () => {
-    const newTheme = getThemeExtension()
     editor.dispatch({
-      effects: themeCompartment.reconfigure(newTheme)
+      effects: themeCompartment.reconfigure(getThemeExtension())
+    })
+  }
+
+  const updateLanguage = (newLang) => {
+    editor.dispatch({
+      effects: languageCompartment.reconfigure(getLanguageExtension(newLang))
     })
   }
 
   return {
     editor,
     updateTheme,
+    updateLanguage,
     destroy: () => {
-      if (autosaveTimer) {
-        clearTimeout(autosaveTimer)
-      }
+      if (autosaveTimer) clearTimeout(autosaveTimer)
+      if (compileTimer) clearTimeout(compileTimer)
       editor.destroy()
     }
   }
@@ -188,14 +162,13 @@ export function updateEditorContent(editorInstance, content) {
   if (editorInstance && editorInstance.editor) {
     const currentContent = editorInstance.editor.state.doc.toString()
     if (currentContent !== content) {
-      const transaction = editorInstance.editor.state.update({
+      editorInstance.editor.dispatch({
         changes: {
           from: 0,
           to: editorInstance.editor.state.doc.length,
           insert: content
         }
       })
-      editorInstance.editor.dispatch(transaction)
     }
   }
 }

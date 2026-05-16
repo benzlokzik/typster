@@ -38,10 +38,12 @@ defmodule TypsterWeb.Layouts do
   end
 
   @doc """
-  Shared floating nav used by both the marketing layout and the auth layout.
-  Pass a `:nav_links` slot to render the section-link bar (marketing only).
+  Shared floating nav used by marketing, auth, and app layouts.
+  Pass a `:nav_links` slot to render the section-link bar.
+  Set `app_mode` to true on authenticated app pages to show only the logout CTA.
   """
   attr :current_scope, :map, default: nil
+  attr :app_mode, :boolean, default: false
   slot :nav_links
 
   def mk_nav(assigns) do
@@ -55,24 +57,48 @@ defmodule TypsterWeb.Layouts do
         {render_slot(@nav_links)}
       </nav>
       <div class="mk-nav-cta">
+        <.link
+          href={
+            ~p"/locale/#{if Gettext.get_locale(TypsterWeb.Gettext) == "ru", do: "en", else: "ru"}"
+          }
+          class="mk-btn mk-btn-ghost mk-btn-sm"
+          aria-label="Switch language"
+        >
+          {if Gettext.get_locale(TypsterWeb.Gettext) == "ru", do: "EN", else: "RU"}
+        </.link>
         <button
           class="mk-btn mk-btn-ghost mk-btn-sm mk-theme-toggle"
           onclick="toggleMkTheme(this)"
-          aria-label="Toggle theme"
+          aria-label={gettext("layout.theme.toggle")}
         >
           <i data-lucide="moon" class="mk-icon-moon" aria-hidden="true"></i>
           <i data-lucide="sun" class="mk-icon-sun" aria-hidden="true"></i>
         </button>
-        <%= if @current_scope && @current_scope.user do %>
-          <a href={~p"/projects"} class="mk-btn mk-btn-ghost mk-btn-sm">My projects</a>
-          <.link href={~p"/users/log-out"} method="delete" class="mk-btn mk-btn-ghost mk-btn-sm">
-            Log out
+        <%= if @app_mode do %>
+          <.link
+            :if={@current_scope && @current_scope.user}
+            href={~p"/users/log-out"}
+            method="delete"
+            class="mk-btn mk-btn-ghost mk-btn-sm"
+          >
+            {gettext("auth.log_out")}
           </.link>
         <% else %>
-          <.link href={~p"/users/log-in"} class="mk-btn mk-btn-ghost mk-btn-sm">Log in</.link>
-          <.link href={~p"/users/register"} class="mk-btn mk-btn-primary mk-btn-sm">
-            Sign up free
-          </.link>
+          <%= if @current_scope && @current_scope.user do %>
+            <a href={~p"/projects"} class="mk-btn mk-btn-ghost mk-btn-sm">
+              {gettext("nav.my_projects")}
+            </a>
+            <.link href={~p"/users/log-out"} method="delete" class="mk-btn mk-btn-ghost mk-btn-sm">
+              {gettext("auth.log_out")}
+            </.link>
+          <% else %>
+            <.link href={~p"/users/log-in"} class="mk-btn mk-btn-ghost mk-btn-sm">
+              {gettext("auth.log_in")}
+            </.link>
+            <.link href={~p"/users/register"} class="mk-btn mk-btn-primary mk-btn-sm">
+              {gettext("auth.sign_up")}
+            </.link>
+          <% end %>
         <% end %>
       </div>
     </header>
@@ -103,40 +129,28 @@ defmodule TypsterWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href={~p"/projects"} class="text-lg font-semibold">
-          Typster
-        </a>
+    <div class="ts-app">
+      <.mk_nav app_mode={true} current_scope={@current_scope}>
+        <:nav_links>
+          <.link navigate={~p"/projects"}>{gettext("nav.projects")}</.link>
+          <.link :if={@current_scope && @current_scope.user} navigate={~p"/users/settings"}>
+            {gettext("nav.settings")}
+          </.link>
+        </:nav_links>
+      </.mk_nav>
+      <div
+        id="connection-banner"
+        class="ts-conn-banner"
+        phx-disconnected={JS.remove_attribute("hidden")}
+        phx-connected={JS.set_attribute({"hidden", ""})}
+        hidden
+      >
+        <.icon name="hero-arrow-path" class="size-3 motion-safe:animate-spin" />
+        <span>{gettext("app.connection_lost")}</span>
       </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <.link navigate={~p"/projects"} class="btn btn-ghost">Projects</.link>
-          </li>
-          <li :if={@current_scope && @current_scope.user}>
-            <.link navigate={~p"/users/settings"} class="btn btn-ghost">Settings</.link>
-          </li>
-          <li :if={@current_scope && @current_scope.user}>
-            <.link href={~p"/users/log-out"} method="delete" class="btn btn-ghost">Log out</.link>
-          </li>
-          <li :if={!@current_scope || !@current_scope.user}>
-            <.link navigate={~p"/users/log-in"} class="btn btn-ghost">Log in</.link>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-        </ul>
-      </div>
-    </header>
-
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
-
-    <.flash_group flash={@flash} />
+      {render_slot(@inner_block)}
+      <.flash_group flash={@flash} />
+    </div>
     """
   end
 
@@ -155,30 +169,6 @@ defmodule TypsterWeb.Layouts do
     <div id={@id} class="mk-toast-stack" aria-live="polite" aria-atomic="false">
       <.flash kind={:info} flash={@flash} />
       <.flash kind={:error} flash={@flash} />
-
-      <.flash
-        id="client-error"
-        kind={:error}
-        title={gettext("We can't find the internet")}
-        phx-disconnected={show(".phx-client-error #client-error") |> JS.remove_attribute("hidden")}
-        phx-connected={hide("#client-error") |> JS.set_attribute({"hidden", ""})}
-        hidden
-      >
-        {gettext("Attempting to reconnect")}
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
-      </.flash>
-
-      <.flash
-        id="server-error"
-        kind={:error}
-        title={gettext("Something went wrong!")}
-        phx-disconnected={show(".phx-server-error #server-error") |> JS.remove_attribute("hidden")}
-        phx-connected={hide("#server-error") |> JS.set_attribute({"hidden", ""})}
-        hidden
-      >
-        {gettext("Attempting to reconnect")}
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
-      </.flash>
     </div>
     """
   end
@@ -190,31 +180,30 @@ defmodule TypsterWeb.Layouts do
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
-
+    <div class="ts-toggle">
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="ts-toggle__btn"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="system"
+        aria-label={gettext("layout.theme.system")}
       >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-computer-desktop-micro" class="size-3.5" />
       </button>
-
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="ts-toggle__btn"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
+        aria-label={gettext("layout.theme.light")}
       >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-sun-micro" class="size-3.5" />
       </button>
-
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="ts-toggle__btn"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
+        aria-label={gettext("layout.theme.dark")}
       >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-moon-micro" class="size-3.5" />
       </button>
     </div>
     """

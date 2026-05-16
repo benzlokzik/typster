@@ -16,20 +16,45 @@ export function initTypstWorker(hook) {
       worker.onmessage = (event) => {
         const { type, data } = event.data
 
-      if (type === "render") {
-          if (typeof pushEvent === "function") {
-            pushEvent("update_preview", {
-              source_count: data.sourceCount,
-              asset_count: data.assetCount
-            })
-          } else {
-            console.warn("pushEvent not available, preview won't update")
-        }
-      } else if (type === "error") {
-        if (typeof pushEvent === "function") {
-          pushEvent("preview_error", { message: data.message || "Typst preview failed" })
-        }
-        console.error("Typst compilation error:", data)
+        if (type === "render") {
+          if (previewContainer && data.svg) {
+            const errEl = previewContainer.querySelector("#preview-error")
+            if (errEl) errEl.style.display = "none"
+
+            let svgContainer = previewContainer.querySelector("#typst-svg-output")
+            if (!svgContainer) {
+              svgContainer = document.createElement("div")
+              svgContainer.id = "typst-svg-output"
+              svgContainer.style.cssText = "width:100%;overflow:auto;"
+              previewContainer.appendChild(svgContainer)
+            }
+            svgContainer.style.display = ""
+
+            const placeholder = previewContainer.querySelector("#preview-placeholder")
+            if (placeholder) placeholder.style.display = "none"
+
+            svgContainer.innerHTML = data.svg
+          }
+        } else if (type === "error") {
+          if (previewContainer) {
+            let errEl = previewContainer.querySelector("#preview-error")
+            if (!errEl) {
+              errEl = document.createElement("div")
+              errEl.id = "preview-error"
+              errEl.className = "ts-card"
+              errEl.style.cssText = "border-color:var(--mk-error-bd);background:var(--mk-error-50);color:var(--mk-error);padding:16px;font-size:13px;font-family:'JetBrains Mono',monospace;width:100%;max-width:520px;"
+              previewContainer.appendChild(errEl)
+            }
+            errEl.textContent = data.message || "Typst preview failed"
+            errEl.style.display = ""
+
+            const svgContainer = previewContainer.querySelector("#typst-svg-output")
+            if (svgContainer) svgContainer.style.display = "none"
+
+            const placeholder = previewContainer.querySelector("#preview-placeholder")
+            if (placeholder) placeholder.style.display = "none"
+          }
+          console.error("Typst compilation error:", data)
         }
       }
 
@@ -69,22 +94,12 @@ export function compileTypst(content, project = {}) {
     }
   }
 
-  if (worker && worker.readyState !== Worker.CLOSED) {
+  if (worker) {
     worker.postMessage({
       type: "compile",
       content: content,
       project: project
     })
-  } else if (!worker && previewContainer) {
-    setTimeout(() => {
-      if (worker && worker.readyState !== Worker.CLOSED) {
-        worker.postMessage({
-          type: "compile",
-          content: content,
-          project: project
-        })
-      }
-    }, 100)
   }
 }
 

@@ -25,7 +25,7 @@ defmodule TypsterWeb.UserLive.LoginTest do
         |> render_submit()
         |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert html =~ "If your email is in our system"
+      assert html =~ "If that email is in our system"
 
       assert Typster.Repo.get_by!(Typster.Accounts.UserToken, user_id: user.id).context ==
                "login"
@@ -39,7 +39,7 @@ defmodule TypsterWeb.UserLive.LoginTest do
         |> render_submit()
         |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert html =~ "If your email is in our system"
+      assert html =~ "If that email is in our system"
     end
   end
 
@@ -98,7 +98,7 @@ defmodule TypsterWeb.UserLive.LoginTest do
     test "shows login page with email filled in", %{conn: conn, user: user} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
-      assert html =~ "Reauthenticate"
+      assert html =~ "Log in again"
       refute html =~ "Sign up"
       assert html =~ "Email me a link"
 

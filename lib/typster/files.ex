@@ -8,7 +8,7 @@ defmodule Typster.Files do
   alias Typster.Repo
   alias Typster.Projects.File
 
-  @editable_extensions ~w(.typ .bib)
+  @editable_extensions ~w(.typ .bib .md .yaml .yml .tex .latex .sty .cls)
   @asset_extensions ~w(.pdf .png .jpg .jpeg .svg .webp .ttf .otf .woff .woff2)
 
   def get_file!(%Scope{user: user}, id) do
@@ -97,8 +97,11 @@ defmodule Typster.Files do
 
   def editor_language(path) when is_binary(path) do
     case extension(path) do
-      ".bib" -> "bibtex"
       ".typ" -> "typst"
+      ".bib" -> "bibtex"
+      ".md" -> "markdown"
+      ext when ext in ~w(.yaml .yml) -> "yaml"
+      ext when ext in ~w(.tex .latex .sty .cls) -> "latex"
       _ -> "plain"
     end
   end

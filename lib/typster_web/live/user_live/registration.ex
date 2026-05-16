@@ -8,24 +8,29 @@ defmodule TypsterWeb.UserLive.Registration do
   def render(assigns) do
     ~H"""
     <Layouts.auth flash={@flash} current_scope={@current_scope}>
-      <h1>Write with <em>Typster</em></h1>
+      <h1>{gettext("registration.title_prefix")} <em>Typster</em></h1>
       <p class="auth-subtitle">
-        Already have one? <.link navigate={~p"/users/log-in"}>Log in</.link>
+        {gettext("registration.have_account")}
+        <.link navigate={~p"/users/log-in"}>{gettext("auth.log_in")}</.link>
       </p>
 
       <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
         <.input
           field={@form[:email]}
           type="email"
-          label="Email"
+          label={gettext("common.email")}
           autocomplete="username"
           required
           class="auth-input"
           error_class="auth-input auth-input--error"
           phx-mounted={JS.focus()}
         />
-        <button type="submit" class="mk-btn mk-btn-primary" phx-disable-with="Creating account...">
-          Create account
+        <button
+          type="submit"
+          class="mk-btn mk-btn-primary"
+          phx-disable-with={gettext("registration.creating")}
+        >
+          {gettext("registration.create_account")}
         </button>
       </.form>
     </Layouts.auth>
@@ -58,7 +63,10 @@ defmodule TypsterWeb.UserLive.Registration do
          socket
          |> put_flash(
            :info,
-           "An email was sent to #{user.email}, please access it to confirm your account."
+           gettext(
+             "registration.flash.instructions_sent",
+             email: user.email
+           )
          )
          |> push_navigate(to: ~p"/users/log-in")}
 

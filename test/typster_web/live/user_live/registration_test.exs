@@ -47,7 +47,7 @@ defmodule TypsterWeb.UserLive.RegistrationTest do
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~
-               ~r/An email was sent to .*, please access it to confirm your account/
+               ~r/Email sent to .*. Open the link from your email to confirm your account/
     end
 
     test "renders errors for duplicated email", %{conn: conn} do
@@ -62,7 +62,7 @@ defmodule TypsterWeb.UserLive.RegistrationTest do
         )
         |> render_submit()
 
-      assert result =~ "has already been taken"
+      assert result =~ "is already taken"
     end
   end
 

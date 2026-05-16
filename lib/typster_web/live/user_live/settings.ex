@@ -9,59 +9,123 @@ defmodule TypsterWeb.UserLive.Settings do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="text-center">
-        <.header>
-          Account Settings
-          <:subtitle>Manage your account email address and password settings</:subtitle>
-        </.header>
-      </div>
+      <main class="ts-main">
+        <div class="ts-page ts-page--narrow">
+          <header class="ts-pagehead">
+            <div>
+              <h1 class="ts-h1">{gettext("settings.title")}</h1>
+              <p class="ts-p ts-muted">
+                {gettext("settings.subtitle")}
+              </p>
+            </div>
+          </header>
 
-      <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
-        <.input
-          field={@email_form[:email]}
-          type="email"
-          label="Email"
-          autocomplete="username"
-          required
-        />
-        <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
-      </.form>
+          <.form
+            for={@email_form}
+            id="email_form"
+            phx-submit="update_email"
+            phx-change="validate_email"
+          >
+            <section class="ts-card">
+              <div class="ts-card__h">
+                <h3 class="ts-h3">{gettext("common.email")}</h3>
+                <p class="ts-p ts-muted">{gettext("settings.email.description")}</p>
+              </div>
+              <div class="ts-card__c">
+                <label class="ts-field">
+                  <span class="ts-field__label">{gettext("common.email")}</span>
+                  <.input
+                    field={@email_form[:email]}
+                    type="email"
+                    class="ts-input"
+                    autocomplete="username"
+                    required
+                  />
+                </label>
+              </div>
+              <div class="ts-card__f">
+                <button
+                  type="submit"
+                  class="ts-btn ts-btn--primary"
+                  phx-disable-with={gettext("settings.email.changing")}
+                >
+                  {gettext("settings.email.change")}
+                </button>
+              </div>
+            </section>
+          </.form>
 
-      <div class="divider" />
+          <.form
+            for={@password_form}
+            id="password_form"
+            action={~p"/users/update-password"}
+            method="post"
+            phx-change="validate_password"
+            phx-submit="update_password"
+            phx-trigger-action={@trigger_submit}
+          >
+            <input
+              name={@password_form[:email].name}
+              type="hidden"
+              id="hidden_user_email"
+              autocomplete="username"
+              value={@current_email}
+            />
+            <section class="ts-card">
+              <div class="ts-card__h">
+                <h3 class="ts-h3">{gettext("common.password")}</h3>
+                <p class="ts-p ts-muted">
+                  {gettext("settings.password.description")}
+                </p>
+              </div>
+              <div class="ts-card__c">
+                <label class="ts-field">
+                  <span class="ts-field__label">{gettext("settings.password.new_label")}</span>
+                  <.input
+                    field={@password_form[:password]}
+                    type="password"
+                    class="ts-input"
+                    autocomplete="new-password"
+                    required
+                  />
+                </label>
+                <label class="ts-field">
+                  <span class="ts-field__label">{gettext("settings.password.confirm_label")}</span>
+                  <.input
+                    field={@password_form[:password_confirmation]}
+                    type="password"
+                    class="ts-input"
+                    autocomplete="new-password"
+                  />
+                </label>
+              </div>
+              <div class="ts-card__f">
+                <button
+                  type="submit"
+                  class="ts-btn ts-btn--primary"
+                  phx-disable-with={gettext("common.saving")}
+                >
+                  {gettext("settings.password.save")}
+                </button>
+              </div>
+            </section>
+          </.form>
 
-      <.form
-        for={@password_form}
-        id="password_form"
-        action={~p"/users/update-password"}
-        method="post"
-        phx-change="validate_password"
-        phx-submit="update_password"
-        phx-trigger-action={@trigger_submit}
-      >
-        <input
-          name={@password_form[:email].name}
-          type="hidden"
-          id="hidden_user_email"
-          autocomplete="username"
-          value={@current_email}
-        />
-        <.input
-          field={@password_form[:password]}
-          type="password"
-          label="New password"
-          autocomplete="new-password"
-          required
-        />
-        <.input
-          field={@password_form[:password_confirmation]}
-          type="password"
-          label="Confirm new password"
-          autocomplete="new-password"
-        />
-        <.button variant="primary" phx-disable-with="Saving...">
-          Save Password
-        </.button>
-      </.form>
+          <section class="ts-card ts-card--danger">
+            <div class="ts-card__h">
+              <h3 class="ts-h3">{gettext("settings.danger.title")}</h3>
+              <p class="ts-p ts-muted">
+                {gettext("settings.danger.description")}
+              </p>
+            </div>
+            <div class="ts-card__f">
+              <button class="ts-btn ts-btn--destructive" disabled>
+                {gettext("settings.danger.delete_account")}
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
     </Layouts.app>
     """
   end
@@ -71,10 +135,10 @@ defmodule TypsterWeb.UserLive.Settings do
     socket =
       case Accounts.update_user_email(socket.assigns.current_scope.user, token) do
         {:ok, _user} ->
-          put_flash(socket, :info, "Email changed successfully.")
+          put_flash(socket, :info, gettext("settings.flash.email_changed"))
 
         {:error, _} ->
-          put_flash(socket, :error, "Email change link is invalid or it has expired.")
+          put_flash(socket, :error, gettext("settings.flash.email_change_invalid"))
       end
 
     {:ok, push_navigate(socket, to: ~p"/users/settings")}
@@ -121,7 +185,7 @@ defmodule TypsterWeb.UserLive.Settings do
           &url(~p"/users/settings/confirm-email/#{&1}")
         )
 
-        info = "A link to confirm your email change has been sent to the new address."
+        info = gettext("settings.flash.email_change_sent")
         {:noreply, socket |> put_flash(:info, info)}
 
       changeset ->

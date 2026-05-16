@@ -6,7 +6,8 @@
   "shutdownAction": "stopCompose",
   "forwardPorts": [
     4000,
-    5432
+    5432,
+    9001
   ],
   "portsAttributes": {
     "4000": {
@@ -15,6 +16,10 @@
     },
     "5432": {
       "label": "PostgreSQL"
+    },
+    "9001": {
+      "label": "MinIO Console",
+      "onAutoForward": "notify"
     }
   },
   "features": {

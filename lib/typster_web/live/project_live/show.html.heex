@@ -1,95 +1,85 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-      <.breadcrumb class="mb-4">
-        <.breadcrumb_item>
-          <.breadcrumb_link navigate={~p"/projects"}>Projects</.breadcrumb_link>
-        </.breadcrumb_item>
-        <.breadcrumb_separator />
-        <.breadcrumb_item>
-          <.breadcrumb_page>{@project.name}</.breadcrumb_page>
-        </.breadcrumb_item>
-      </.breadcrumb>
-
-      <div class="flex justify-between items-start">
+  <main class="ts-main">
+    <div class="ts-page">
+      <header class="ts-pagehead">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">{@project.name}</h1>
-          <p class="text-gray-600 mt-1">
-            Created {Calendar.strftime(@project.inserted_at, "%B %d, %Y")}
+          <p class="ts-p ts-muted" style="margin-bottom: 6px;">
+            <.link navigate={~p"/projects"} style="color: var(--fg3);">
+              {gettext("nav.projects")}
+            </.link>
+            &nbsp;/&nbsp;{@project.name}
+          </p>
+          <h1 class="ts-h1">{@project.name}</h1>
+          <p class="ts-p ts-muted">
+            {gettext("common.created_date",
+              date: Calendar.strftime(@project.inserted_at, "%B %d, %Y")
+            )}
           </p>
         </div>
-        <.link
-          navigate={~p"/projects/#{@project.id}/edit"}
-          class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2"
-        >
-          <.icon name="hero-pencil" class="w-4 h-4" /> Open Editor
+        <.link navigate={~p"/projects/#{@project.id}/edit"} class="ts-btn ts-btn--primary">
+          <.icon name="hero-pencil" class="size-3.5" /> {gettext("project.open_editor")}
         </.link>
-      </div>
-    </div>
+      </header>
 
-    <.card>
-      <.card_header>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <.icon name="hero-folder-open" class="w-5 h-5 text-gray-700" />
-            <.card_title>Files</.card_title>
+      <section class="ts-card">
+        <div class="ts-card__h">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 class="ts-h3">{gettext("project.files")}</h3>
+            <span class="ts-p ts-muted">
+              {ngettext(
+                "project.entries.one",
+                "project.entries.other",
+                length(@file_tree) + length(@assets)
+              )}
+            </span>
           </div>
-          <span class="text-sm text-gray-600">
-            {length(@file_tree) + length(@assets)} entries
-          </span>
         </div>
-      </.card_header>
-      <.card_content>
-        <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) do %>
-          <div class="text-center py-12">
-            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <.icon name="hero-document" class="w-8 h-8 text-gray-400" />
+        <div class="ts-card__c" style="padding-top: 8px; padding-bottom: 8px;">
+          <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) do %>
+            <div class="ts-empty" style="border: none; padding: 24px 0;">
+              <p>{gettext("project.files.empty")}</p>
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">No files yet</h3>
-            <p class="text-gray-600 mb-4">
-              Open the editor to create your first file
-            </p>
-          </div>
-        <% else %>
-          <div id="project-files" class="space-y-1">
-            <%= for file <- @file_tree do %>
-              <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-md bg-indigo-100 flex items-center justify-center">
-                    <.icon name="hero-document-text" class="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <span class="font-mono text-sm text-gray-900">{file.path}</span>
-                </div>
+          <% else %>
+            <ul id="project-files" class="ts-tree" style="padding-bottom: 0;">
+              <li :for={file <- @file_tree} class="ts-tree__item">
+                <.icon name="hero-document-text" class="size-3.5" />
+                <span
+                  class="flex-1"
+                  style="font-family: 'JetBrains Mono', monospace; font-size: 12px;"
+                >
+                  {file.path}
+                </span>
                 <button
                   phx-click="delete_file"
                   phx-value-id={file.id}
-                  phx-confirm="Are you sure you want to delete this file? This action cannot be undone."
-                  class="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                  phx-confirm={gettext("project.file.delete.confirm")}
+                  class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+                  aria-label={gettext("project.file.delete.label")}
+                  style="opacity: 0; transition: opacity 200ms;"
+                  onmouseenter="this.style.opacity='1'"
+                  onmouseleave="this.style.opacity='0'"
                 >
-                  Delete
+                  <.icon name="hero-trash" class="size-3" />
                 </button>
-              </div>
-            <% end %>
-            <%= for asset <- @assets do %>
-              <div
+              </li>
+              <li
+                :for={asset <- @assets}
                 id={"asset-#{asset.id}"}
-                class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group"
+                class="ts-tree__item is-disabled"
               >
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
-                    <.icon name="hero-photo" class="w-5 h-5 text-gray-600" />
-                  </div>
-                  <div>
-                    <span class="font-mono text-sm text-gray-900">{asset.filename}</span>
-                    <p class="font-mono text-xs text-gray-500">assets/{asset.filename}</p>
-                  </div>
-                </div>
-                <span class="text-xs text-gray-500">{asset.content_type}</span>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </.card_content>
-    </.card>
-  </div>
+                <.icon name="hero-photo" class="size-3.5" />
+                <span
+                  class="flex-1"
+                  style="font-family: 'JetBrains Mono', monospace; font-size: 12px;"
+                >
+                  {asset.filename}
+                </span>
+                <span class="ts-tree__pill">{asset.content_type}</span>
+              </li>
+            </ul>
+          <% end %>
+        </div>
+      </section>
+    </div>
+  </main>
 </Layouts.app>

@@ -24,7 +24,8 @@
     "baseUrl": ".",
     "paths": {
       "*": ["../deps/*"],
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@codemirror/state": ["./node_modules/@codemirror/state"]
     },
     "allowJs": true,
     "noEmit": true,

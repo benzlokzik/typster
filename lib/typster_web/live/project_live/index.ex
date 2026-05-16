@@ -2,38 +2,23 @@ defmodule TypsterWeb.ProjectLive.Index do
   use TypsterWeb, :live_view
 
   alias Typster.Projects
-  alias Typster.Projects.Project
 
   @impl true
   def mount(_params, _session, socket) do
+    projects = Projects.list_projects(socket.assigns.current_scope)
+
     {:ok,
      socket
-     |> assign(:page_title, "Projects")
-     |> stream(:projects, Projects.list_projects(socket.assigns.current_scope))}
+     |> assign(:page_title, gettext("projects.index.title"))
+     |> assign(:search, "")
+     |> assign(:show_new_dialog, false)
+     |> assign(:project_count, length(projects))
+     |> stream(:projects, projects)}
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
-    live_action = socket.assigns[:live_action] || :index
-    {:noreply, apply_action(socket, live_action, params)}
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Project")
-    |> assign(:project, Projects.get_project!(socket.assigns.current_scope, id))
-  end
-
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Project")
-    |> assign(:project, %Project{})
-  end
-
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Projects")
-    |> assign(:project, nil)
+  def handle_params(_params, _url, socket) do
+    {:noreply, socket}
   end
 
   @impl true
@@ -41,19 +26,55 @@ defmodule TypsterWeb.ProjectLive.Index do
     project = Projects.get_project!(socket.assigns.current_scope, id)
     {:ok, _} = Projects.delete_project(socket.assigns.current_scope, project)
 
-    {:noreply, stream_delete(socket, :projects, project)}
+    {:noreply,
+     socket
+     |> assign(:project_count, max(socket.assigns.project_count - 1, 0))
+     |> stream_delete(:projects, project)}
   end
 
   @impl true
-  def handle_event("create_project", params, socket) do
-    name = Map.get(params, "name", "New Project")
+  def handle_event("new_project", _params, socket) do
+    {:noreply, assign(socket, :show_new_dialog, true)}
+  end
+
+  @impl true
+  def handle_event("close_dialog", _params, socket) do
+    {:noreply, assign(socket, :show_new_dialog, false)}
+  end
+
+  @impl true
+  def handle_event("create_project", %{"name" => name}, socket) do
+    name = String.trim(name)
 
     case Projects.create_project(socket.assigns.current_scope, %{name: name}) do
       {:ok, project} ->
-        {:noreply, stream_insert(socket, :projects, project, at: -1)}
+        {:noreply,
+         socket
+         |> assign(:show_new_dialog, false)
+         |> assign(:project_count, socket.assigns.project_count + 1)
+         |> stream_insert(:projects, project, at: -1)}
 
       {:error, _changeset} ->
         {:noreply, socket}
     end
+  end
+
+  @impl true
+  def handle_event("search", %{"value" => query}, socket) do
+    projects = Projects.list_projects(socket.assigns.current_scope)
+
+    filtered =
+      if query == "" do
+        projects
+      else
+        q = String.downcase(query)
+        Enum.filter(projects, &String.contains?(String.downcase(&1.name), q))
+      end
+
+    {:noreply,
+     socket
+     |> assign(:search, query)
+     |> assign(:project_count, length(filtered))
+     |> stream(:projects, filtered, reset: true)}
   end
 end

@@ -1,0 +1,50 @@
+{
+  "languages": {
+    "Elixir": {
+      "language_servers": [
+        "expert",
+        "!elixir-ls",
+        "!dexter",
+        "!next-ls",
+        "!lexical",
+        "..."
+      ]
+    },
+    "EEx": {
+      "language_servers": [
+        "expert",
+        "!elixir-ls",
+        "!dexter",
+        "!next-ls",
+        "!lexical",
+        "..."
+      ]
+    },
+    "HEEx": {
+      "language_servers": [
+        "expert",
+        "!elixir-ls",
+        "!dexter",
+        "!next-ls",
+        "!lexical",
+        "..."
+      ]
+    }
+  },
+  "lsp": {
+    "tailwindcss-language-server": {
+      "settings": {
+        "includeLanguages": {
+          "elixir": "html",
+          "heex": "html"
+        },
+        "experimental": {
+          "classRegex": [
+            "class=\"([^\"]*)\"", // HEEx + HTML
+            "class='([^']*)'" // HEEx
+          ]
+        }
+      }
+    }
+  }
+}

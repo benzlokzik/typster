@@ -22,6 +22,7 @@ Thank you for contributing. This guide covers everything you need to get product
   - [Code style](#code-style)
     - [Elixir](#elixir)
     - [JS / TS / CSS](#js--ts--css)
+  - [Translations](#translations)
   - [Commit conventions](#commit-conventions)
     - [Format](#format)
     - [Types](#types)
@@ -215,6 +216,41 @@ Used for code navigation, finding usages, and understanding module dependencies.
 ### JS / TS / CSS
 
 TODO
+
+---
+
+## Translations
+
+Typster uses Phoenix/Gettext through `TypsterWeb.Gettext`.
+
+- Supported locales are `en` and `ru`
+- Catalogs live in `priv/gettext/<locale>/LC_MESSAGES/`
+- Template files live in `priv/gettext/*.pot`
+- Browser locale is stored in the session and switched through `/locale/:locale`
+- The browser pipeline defaults to `en` when no locale is set
+
+When adding or changing user-facing text in Elixir, HEEx, LiveView, or components:
+
+1. Wrap UI strings in `gettext/1`, `gettext/2`, or `ngettext/3`
+2. Prefer stable dotted keys for application UI, such as `editor.compile` or `projects.index.title`
+3. Use interpolation instead of string concatenation:
+   ```elixir
+   gettext("common.created_date", date: formatted_date)
+   ```
+4. Use `ngettext/3` for plural text:
+   ```elixir
+   ngettext("project.files.count.one", "project.files.count.other", count)
+   ```
+5. Keep variables identical across all locales
+6. Run extraction and merge after changing gettext keys:
+   ```bash
+   mix gettext.extract --merge
+   ```
+7. Fill both English and Russian `msgstr` values before handing off
+8. Do not edit generated `msgid` values directly in `.po` files; change the source `gettext` call, then re-run extraction
+9. Run `mix format` if Elixir or HEEx files changed, then run the relevant tests
+
+When adding a new locale, add a new `priv/gettext/<locale>/LC_MESSAGES/` catalog set, update the supported locale list in `lib/typster_web/controllers/locale_controller.ex`, and verify the locale toggle or navigation path still works.
 
 ---
 

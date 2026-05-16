@@ -7,13 +7,13 @@ defmodule TypsterWeb.UserLive.SettingsTest do
 
   describe "Settings page" do
     test "renders settings page", %{conn: conn} do
-      {:ok, _lv, html} =
+      {:ok, lv, _html} =
         conn
         |> log_in_user(user_fixture())
         |> live(~p"/users/settings")
 
-      assert html =~ "Change Email"
-      assert html =~ "Save Password"
+      assert has_element?(lv, "#email_form button", "Change email")
+      assert has_element?(lv, "#password_form button", "Save password")
     end
 
     test "redirects if user is not logged in", %{conn: conn} do
@@ -62,30 +62,28 @@ defmodule TypsterWeb.UserLive.SettingsTest do
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
-      result =
-        lv
-        |> element("#email_form")
-        |> render_change(%{
-          "action" => "update_email",
-          "user" => %{"email" => "with spaces"}
-        })
+      lv
+      |> element("#email_form")
+      |> render_change(%{
+        "action" => "update_email",
+        "user" => %{"email" => "with spaces"}
+      })
 
-      assert result =~ "Change Email"
-      assert result =~ "must have the @ sign and no spaces"
+      assert has_element?(lv, "#email_form button", "Change email")
+      assert has_element?(lv, "#email_form p", "must have the @ sign and no spaces")
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn, user: user} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
-      result =
-        lv
-        |> form("#email_form", %{
-          "user" => %{"email" => user.email}
-        })
-        |> render_submit()
+      lv
+      |> form("#email_form", %{
+        "user" => %{"email" => user.email}
+      })
+      |> render_submit()
 
-      assert result =~ "Change Email"
-      assert result =~ "did not change"
+      assert has_element?(lv, "#email_form button", "Change email")
+      assert has_element?(lv, "#email_form p", "did not change")
     end
   end
 
@@ -126,37 +124,35 @@ defmodule TypsterWeb.UserLive.SettingsTest do
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
-      result =
-        lv
-        |> element("#password_form")
-        |> render_change(%{
-          "user" => %{
-            "password" => "too short",
-            "password_confirmation" => "does not match"
-          }
-        })
+      lv
+      |> element("#password_form")
+      |> render_change(%{
+        "user" => %{
+          "password" => "too short",
+          "password_confirmation" => "does not match"
+        }
+      })
 
-      assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
+      assert has_element?(lv, "#password_form button", "Save password")
+      assert has_element?(lv, "#password_form p", "should be at least 12 characters")
+      assert has_element?(lv, "#password_form p", "does not match password")
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/settings")
 
-      result =
-        lv
-        |> form("#password_form", %{
-          "user" => %{
-            "password" => "too short",
-            "password_confirmation" => "does not match"
-          }
-        })
-        |> render_submit()
+      lv
+      |> form("#password_form", %{
+        "user" => %{
+          "password" => "too short",
+          "password_confirmation" => "does not match"
+        }
+      })
+      |> render_submit()
 
-      assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
+      assert has_element?(lv, "#password_form button", "Save password")
+      assert has_element?(lv, "#password_form p", "should be at least 12 characters")
+      assert has_element?(lv, "#password_form p", "does not match password")
     end
   end
 
@@ -179,7 +175,7 @@ defmodule TypsterWeb.UserLive.SettingsTest do
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/settings"
       assert %{"info" => message} = flash
-      assert message == "Email changed successfully."
+      assert message == "Email changed."
       refute Accounts.get_user_by_email(user.email)
       assert Accounts.get_user_by_email(email)
 
@@ -188,7 +184,7 @@ defmodule TypsterWeb.UserLive.SettingsTest do
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/settings"
       assert %{"error" => message} = flash
-      assert message == "Email change link is invalid or it has expired."
+      assert message == "That email change link is invalid or expired."
     end
 
     test "does not update email with invalid token", %{conn: conn, user: user} do
@@ -196,7 +192,7 @@ defmodule TypsterWeb.UserLive.SettingsTest do
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/settings"
       assert %{"error" => message} = flash
-      assert message == "Email change link is invalid or it has expired."
+      assert message == "That email change link is invalid or expired."
       assert Accounts.get_user_by_email(user.email)
     end
 

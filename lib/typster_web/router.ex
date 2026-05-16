@@ -3,6 +3,12 @@ defmodule TypsterWeb.Router do
 
   import TypsterWeb.UserAuth
 
+  defp set_locale(conn, _opts) do
+    locale = get_session(conn, :locale) || "en"
+    Gettext.put_locale(TypsterWeb.Gettext, locale)
+    conn
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -11,6 +17,7 @@ defmodule TypsterWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_scope_for_user
+    plug :set_locale
   end
 
   pipeline :api do
@@ -26,6 +33,7 @@ defmodule TypsterWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/locale/:locale", LocaleController, :set
   end
 
   scope "/", TypsterWeb do
@@ -53,6 +61,14 @@ defmodule TypsterWeb.Router do
 
     resources "/projects", ProjectController, except: [:new, :edit] do
       resources "/files", FileController, only: [:index, :create, :update, :delete]
+    end
+  end
+
+  if Application.compile_env(:typster, :e2e_auth_routes, false) do
+    scope "/dev", TypsterWeb do
+      pipe_through :browser
+
+      post "/test-login", E2EAuthController, :create
     end
   end
 

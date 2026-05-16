@@ -20,6 +20,23 @@ if System.get_env("PHX_SERVER") do
   config :typster, TypsterWeb.Endpoint, server: true
 end
 
+# When running the Phoenix server in test mode (e.g. for E2E tests via Playwright),
+# the Ecto sandbox pool rolls back every request's connection. Switch to a regular
+# pool so that data created during the test run (users, session tokens) persists
+# across requests.
+if System.get_env("PHX_SERVER") && config_env() == :test do
+  config :typster, Typster.Repo,
+    pool: DBConnection.ConnectionPool,
+    pool_size: 10
+
+  # Playwright drives the server via http://127.0.0.1:4000 while the global
+  # endpoint config keeps url.host: "localhost", so Phoenix' default
+  # check_origin rejects the LiveView socket handshake. Disable origin
+  # checks for the loopback server — only enabled when the server is
+  # actually booted under MIX_ENV=test (i.e. by the E2E web server).
+  config :typster, TypsterWeb.Endpoint, check_origin: false
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
