@@ -3,7 +3,10 @@
     <div class="ts-page">
       <header class="ts-pagehead">
         <div>
-          <h1 class="ts-h1">{gettext("projects.index.title")}</h1>
+          <h1 class="ts-h1">
+            {gettext("projects.heading_lead")}
+            <span class="ts-serif">{gettext("projects.heading_accent")}</span>
+          </h1>
           <p class="ts-p ts-muted">{gettext("projects.index.subtitle")}</p>
         </div>
         <button
@@ -20,19 +23,41 @@
           <.icon name="hero-magnifying-glass" class="size-3.5" />
           <input
             id="project-search"
+            phx-hook="SlashFocus"
             phx-keyup="search"
             phx-debounce="200"
             placeholder={gettext("projects.search.placeholder")}
             value={@search}
           />
+          <span class="ts-kbd">/</span>
         </div>
+        <div class="ts-seg" id="project-filter">
+          <button
+            :for={
+              {key, label} <- [
+                {"all", gettext("projects.filter.all")},
+                {"recent", gettext("projects.filter.recent")},
+                {"starred", gettext("projects.filter.starred")},
+                {"archive", gettext("projects.filter.archive")}
+              ]
+            }
+            type="button"
+            id={"filter-#{key}"}
+            phx-click="filter"
+            phx-value-filter={key}
+            class={[@filter == key && "is-active"]}
+          >
+            {label}
+          </button>
+        </div>
+        <div class="ts-spacer" />
         <span class="ts-p ts-muted">
           {ngettext("projects.count.one", "projects.count.other", @project_count)}
         </span>
       </div>
 
       <ul id="projects" phx-update="stream" class="ts-list">
-        <li class="ts-empty" id="projects-empty" style="display: none;">
+        <li class="ts-empty only:block hidden" id="projects-empty">
           {gettext("projects.empty")}
         </li>
         <li
@@ -40,37 +65,71 @@
           id={id}
           class="ts-list__row"
         >
-          <div class="ts-list__icon">
-            <.icon name="hero-folder" class="size-5" />
+          <div class="ts-project-icon" style={"--ts-icon: #{project_hue(project.name)}"}>
+            {project_initial(project.name)}
           </div>
           <div class="ts-list__main">
             <div class="ts-list__title">{project.name}</div>
             <div class="ts-list__sub">
-              {gettext("common.created_date",
-                date: Calendar.strftime(project.inserted_at, "%B %d, %Y")
+              {gettext("projects.row.edited")} {relative_time(project.updated_at)} · {ngettext(
+                "1 file",
+                "%{count} files",
+                file_count(@file_counts, project.id)
               )}
             </div>
           </div>
           <div class="ts-list__actions">
-            <.link
-              navigate={~p"/projects/#{project.id}/edit"}
-              class="ts-btn ts-btn--ghost ts-btn--sm"
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              disabled
+              title={gettext("projects.star_soon")}
+              aria-label={gettext("projects.star_soon")}
             >
-              {gettext("common.open")}
-            </.link>
+              <.icon name="hero-star" class="size-3.5" />
+            </button>
             <button
               id={"delete-project-#{project.id}"}
               phx-click="delete"
               phx-value-id={project.id}
               phx-confirm={gettext("projects.delete.confirm")}
-              class="ts-btn ts-btn--ghost ts-btn--icon"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
               aria-label={gettext("projects.delete.label")}
             >
               <.icon name="hero-trash" class="size-3.5" />
             </button>
           </div>
+          <.link
+            navigate={~p"/projects/#{project.id}/edit"}
+            class="ts-btn ts-btn--ghost ts-btn--sm"
+          >
+            {gettext("common.open")} <.icon name="hero-arrow-right" class="size-3" />
+          </.link>
         </li>
       </ul>
+
+      <div class="ts-cards">
+        <button type="button" phx-click="new_project" class="ts-card ts-card--action">
+          <div class="ts-card__action-icon">
+            <.icon name="hero-document-text" class="size-4" />
+          </div>
+          <div class="ts-card__action-body">
+            <div class="ts-card__action-title">{gettext("projects.template.title")}</div>
+            <div class="ts-card__action-sub">{gettext("projects.template.sub")}</div>
+          </div>
+          <.icon name="hero-arrow-right" class="size-3.5 ts-muted" />
+        </button>
+        <div class="ts-card ts-card--action is-disabled" title={gettext("projects.import.soon")}>
+          <div class="ts-card__action-icon ts-card__action-icon--success">
+            <.icon name="hero-arrow-up-tray" class="size-4" />
+          </div>
+          <div class="ts-card__action-body">
+            <div class="ts-card__action-title">{gettext("projects.import.title")}</div>
+            <div class="ts-card__action-sub">{gettext("projects.import.sub")}</div>
+          </div>
+          <.icon name="hero-arrow-right" class="size-3.5 ts-muted" />
+        </div>
+      </div>
     </div>
   </main>
 

@@ -53,12 +53,11 @@ msgid "auth.sign_up"
 msgstr ""
 
 #: lib/typster_web/live/editor_live/index.html.heex:482
-#: lib/typster_web/live/project_live/index.html.heex:98
+#: lib/typster_web/live/project_live/index.html.heex:154
 #, elixir-autogen, elixir-format
 msgid "common.cancel"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:49
 #: lib/typster_web/live/project_live/show.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "common.created_date"
@@ -73,7 +72,7 @@ msgstr ""
 msgid "common.email"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:59
+#: lib/typster_web/live/project_live/index.html.heex:103
 #, elixir-autogen, elixir-format
 msgid "common.open"
 msgstr ""
@@ -367,66 +366,65 @@ msgstr ""
 msgid "project.open_editor"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:30
+#: lib/typster_web/live/project_live/index.html.heex:55
 #, elixir-autogen, elixir-format
 msgid "projects.count.one"
 msgid_plural "projects.count.other"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/typster_web/live/project_live/index.html.heex:101
+#: lib/typster_web/live/project_live/index.html.heex:157
 #, elixir-autogen, elixir-format
 msgid "projects.create"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:65
+#: lib/typster_web/live/project_live/index.html.heex:92
 #, elixir-autogen, elixir-format
 msgid "projects.delete.confirm"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:67
+#: lib/typster_web/live/project_live/index.html.heex:94
 #, elixir-autogen, elixir-format
 msgid "projects.delete.label"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:82
+#: lib/typster_web/live/project_live/index.html.heex:138
 #, elixir-autogen, elixir-format
 msgid "projects.dialog.description"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:36
+#: lib/typster_web/live/project_live/index.html.heex:61
 #, elixir-autogen, elixir-format
 msgid "projects.empty"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:7
+#: lib/typster_web/live/project_live/index.html.heex:10
 #, elixir-autogen, elixir-format
 msgid "projects.index.subtitle"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.ex:12
-#: lib/typster_web/live/project_live/index.html.heex:6
+#: lib/typster_web/live/project_live/index.ex:18
 #, elixir-autogen, elixir-format
 msgid "projects.index.title"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:87
+#: lib/typster_web/live/project_live/index.html.heex:143
 #, elixir-autogen, elixir-format
 msgid "projects.name.label"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:92
+#: lib/typster_web/live/project_live/index.html.heex:148
 #, elixir-autogen, elixir-format
 msgid "projects.name.placeholder"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:14
-#: lib/typster_web/live/project_live/index.html.heex:81
+#: lib/typster_web/live/project_live/index.html.heex:17
+#: lib/typster_web/live/project_live/index.html.heex:137
 #, elixir-autogen, elixir-format
 msgid "projects.new"
 msgstr ""
 
-#: lib/typster_web/live/project_live/index.html.heex:25
+#: lib/typster_web/live/project_live/index.html.heex:29
 #, elixir-autogen, elixir-format
 msgid "projects.search.placeholder"
 msgstr ""
@@ -736,4 +734,103 @@ msgstr ""
 #: lib/typster_web/live/user_live/settings.ex:25
 #, elixir-autogen, elixir-format
 msgid "settings.appearance.title"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.ex:127
+#, elixir-autogen, elixir-format
+msgid "1 day ago"
+msgid_plural "%{count} days ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/typster_web/live/project_live/index.html.heex:75
+#, elixir-autogen, elixir-format
+msgid "1 file"
+msgid_plural "%{count} files"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/typster_web/live/project_live/index.ex:126
+#, elixir-autogen, elixir-format
+msgid "1 hour ago"
+msgid_plural "%{count} hours ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/typster_web/live/project_live/index.ex:125
+#, elixir-autogen, elixir-format
+msgid "1 minute ago"
+msgid_plural "%{count} minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/typster_web/live/project_live/index.html.heex:38
+#, elixir-autogen, elixir-format
+msgid "projects.filter.all"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:41
+#, elixir-autogen, elixir-format
+msgid "projects.filter.archive"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:39
+#, elixir-autogen, elixir-format
+msgid "projects.filter.recent"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:40
+#, elixir-autogen, elixir-format
+msgid "projects.filter.starred"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "projects.heading_accent"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:7
+#, elixir-autogen, elixir-format
+msgid "projects.heading_lead"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:119
+#, elixir-autogen, elixir-format
+msgid "projects.import.soon"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:125
+#, elixir-autogen, elixir-format
+msgid "projects.import.sub"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:124
+#, elixir-autogen, elixir-format
+msgid "projects.import.title"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "projects.row.edited"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:83
+#: lib/typster_web/live/project_live/index.html.heex:84
+#, elixir-autogen, elixir-format
+msgid "projects.star_soon"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:115
+#, elixir-autogen, elixir-format
+msgid "projects.template.sub"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.html.heex:114
+#, elixir-autogen, elixir-format
+msgid "projects.template.title"
+msgstr ""
+
+#: lib/typster_web/live/project_live/index.ex:124
+#, elixir-autogen, elixir-format
+msgid "time.just_now"
 msgstr ""

@@ -246,6 +246,24 @@ export const CommandPalette = {
   }
 }
 
+// Focus a search input when "/" is pressed outside of any text field.
+export const SlashFocus = {
+  mounted() {
+    this.handler = (event) => {
+      const tag = document.activeElement && document.activeElement.tagName
+      if (event.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
+        event.preventDefault()
+        this.el.focus()
+      }
+    }
+    window.addEventListener("keydown", this.handler)
+  },
+
+  destroyed() {
+    if (this.handler) window.removeEventListener("keydown", this.handler)
+  }
+}
+
 // Command palette keyboard navigation. Mounted only while the palette is open;
 // owns active-item highlighting and Enter-to-activate (clicks the focused row,
 // triggering whatever phx-click / JS.dispatch it carries).

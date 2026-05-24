@@ -3,17 +3,24 @@ defmodule TypsterWeb.ProjectLive.Index do
 
   alias Typster.Projects
 
+  @accent_hexes %{
+    "indigo" => "#4f46e5",
+    "violet" => "#7c3aed",
+    "sky" => "#0ea5e9",
+    "emerald" => "#10b981",
+    "rose" => "#e11d48"
+  }
+
   @impl true
   def mount(_params, _session, socket) do
-    projects = Projects.list_projects(socket.assigns.current_scope)
-
     {:ok,
      socket
      |> assign(:page_title, gettext("projects.index.title"))
      |> assign(:search, "")
+     |> assign(:filter, "all")
      |> assign(:show_new_dialog, false)
-     |> assign(:project_count, length(projects))
-     |> stream(:projects, projects)}
+     |> assign(:file_counts, Projects.file_counts(socket.assigns.current_scope))
+     |> load_projects()}
   end
 
   @impl true
@@ -47,12 +54,12 @@ defmodule TypsterWeb.ProjectLive.Index do
     name = String.trim(name)
 
     case Projects.create_project(socket.assigns.current_scope, %{name: name}) do
-      {:ok, project} ->
+      {:ok, _project} ->
         {:noreply,
          socket
          |> assign(:show_new_dialog, false)
-         |> assign(:project_count, socket.assigns.project_count + 1)
-         |> stream_insert(:projects, project, at: -1)}
+         |> assign(:file_counts, Projects.file_counts(socket.assigns.current_scope))
+         |> load_projects()}
 
       {:error, _changeset} ->
         {:noreply, socket}
@@ -61,20 +68,64 @@ defmodule TypsterWeb.ProjectLive.Index do
 
   @impl true
   def handle_event("search", %{"value" => query}, socket) do
-    projects = Projects.list_projects(socket.assigns.current_scope)
+    {:noreply, socket |> assign(:search, query) |> load_projects()}
+  end
+
+  @impl true
+  def handle_event("filter", %{"filter" => filter}, socket) do
+    {:noreply, socket |> assign(:filter, filter) |> load_projects()}
+  end
+
+  # Refetches projects for the current filter + search and re-streams them.
+  defp load_projects(socket) do
+    projects = listed_projects(socket.assigns.current_scope, socket.assigns.filter)
 
     filtered =
-      if query == "" do
-        projects
-      else
-        q = String.downcase(query)
-        Enum.filter(projects, &String.contains?(String.downcase(&1.name), q))
+      case String.trim(socket.assigns.search) do
+        "" ->
+          projects
+
+        query ->
+          q = String.downcase(query)
+          Enum.filter(projects, &String.contains?(String.downcase(&1.name), q))
       end
 
-    {:noreply,
-     socket
-     |> assign(:search, query)
-     |> assign(:project_count, length(filtered))
-     |> stream(:projects, filtered, reset: true)}
+    socket
+    |> assign(:project_count, length(filtered))
+    |> stream(:projects, filtered, reset: true)
+  end
+
+  # "all" keeps newest-first; "recent" sorts by last update. Starred/Archive
+  # have no backing columns yet, so they intentionally resolve to an empty set.
+  defp listed_projects(scope, "recent") do
+    scope |> Projects.list_projects() |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
+  end
+
+  defp listed_projects(_scope, filter) when filter in ["starred", "archive"], do: []
+  defp listed_projects(scope, _all), do: Projects.list_projects(scope)
+
+  defp file_count(counts, project_id), do: Map.get(counts, project_id, 0)
+
+  # Deterministic accent hue per project name, so initials stay stable.
+  defp project_hue(name) do
+    keys = Map.keys(@accent_hexes) |> Enum.sort()
+    index = :erlang.phash2(name, length(keys))
+    Map.fetch!(@accent_hexes, Enum.at(keys, index))
+  end
+
+  defp project_initial(name) do
+    name |> String.trim() |> String.first() |> Kernel.||("·") |> String.upcase()
+  end
+
+  defp relative_time(%DateTime{} = dt) do
+    diff = DateTime.diff(DateTime.utc_now(), dt, :second)
+
+    cond do
+      diff < 60 -> gettext("time.just_now")
+      diff < 3600 -> ngettext("1 minute ago", "%{count} minutes ago", div(diff, 60))
+      diff < 86_400 -> ngettext("1 hour ago", "%{count} hours ago", div(diff, 3600))
+      diff < 604_800 -> ngettext("1 day ago", "%{count} days ago", div(diff, 86_400))
+      true -> Calendar.strftime(dt, "%b %d, %Y")
+    end
   end
 end

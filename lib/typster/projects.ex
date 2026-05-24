@@ -13,6 +13,21 @@ defmodule Typster.Projects do
     |> Repo.all()
   end
 
+  @doc """
+  Returns a map of `%{project_id => file_count}` for the scope's projects.
+  """
+  def file_counts(%Scope{user: user}) do
+    from(f in Typster.Projects.File,
+      join: p in Project,
+      on: f.project_id == p.id,
+      where: p.user_id == ^user.id,
+      group_by: f.project_id,
+      select: {f.project_id, count(f.id)}
+    )
+    |> Repo.all()
+    |> Map.new()
+  end
+
   def get_project!(%Scope{user: user}, id) do
     from(p in Project, where: p.id == ^id and p.user_id == ^user.id)
     |> Repo.one!()
