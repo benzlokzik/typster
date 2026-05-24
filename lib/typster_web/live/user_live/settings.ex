@@ -20,6 +20,42 @@ defmodule TypsterWeb.UserLive.Settings do
             </div>
           </header>
 
+          <section class="ts-card">
+            <div class="ts-card__h">
+              <h3 class="ts-h3">{gettext("settings.appearance.title")}</h3>
+              <p class="ts-p ts-muted">{gettext("settings.appearance.description")}</p>
+            </div>
+            <div class="ts-card__c">
+              <div class="ts-prefrow">
+                <div>
+                  <div class="ts-prefrow__label">{gettext("settings.appearance.theme")}</div>
+                  <div class="ts-prefrow__hint">{gettext("settings.appearance.theme_hint")}</div>
+                </div>
+                <Layouts.theme_toggle />
+              </div>
+              <div class="ts-prefrow">
+                <div>
+                  <div class="ts-prefrow__label">{gettext("settings.appearance.accent")}</div>
+                  <div class="ts-prefrow__hint">{gettext("settings.appearance.accent_hint")}</div>
+                </div>
+                <div class="ts-swatches" id="accent-swatches">
+                  <button
+                    :for={{key, hex} <- accent_swatches()}
+                    type="button"
+                    id={"accent-#{key}"}
+                    phx-click="set_accent"
+                    phx-value-accent={key}
+                    class={["ts-swatch", @current_scope.user.accent_color == key && "is-active"]}
+                    style={"--sw: #{hex}"}
+                    aria-label={key}
+                    aria-pressed={to_string(@current_scope.user.accent_color == key)}
+                  >
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <.form
             for={@email_form}
             id="email_form"
@@ -130,6 +166,18 @@ defmodule TypsterWeb.UserLive.Settings do
     """
   end
 
+  @accent_hexes %{
+    "indigo" => "#4f46e5",
+    "violet" => "#7c3aed",
+    "sky" => "#0ea5e9",
+    "emerald" => "#10b981",
+    "rose" => "#e11d48"
+  }
+
+  defp accent_swatches do
+    Enum.map(Typster.Accounts.User.accent_colors(), &{&1, Map.fetch!(@accent_hexes, &1)})
+  end
+
   @impl true
   def mount(%{"token" => token}, _session, socket) do
     socket =
@@ -157,6 +205,20 @@ defmodule TypsterWeb.UserLive.Settings do
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("set_accent", %{"accent" => accent}, socket) do
+    case Accounts.update_user_preferences(socket.assigns.current_scope.user, %{
+           accent_color: accent
+         }) do
+      {:ok, user} ->
+        scope = %{socket.assigns.current_scope | user: user}
+        {:noreply, assign(socket, :current_scope, scope)}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, gettext("settings.appearance.accent_invalid"))}
+    end
   end
 
   @impl true

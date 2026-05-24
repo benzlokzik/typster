@@ -261,3 +261,13 @@
 
 /* ── Project initial tile (serif, accent-tinted; --ts-icon overrides hue) ──── */
 .ts-project-icon { width: 40px; height: 40px; border-radius: var(--r-sm); display: grid; place-items: center; flex-shrink: 0; font-family: 'Instrument Serif', 'Times New Roman', serif; font-style: italic; font-weight: 400; font-size: 19px; background: color-mix(in srgb, var(--ts-icon, var(--pri)) 14%, transparent); color: var(--ts-icon, var(--pri)); }
+
+/* ── Settings preference rows + accent swatches ────────────────────────────── */
+.ts-prefrow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--bd2); }
+.ts-prefrow:first-child { border-top: 0; padding-top: 0; }
+.ts-prefrow__label { font: 500 13.5px 'Inter', system-ui, sans-serif; color: var(--fg); }
+.ts-prefrow__hint { font: 12px 'Inter', system-ui, sans-serif; color: var(--fg3); margin-top: 2px; }
+.ts-swatches { display: flex; gap: 8px; align-items: center; }
+.ts-swatch { width: 26px; height: 26px; border-radius: var(--r-sm); background: var(--sw); border: 2px solid transparent; box-shadow: var(--sh-sm); cursor: pointer; padding: 0; transition: transform 120ms var(--ease); }
+.ts-swatch:hover { transform: translateY(-1px); }
+.ts-swatch.is-active { border-color: var(--fg); box-shadow: 0 0 0 2px var(--bg); }

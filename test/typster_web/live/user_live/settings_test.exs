@@ -205,4 +205,28 @@ defmodule TypsterWeb.UserLive.SettingsTest do
       assert message == "You must log in to access this page."
     end
   end
+
+  describe "appearance preferences" do
+    setup %{conn: conn} do
+      user = user_fixture()
+      %{conn: log_in_user(conn, user), user: user}
+    end
+
+    test "renders the accent swatches with the current accent active", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+
+      assert has_element?(lv, "#accent-swatches")
+      assert has_element?(lv, "#accent-indigo.is-active")
+      assert has_element?(lv, "#accent-violet")
+    end
+
+    test "selecting an accent persists it on the user", %{conn: conn, user: user} do
+      {:ok, lv, _html} = live(conn, ~p"/users/settings")
+
+      lv |> element("#accent-violet") |> render_click()
+
+      assert has_element?(lv, "#accent-violet.is-active")
+      assert Accounts.get_user!(user.id).accent_color == "violet"
+    end
+  end
 end
