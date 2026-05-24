@@ -129,7 +129,7 @@ defmodule TypsterWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div class="ts-app">
+    <div class="ts-app" data-accent={accent_color(@current_scope)}>
       <.mk_nav app_mode={true} current_scope={@current_scope}>
         <:nav_links>
           <.link navigate={~p"/projects"}>{gettext("nav.projects")}</.link>
@@ -153,6 +153,9 @@ defmodule TypsterWeb.Layouts do
     </div>
     """
   end
+
+  defp accent_color(%{user: %{accent_color: accent}}) when is_binary(accent), do: accent
+  defp accent_color(_scope), do: "indigo"
 
   @doc """
   Shows the flash group with standard titles and content.

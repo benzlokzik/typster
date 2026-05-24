@@ -394,4 +394,38 @@ defmodule Typster.AccountsTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "update_user_preferences/2" do
+    test "defaults the accent color to indigo" do
+      assert user_fixture().accent_color == "indigo"
+    end
+
+    test "persists a valid accent color" do
+      user = user_fixture()
+      assert {:ok, updated} = Accounts.update_user_preferences(user, %{accent_color: "violet"})
+      assert updated.accent_color == "violet"
+      assert Accounts.get_user!(user.id).accent_color == "violet"
+    end
+
+    test "rejects an unknown accent color" do
+      user = user_fixture()
+
+      assert {:error, changeset} =
+               Accounts.update_user_preferences(user, %{accent_color: "bogus"})
+
+      assert "is invalid" in errors_on(changeset).accent_color
+      assert Accounts.get_user!(user.id).accent_color == "indigo"
+    end
+  end
+
+  describe "change_user_preferences/2" do
+    test "returns a changeset for every supported accent" do
+      user = user_fixture()
+
+      for accent <- User.accent_colors() do
+        changeset = Accounts.change_user_preferences(user, %{accent_color: accent})
+        assert changeset.valid?
+      end
+    end
+  end
 end
