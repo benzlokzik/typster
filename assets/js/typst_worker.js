@@ -1,6 +1,12 @@
 let worker = null
 let previewContainer = null
 let pushEvent = null
+let compileStartedAt = null
+
+function countPages(svg) {
+  const matches = svg.match(/class="typst-page"/g)
+  return matches ? matches.length : 1
+}
 
 export function initTypstWorker(hook) {
   if (typeof Worker !== "undefined") {
@@ -34,6 +40,11 @@ export function initTypstWorker(hook) {
             if (placeholder) placeholder.style.display = "none"
 
             svgContainer.innerHTML = data.svg
+
+            if (pushEvent) {
+              const ms = compileStartedAt ? Math.round(performance.now() - compileStartedAt) : null
+              pushEvent("update_preview", { ms, pages: countPages(data.svg) })
+            }
           }
         } else if (type === "error") {
           if (previewContainer) {
@@ -54,6 +65,7 @@ export function initTypstWorker(hook) {
             const placeholder = previewContainer.querySelector("#preview-placeholder")
             if (placeholder) placeholder.style.display = "none"
           }
+          if (pushEvent) pushEvent("preview_error", { message: data.message || "Typst preview failed" })
           console.error("Typst compilation error:", data)
         }
       }
@@ -95,6 +107,7 @@ export function compileTypst(content, project = {}) {
   }
 
   if (worker) {
+    compileStartedAt = performance.now()
     worker.postMessage({
       type: "compile",
       content: content,

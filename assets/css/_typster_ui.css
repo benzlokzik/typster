@@ -163,10 +163,14 @@
 .ts-savestat--saving .ts-savestat__dot { background: var(--mk-warning); }
 .ts-savestat--error .ts-savestat__dot { background: var(--mk-error); }
 
-.ts-editor__panes { flex: 1; display: grid; grid-template-columns: 240px 1fr 1fr; min-height: 0; overflow: hidden; }
+.ts-editor__body { flex: 1; min-height: 0; padding: 12px 16px 16px; display: flex; }
+.ts-editor__panes { flex: 1; display: grid; grid-template-columns: 230px 1fr 1fr; grid-template-rows: 1fr auto; min-height: 0; }
 
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
-.ts-side { border-right: 1px solid var(--bd); background: var(--bg2); overflow: auto; padding: 8px 0; display: flex; flex-direction: column; }
+.ts-side { border-right: 1px solid var(--bd); background: var(--bg2); overflow: auto; padding: 8px 0; display: flex; flex-direction: column; min-height: 0; }
+.ts-side__search { padding: 10px 12px 4px; flex-shrink: 0; }
+.ts-search--sm { max-width: none; height: 30px; font-size: 12px; }
+.ts-search--sm input { font-size: 12px; }
 .ts-side__head { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px 6px; font: 600 11px 'Inter', system-ui, sans-serif; color: var(--fg3); text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; }
 .ts-side__actions { display: flex; align-items: center; gap: 2px; }
 .ts-tree { display: flex; flex-direction: column; padding: 0 6px 12px; list-style: none; margin: 0; }
@@ -189,12 +193,20 @@
 .ts-source__editor .cm-editor { height: 100%; width: 100%; display: flex; flex-direction: column; }
 .ts-source__editor .cm-scroller { overflow: auto; flex: 1; }
 .ts-source__status { display: flex; align-items: center; gap: 14px; height: 24px; padding: 0 12px; border-top: 1px solid var(--bd); font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg3); background: var(--bg2); flex-shrink: 0; }
+.ts-formatbar svg { width: 15px; height: 15px; }
+
+/* ── Status bar (spans all editor panes) ───────────────────────────────────── */
+.ts-statusbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; height: 28px; padding: 0 14px; border-top: 1px solid var(--bd); background: var(--bg2); font: 500 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg3); }
+.ts-statusbar__item { display: inline-flex; align-items: center; gap: 6px; }
+.ts-statusbar__sep { width: 1px; height: 12px; background: var(--bd); flex-shrink: 0; }
+.ts-statusbar__dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--mk-success); flex-shrink: 0; }
 
 /* ── Preview pane ─────────────────────────────────────────────────────────── */
 .ts-preview { display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: var(--bg2); }
 .ts-preview__bar { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--bd); background: var(--bg); font: 500 12px 'Inter', system-ui, sans-serif; color: var(--fg2); flex-shrink: 0; }
 .ts-preview__scroll { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .ts-preview__placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--fg3); font: 13px 'Inter', system-ui, sans-serif; }
+.ts-preview__ms { font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
 .ts-pdf { width: 100%; max-width: 520px; background: #fff; box-shadow: var(--sh-md); padding: 48px 56px; font: 11pt/1.5 'New Computer Modern', Cambria, Georgia, serif; color: #111; border-radius: 2px; min-height: 680px; }
 
 /* ── Command palette ──────────────────────────────────────────────────────── */
@@ -205,6 +217,9 @@
 .ts-palette__item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-sm); font: 500 13px 'Inter', system-ui, sans-serif; color: var(--fg2); cursor: pointer; }
 .ts-palette__item.is-active, .ts-palette__item:hover { background: var(--pri-50); color: var(--pri-h); }
 .ts-palette__item .ts-kbd { margin-left: auto; }
+.ts-palette__list button.ts-palette__item { width: 100%; background: transparent; border: 0; text-align: left; font-family: inherit; }
+.ts-palette__item .size-4 { flex-shrink: 0; }
+.ts-outline__empty { padding: 4px 14px 10px; color: var(--fg4); font: 12px 'Inter', system-ui, sans-serif; }
 
 /* ── Keyboard hints ───────────────────────────────────────────────────────── */
 .ts-kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 4px; background: var(--bd2); border: 1px solid var(--bd); border-bottom-width: 2px; color: var(--fg2); font: 500 10px 'JetBrains Mono', ui-monospace, monospace; }
