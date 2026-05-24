@@ -257,11 +257,26 @@
             style={if !@current_file, do: "display:none", else: ""}
           >
           </div>
-          <div :if={!@current_file} class="ts-preview__placeholder">
-            <span style="color: var(--fg4);">
-              <.icon name="hero-pencil-square" class="size-8" />
-            </span>
-            <p>{gettext("editor.select_file_placeholder")}</p>
+          <div :if={!@current_file} class="ts-emptystate">
+            <div class="ts-emptystate__tile ts-serif">T</div>
+            <h3 class="ts-emptystate__title">
+              {gettext("editor.empty.title_lead")}
+              <span class="ts-serif">{gettext("editor.empty.title_accent")}</span>
+            </h3>
+            <p class="ts-emptystate__sub">{gettext("editor.empty.sub")}</p>
+            <div class="ts-emptystate__actions">
+              <button type="button" phx-click="new_file" class="ts-btn ts-btn--primary ts-btn--sm">
+                <.icon name="hero-plus" class="size-3" /> {gettext("editor.empty.new_file")}
+              </button>
+              <button
+                type="button"
+                class="ts-btn ts-btn--outline ts-btn--sm"
+                disabled
+                title={gettext("editor.empty.template_soon")}
+              >
+                {gettext("editor.empty.open_template")}
+              </button>
+            </div>
           </div>
         </section>
 

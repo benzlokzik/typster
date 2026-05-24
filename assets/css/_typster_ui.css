@@ -220,6 +220,13 @@
 .ts-preview__scroll { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .ts-preview__placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--fg3); font: 13px 'Inter', system-ui, sans-serif; }
 .ts-preview__ms { font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
+
+/* ── Serif empty state (no file open) ──────────────────────────────────────── */
+.ts-emptystate { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; padding: 24px; text-align: center; }
+.ts-emptystate__tile { width: 72px; height: 72px; border-radius: var(--r); background: var(--pri-50); color: var(--pri); display: grid; place-items: center; font-size: 36px; border: 1px solid var(--mk-pri-100); margin-bottom: 6px; }
+.ts-emptystate__title { font: 700 20px 'Inter', system-ui, sans-serif; letter-spacing: -0.02em; margin: 0; color: var(--fg); }
+.ts-emptystate__sub { font: 13.5px/1.5 'Inter', system-ui, sans-serif; color: var(--fg3); margin: 0; max-width: 300px; }
+.ts-emptystate__actions { display: flex; gap: 8px; margin-top: 8px; }
 .ts-pdf { width: 100%; max-width: 520px; background: #fff; box-shadow: var(--sh-md); padding: 48px 56px; font: 11pt/1.5 'New Computer Modern', Cambria, Georgia, serif; color: #111; border-radius: 2px; min-height: 680px; }
 
 /* ── Command palette ──────────────────────────────────────────────────────── */
