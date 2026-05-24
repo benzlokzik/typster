@@ -4,6 +4,7 @@
 :root {
   --bg: var(--mk-bg);
   --bg2: var(--mk-bg2);
+  --bg3: var(--mk-bg3);
   --fg: var(--mk-fg);
   --fg2: var(--mk-fg2);
   --fg3: var(--mk-fg3);
@@ -20,7 +21,7 @@
   --sh-lg: var(--mk-sh-lg);
   --sh-2xl: var(--mk-sh-2xl);
   --ease: var(--mk-ease);
-  --ring: 0 0 0 3px rgba(79, 70, 229, 0.30);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--mk-pri) 30%, transparent);
 }
 
 /* ── Layout shell ─────────────────────────────────────────────────────────── */
@@ -210,3 +211,38 @@
 
 /* ── Sidebar upload zone ──────────────────────────────────────────────────── */
 .ts-side__upload { padding: 8px 14px; border-top: 1px solid var(--bd); flex-shrink: 0; }
+
+/* ── Serif accent (mirrors landing <em>, Instrument Serif italic) ──────────── */
+.ts-serif { font-family: 'Instrument Serif', 'Times New Roman', serif; font-style: italic; font-weight: 400; color: var(--pri); letter-spacing: -0.01em; }
+
+/* ── Segmented control ─────────────────────────────────────────────────────── */
+.ts-seg { display: inline-flex; background: var(--bg2); border: 1px solid var(--bd); border-radius: var(--r-sm); padding: 3px; gap: 2px; }
+.ts-seg button { font: 500 12px 'Inter', system-ui, sans-serif; padding: 5px 10px; border-radius: 6px; background: transparent; border: 0; color: var(--fg2); cursor: pointer; transition: all 200ms var(--ease); }
+.ts-seg button:hover { color: var(--fg); }
+.ts-seg button.is-active { background: var(--bg); color: var(--fg); box-shadow: var(--sh-sm); }
+
+/* ── Status pills ──────────────────────────────────────────────────────────── */
+.ts-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 9999px; font: 500 12px 'Inter', system-ui, sans-serif; border: 1px solid var(--bd); background: var(--bg); color: var(--fg3); }
+.ts-pill__dot { width: 6px; height: 6px; border-radius: 9999px; background: currentColor; flex-shrink: 0; }
+.ts-pill--accent { background: var(--pri-50); color: var(--pri-h); border-color: var(--mk-pri-100); }
+.ts-pill--success { background: var(--mk-success-50); color: var(--mk-success-h); border-color: var(--mk-success-bd); }
+.ts-pill--error { background: var(--mk-error-50); color: var(--mk-error-h); border-color: var(--mk-error-bd); }
+
+/* ── Window chrome (rounded panel wrapping editor panes) ───────────────────── */
+.ts-window { border: 1px solid var(--bd); border-radius: var(--r); background: var(--bg); box-shadow: var(--sh-lg); overflow: hidden; }
+
+/* ── Formatting toolbar (WYSIWYG row, separate from tabs) ──────────────────── */
+.ts-formatbar { display: flex; align-items: center; gap: 2px; padding: 5px 8px; background: var(--bg); border-bottom: 1px solid var(--bd); flex-shrink: 0; }
+.ts-formatbar__sep { width: 1px; height: 16px; background: var(--bd); margin: 0 4px; flex-shrink: 0; }
+.ts-formatbar__hint { margin-left: auto; font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); padding-right: 6px; white-space: nowrap; }
+
+/* ── Outline ───────────────────────────────────────────────────────────────── */
+.ts-outline { display: flex; flex-direction: column; padding: 0 6px 12px; list-style: none; margin: 0; }
+.ts-outline__item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; font: 12.5px 'Inter', system-ui, sans-serif; color: var(--fg3); cursor: pointer; border-left: 2px solid transparent; border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.ts-outline__item:hover { color: var(--fg); }
+.ts-outline__item.is-active { color: var(--pri); border-left-color: var(--pri); background: var(--pri-50); }
+.ts-outline__item.level-2 { padding-left: 22px; font-size: 12px; }
+.ts-outline__item.level-3 { padding-left: 34px; font-size: 12px; color: var(--fg4); }
+
+/* ── Project initial tile (serif, accent-tinted; --ts-icon overrides hue) ──── */
+.ts-project-icon { width: 40px; height: 40px; border-radius: var(--r-sm); display: grid; place-items: center; flex-shrink: 0; font-family: 'Instrument Serif', 'Times New Roman', serif; font-style: italic; font-weight: 400; font-size: 19px; background: color-mix(in srgb, var(--ts-icon, var(--pri)) 14%, transparent); color: var(--ts-icon, var(--pri)); }

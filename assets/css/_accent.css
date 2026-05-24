@@ -1,0 +1,24 @@
+/* ── Accent theming ─────────────────────────────────────────────────────── */
+/* Per-user accent, applied via [data-accent] on the app wrapper (.ts-app).
+   `indigo` is the default token set in _tokens.css, so it needs no override.
+   data-theme lives on <html>; data-accent on a descendant wrapper, so the
+   dark overrides use the descendant combinator and win on specificity. */
+
+[data-accent="violet"]  { --mk-pri: #7c3aed; --mk-pri-h: #6d28d9; --mk-pri-50: #f5f3ff; --mk-pri-100: #ede9fe; }
+[data-accent="sky"]     { --mk-pri: #0ea5e9; --mk-pri-h: #0284c7; --mk-pri-50: #f0f9ff; --mk-pri-100: #e0f2fe; }
+[data-accent="emerald"] { --mk-pri: #10b981; --mk-pri-h: #059669; --mk-pri-50: #ecfdf5; --mk-pri-100: #d1fae5; }
+[data-accent="rose"]    { --mk-pri: #e11d48; --mk-pri-h: #be123c; --mk-pri-50: #fff1f2; --mk-pri-100: #ffe4e6; }
+
+/* Dark mode — explicit [data-theme="dark"] on <html>, accent on descendant. */
+[data-theme="dark"] [data-accent="violet"]  { --mk-pri: #a78bfa; --mk-pri-h: #8b5cf6; --mk-pri-50: rgba(167,139,250,.16); --mk-pri-100: rgba(167,139,250,.30); }
+[data-theme="dark"] [data-accent="sky"]     { --mk-pri: #38bdf8; --mk-pri-h: #0ea5e9; --mk-pri-50: rgba(56,189,248,.16);  --mk-pri-100: rgba(56,189,248,.30); }
+[data-theme="dark"] [data-accent="emerald"] { --mk-pri: #34d399; --mk-pri-h: #10b981; --mk-pri-50: rgba(52,211,153,.16);  --mk-pri-100: rgba(52,211,153,.30); }
+[data-theme="dark"] [data-accent="rose"]    { --mk-pri: #fb7185; --mk-pri-h: #f43f5e; --mk-pri-50: rgba(251,113,133,.16); --mk-pri-100: rgba(251,113,133,.30); }
+
+/* System dark preference fallback — when data-theme is absent but OS is dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [data-accent="violet"]  { --mk-pri: #a78bfa; --mk-pri-h: #8b5cf6; --mk-pri-50: rgba(167,139,250,.16); --mk-pri-100: rgba(167,139,250,.30); }
+  :root:not([data-theme="light"]) [data-accent="sky"]     { --mk-pri: #38bdf8; --mk-pri-h: #0ea5e9; --mk-pri-50: rgba(56,189,248,.16);  --mk-pri-100: rgba(56,189,248,.30); }
+  :root:not([data-theme="light"]) [data-accent="emerald"] { --mk-pri: #34d399; --mk-pri-h: #10b981; --mk-pri-50: rgba(52,211,153,.16);  --mk-pri-100: rgba(52,211,153,.30); }
+  :root:not([data-theme="light"]) [data-accent="rose"]    { --mk-pri: #fb7185; --mk-pri-h: #f43f5e; --mk-pri-50: rgba(251,113,133,.16); --mk-pri-100: rgba(251,113,133,.30); }
+}
