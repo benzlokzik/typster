@@ -62,6 +62,25 @@ cd assets && bun run test:e2e   # Browser E2E tests (Playwright)
 
 ---
 
+## Roadmap
+
+**`codemirror-lang-typst` — a proper Lezer grammar (planned, standalone npm package).**
+Typst syntax highlighting in the editor is currently powered by [Shiki](https://shiki.style)'s
+official Typst TextMate grammar, painted as CodeMirror decorations
+(`assets/js/typst_highlight.js`). That gives VS Code-quality colors today, but it is
+*highlighting only* — there is no real grammar, so we don't get structural features
+(code folding, indentation, bracket matching, structure-aware selection, incremental
+parsing). The ecosystem currently has **no** CodeMirror 6 Lezer grammar for Typst.
+
+The plan is to author one as its own repo/npm package (`codemirror-lang-typst`) and consume
+it here, swapping it in behind the existing `typst()` entry point. It's a sizeable effort —
+Typst interleaves markup, `#` code, and `$ $` math modes plus content blocks, so the grammar
+needs external tokenizers/nesting. [`frozolotl/tree-sitter-typst`](https://github.com/frozolotl/tree-sitter-typst)
+(correctness-focused) is a useful reference, though Lezer's tree-sitter importer handles
+complex grammars poorly, so it'd be largely from scratch.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide — dev workflow, code style, commit conventions, and design system reference

@@ -58,6 +58,16 @@ test.describe('Product UI redesign', () => {
     await expect(page.locator('#command-palette')).not.toBeVisible()
   })
 
+  test('applies Shiki Typst syntax highlighting', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Highlight E2E')
+    await addMainFile(page)
+
+    // Shiki initializes asynchronously, then paints colored token spans.
+    const colored = page.locator('#editor-container .cm-line span[style*="color"]')
+    await expect(colored.first()).toBeVisible({ timeout: 15_000 })
+    expect(await colored.count()).toBeGreaterThan(0)
+  })
+
   test('formatting toolbar inserts markup into the editor', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'Toolbar E2E')
     await addMainFile(page)

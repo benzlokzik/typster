@@ -1,11 +1,73 @@
-import { EditorView, basicSetup } from "codemirror"
+// Built from granular @codemirror/* packages (not the `codemirror` meta-package)
+// so the EditorView, keymaps, and decorations all share one instance set — the
+// meta-package bundled a second @codemirror/view/state copy, which made
+// decoration-facet identity mismatch and silently dropped Typst highlighting.
+import {
+  EditorView,
+  keymap,
+  lineNumbers,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  drawSelection,
+  dropCursor,
+  rectangularSelection,
+  crosshairCursor,
+  highlightActiveLine
+} from "@codemirror/view"
 import { EditorState, Compartment } from "@codemirror/state"
-import { StreamLanguage } from "@codemirror/language"
-import { typst } from "./typst_syntax"
+import {
+  StreamLanguage,
+  foldGutter,
+  indentOnInput,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+  bracketMatching,
+  foldKeymap
+} from "@codemirror/language"
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
+import { searchKeymap, highlightSelectionMatches } from "@codemirror/search"
+import {
+  autocompletion,
+  completionKeymap,
+  closeBrackets,
+  closeBracketsKeymap
+} from "@codemirror/autocomplete"
+import { lintKeymap } from "@codemirror/lint"
+import { typst, setTypstTheme, registerTypstView } from "./typst_highlight"
 import { markdown } from "@codemirror/lang-markdown"
 import { yaml } from "@codemirror/lang-yaml"
 import { stex } from "@codemirror/legacy-modes/mode/stex"
 import { compileTypst } from "./typst_worker"
+
+// Equivalent of `codemirror`'s `basicSetup`, assembled from granular packages.
+const basicSetup = [
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  highlightSpecialChars(),
+  history(),
+  foldGutter(),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  bracketMatching(),
+  closeBrackets(),
+  autocompletion(),
+  rectangularSelection(),
+  crosshairCursor(),
+  highlightActiveLine(),
+  highlightSelectionMatches(),
+  keymap.of([
+    ...closeBracketsKeymap,
+    ...defaultKeymap,
+    ...searchKeymap,
+    ...historyKeymap,
+    ...foldKeymap,
+    ...completionKeymap,
+    ...lintKeymap
+  ])
+]
 
 function getCurrentTheme() {
   const html = document.documentElement
@@ -196,7 +258,9 @@ function cursorPosition(state) {
 
 function getLanguageExtension(lang) {
   switch (lang) {
-    case "typst":    return typst()
+    // Typst highlighting is a top-level extension (a StateField whose `provide`
+    // does not apply from inside a reconfigurable compartment), not a language.
+    case "typst":    return []
     case "markdown": return markdown()
     case "yaml":     return yaml()
     case "latex":
@@ -266,6 +330,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
       basicSetup,
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
+      ...(language === "typst" ? typst() : []),
       updateListener
     ]
   })
@@ -274,6 +339,10 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     state: state,
     parent: container
   })
+
+  if (language === "typst") {
+    registerTypstView(editor)
+  }
 
   if (initialContent && language === "typst") {
     compileTypst(initialContent, options.project || {})
@@ -288,7 +357,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
 
   const updateTheme = () => {
     editor.dispatch({
-      effects: themeCompartment.reconfigure(getThemeExtension())
+      effects: [themeCompartment.reconfigure(getThemeExtension()), setTypstTheme.of(null)]
     })
   }
 
@@ -296,6 +365,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     editor.dispatch({
       effects: languageCompartment.reconfigure(getLanguageExtension(newLang))
     })
+    if (newLang === "typst") registerTypstView(editor)
   }
 
   return {
