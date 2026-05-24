@@ -45,6 +45,16 @@ Defined as CSS custom properties on `:root` (light) and overridden under
 | `--mk-bd2`    | `#f4f4f5`   | `#1f1f23`   | Surface hover, separators   |
 | `--mk-bg`     | `#ffffff`   | `#0a0a0b`   | Card surface                |
 | `--mk-bg2`    | `#fafafa`   | `#111114`   | Tinted section bg           |
+| `--mk-bg3`    | `#f1f1f3`   | `#18181b`   | Inset surface (3rd tier)    |
+
+### Accent theming (`[data-accent]`)
+The product UI lets a user pick an accent. `_accent.css` overrides
+`--mk-pri`/`-h`/`-50`/`-100` on a `[data-accent="…"]` ancestor (`indigo`
+default, plus `violet`, `sky`, `emerald`, `rose`), with `[data-theme="dark"]`
+descendant variants. The app applies it via `data-accent` on the `.ts-app`
+wrapper from `current_scope.user.accent_color`; dark mode wins on specificity
+because `data-theme` lives on `<html>` and `data-accent` on a descendant. The
+focus ring (`--ring`) derives from `--mk-pri` via `color-mix`, so it retints too.
 
 ### Page background
 - `html` and `body` share `#eef0f4` (light) / `#15131f` (dark) — solid
@@ -257,6 +267,30 @@ Full-width brand-color block with white headline + light button.
 ### Footer (`.mk-foot`)
 4-column layout: brand block + 3 link columns. Compact bottom row with
 copyright and tagline.
+
+## Product UI (`.ts-*`)
+
+The authenticated app (editor, projects, settings) uses a `.ts-*` class system
+in `_typster_ui.css`, aliasing the `--mk-*` tokens (so dark mode + accent come
+for free). It reuses the landing's floating `.mk-nav` and the Instrument Serif
+italic accent. Key shared primitives added with the product-UI redesign:
+
+| Class             | Role                                                      |
+| ----------------- | --------------------------------------------------------- |
+| `.ts-serif`       | Instrument Serif italic accent (mirrors landing `<em>`)   |
+| `.ts-seg`         | Segmented control (theme/filter switches)                 |
+| `.ts-pill`        | Status pill (`--accent`/`--success`/`--error` variants)   |
+| `.ts-window`      | Rounded chrome wrapping the 3-pane editor                 |
+| `.ts-formatbar`   | WYSIWYG formatting toolbar row (separate from tabs)        |
+| `.ts-outline`     | Live document outline (parsed headings)                   |
+| `.ts-statusbar`   | Editor status bar (Ln/Col, language, ⌘K hint)             |
+| `.ts-project-icon`| Serif-italic project initial tile (`--ts-icon` hue)       |
+| `.ts-swatch`      | Settings accent swatch (`--sw` hue)                       |
+| `.ts-emptystate`  | Serif "blank page" empty state                            |
+
+Formatting-toolbar glyphs use `lucide` (`data-lucide`, re-init via
+`window.mkIcons` on patches); brand marks use `simple-icons`; everything else
+uses heroicons `<.icon>`.
 
 ## Motion
 
