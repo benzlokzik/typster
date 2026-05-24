@@ -38,6 +38,35 @@ defmodule TypsterWeb.Layouts do
   end
 
   @doc """
+  Inactive social-login buttons for the auth card, followed by an
+  "or with email" divider. OAuth is not wired up yet, so the buttons are
+  intentionally disabled (visual placeholders).
+  """
+  def auth_oauth(assigns) do
+    ~H"""
+    <div class="auth-oauth">
+      <button
+        type="button"
+        class="mk-btn mk-btn-outline"
+        disabled
+        title={gettext("auth.oauth.soon")}
+      >
+        <i data-lucide="google" aria-hidden="true"></i> {gettext("auth.oauth.google")}
+      </button>
+      <button
+        type="button"
+        class="mk-btn mk-btn-outline"
+        disabled
+        title={gettext("auth.oauth.soon")}
+      >
+        <i data-lucide="github" aria-hidden="true"></i> {gettext("auth.oauth.github")}
+      </button>
+    </div>
+    <div class="auth-divider">{gettext("auth.oauth.or_email")}</div>
+    """
+  end
+
+  @doc """
   Shared floating nav used by marketing, auth, and app layouts.
   Pass a `:nav_links` slot to render the section-link bar.
   Set `app_mode` to true on authenticated app pages to show only the logout CTA.

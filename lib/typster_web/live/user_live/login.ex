@@ -27,6 +27,8 @@ defmodule TypsterWeb.UserLive.Login do
         </div>
       </div>
 
+      <Layouts.auth_oauth />
+
       <.form
         :let={f}
         for={@form}

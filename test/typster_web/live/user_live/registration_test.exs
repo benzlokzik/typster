@@ -12,6 +12,13 @@ defmodule TypsterWeb.UserLive.RegistrationTest do
       assert html =~ "Log in"
     end
 
+    test "renders inactive OAuth buttons", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/register")
+
+      assert has_element?(lv, ".auth-oauth button[disabled]", "Continue with Google")
+      assert has_element?(lv, ".auth-oauth button[disabled]", "Continue with GitHub")
+    end
+
     test "redirects if already logged in", %{conn: conn} do
       result =
         conn
