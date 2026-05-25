@@ -356,9 +356,12 @@ Three sources, by context — search them before inventing a mark:
   app.js `mkIconSet` and rendered via `data-lucide="github"`. Used for OAuth
   buttons.
 
-**No raw SVG injection:** never paste or generate raw `<svg>` markup inside JS,
-CSS, HEEx, or HTML. Only create a new standalone `.svg` asset when no suitable
-package icon exists. (There is no `<.mk_icon>` helper or `priv/static/images/icons/`.)
+**No inline SVG, ever:** never write or generate raw `<svg>` markup inside HEEx,
+HTML, JS, or CSS. SVGs must be stored **outside** as standalone `.svg` asset
+files and referenced by path (`<img src>`, CSS `background`/`mask`, or a
+component that loads the file). When no package icon fits, add a new external
+`.svg` and reference it — do not paste the markup into a template. (There is no
+`<.mk_icon>` helper or `priv/static/images/icons/`.)
 
 ## Semantic color tokens
 

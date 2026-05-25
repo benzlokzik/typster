@@ -42,7 +42,7 @@ The page must read as *trustworthy enough to commit a dissertation to* before it
 
 **CSS is linted.** stylelint runs on `assets/css/**` (pre-commit hook + `cd assets && bun run lint:css`). Keep new partials passing; preserve the import order in `app.css` (tokens/accent before consumers).
 
-**No raw SVG injection.** Never paste or generate raw `<svg>` markup inside JS, CSS, HEEx, or HTML. Use icons by context (see `docs/landing-style.md` → Iconography): **heroicons** `<.icon name="hero-…">` for app UI; **`lucide`** via `<i data-lucide="…">` (must also be added to app.js `mkIconSet`; re-init with `window.mkIcons()` after LiveView patches); **`simple-icons`** for brand marks. There is no `<.mk_icon>` helper. Only create a standalone `.svg` asset when no package icon exists.
+**No inline SVG, ever.** Never write or generate raw `<svg>` markup inside HEEx, HTML, JS, or CSS. SVGs must live **outside** as standalone `.svg` asset files and be referenced by path (`<img src>`, CSS `background`/`mask`, or a component that loads the file). Use icons by context (see `docs/landing-style.md` → Iconography): **heroicons** `<.icon name="hero-…">` for app UI; **`lucide`** via `<i data-lucide="…">` (also add to app.js `mkIconSet`; re-init with `window.mkIcons()` after LiveView patches); **`simple-icons`** for brand marks. There is no `<.mk_icon>` helper. Only when no package icon fits, add a new external `.svg` and reference it — do not paste `<svg>` into a template.
 
 **Reduced motion is not optional.** Every animation or transition needs a `@media (prefers-reduced-motion: reduce)` counterpart. It's already wired up — keep it that way.
 
