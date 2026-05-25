@@ -19,8 +19,18 @@
 
       <div class="ts-spacer" />
 
-      <button type="button" class="ts-btn ts-btn--ghost ts-btn--sm" phx-click="open_palette">
-        <.icon name="hero-command-line" class="size-3" /> {gettext("editor.command")}
+      <button
+        type="button"
+        class="ts-btn ts-btn--ghost ts-btn--sm ts-cmdk"
+        phx-click="open_palette"
+        aria-label={gettext("editor.command_open")}
+      >
+        <span class="ts-cmdk__icon ts-mac" aria-hidden="true"><i data-lucide="command"></i></span>
+        <span class="ts-cmdk__icon ts-other" aria-hidden="true">
+          <i data-lucide="square-terminal"></i>
+        </span>
+        <span class="ts-kbd ts-mac">⌘K</span>
+        <span class="ts-kbd ts-other">Ctrl K</span>
       </button>
       <button
         type="button"

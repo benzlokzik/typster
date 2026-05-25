@@ -323,6 +323,16 @@
 /* ── Keyboard hints ───────────────────────────────────────────────────────── */
 .ts-kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 4px; background: var(--bd2); border: 1px solid var(--bd); border-bottom-width: 2px; color: var(--fg2); font: 500 10px 'JetBrains Mono', ui-monospace, monospace; }
 
+/* ── OS-aware shortcut hints ──────────────────────────────────────────────── */
+/* `<html>` gets `.is-mac` from app.js. Show ⌘/command on Apple, Ctrl/terminal
+   elsewhere. Default (pre-JS / SSR) assumes Apple, then JS corrects. */
+.ts-mac, .ts-other { display: inline-flex; align-items: center; }
+.ts-other { display: none; }
+html:not(.is-mac) .ts-mac { display: none; }
+html:not(.is-mac) .ts-other { display: inline-flex; }
+.ts-cmdk { gap: 6px; }
+.ts-cmdk__icon svg { width: 14px; height: 14px; }
+
 /* ── Sidebar upload zone ──────────────────────────────────────────────────── */
 .ts-side__upload { padding: 8px 14px; border-top: 1px solid var(--bd); flex-shrink: 0; }
 
