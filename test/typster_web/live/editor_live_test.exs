@@ -139,6 +139,15 @@ defmodule TypsterWeb.EditorLiveTest do
     assert path_exists?(user, project, "main.typ")
   end
 
+  test "the header breadcrumb shows the active file's path segments",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "sections/intro.typ"})
+    view = open_editor(conn, project)
+
+    assert has_element?(view, ".ts-crumb .ts-crumb__seg", "sections")
+    assert has_element?(view, ".ts-crumb .ts-crumb__seg.is-active", "intro.typ")
+  end
+
   test "outline numbers headings and shows a section count",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "main.typ"})

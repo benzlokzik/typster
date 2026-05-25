@@ -2,11 +2,21 @@
   <div class="ts-editor" id="editor-shell" phx-hook="CommandPalette">
     <%!-- Editor top bar: breadcrumb, save status, actions --%>
     <div class="ts-editor__bar">
-      <.link navigate={~p"/projects"} class="ts-btn ts-btn--ghost ts-btn--sm">
-        <.icon name="hero-chevron-left" class="size-3" /> {gettext("nav.projects")}
+      <.link
+        navigate={~p"/projects"}
+        class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+        aria-label={gettext("nav.projects")}
+        title={gettext("nav.projects")}
+      >
+        <.icon name="hero-chevron-left" class="size-3" />
       </.link>
-      <span class="ts-crumb-sep">/</span>
-      <span class="ts-crumb-current">{@project.name}</span>
+      <nav class="ts-crumb" aria-label={gettext("editor.breadcrumb")}>
+        <span class="ts-crumb__seg">{@project.name}</span>
+        <span :for={seg <- path_segments(@current_file)}>
+          <span class="ts-crumb__sep">/</span>
+          <span class={["ts-crumb__seg", seg.last && "is-active"]}>{seg.name}</span>
+        </span>
+      </nav>
 
       <div
         id="save-status"

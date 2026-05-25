@@ -484,6 +484,15 @@ defmodule TypsterWeb.EditorLive.Index do
   defp save_status_label("error"), do: gettext("editor.status.error")
   defp save_status_label(status), do: status
 
+  # Breadcrumb segments from the active file's path; the filename is `last`.
+  defp path_segments(nil), do: []
+
+  defp path_segments(%{path: path}) do
+    parts = String.split(path, "/")
+    count = length(parts)
+    parts |> Enum.with_index(1) |> Enum.map(fn {p, i} -> %{name: p, last: i == count} end)
+  end
+
   defp pinned_files(file_tree), do: Enum.filter(file_tree, & &1.pinned)
   defp unpinned_files(file_tree), do: Enum.reject(file_tree, & &1.pinned)
 

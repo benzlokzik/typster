@@ -172,6 +172,11 @@
 .ts-editor__bar { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-bottom: 1px solid var(--bd); background: var(--bg); flex-shrink: 0; }
 .ts-crumb-sep { color: var(--fg4); }
 .ts-crumb-current { font: 500 13px 'Inter', system-ui, sans-serif; color: var(--fg); margin-right: 10px; }
+.ts-crumb { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
+.ts-crumb > span { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.ts-crumb__seg { font: 500 13px 'Inter', system-ui, sans-serif; color: var(--fg3); padding: 2px 5px; border-radius: var(--r-sm); white-space: nowrap; }
+.ts-crumb__seg.is-active { color: var(--fg); font: 600 12.5px 'JetBrains Mono', ui-monospace, monospace; }
+.ts-crumb__sep { color: var(--fg4); padding: 0 1px; }
 .ts-savestat { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 9999px; background: var(--bd2); font: 500 11px 'Inter', system-ui, sans-serif; color: var(--fg2); }
 .ts-savestat__dot { width: 6px; height: 6px; border-radius: 9999px; flex-shrink: 0; }
 .ts-savestat--saved .ts-savestat__dot { background: var(--mk-success); }
