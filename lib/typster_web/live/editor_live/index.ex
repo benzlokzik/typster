@@ -28,7 +28,9 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:preview_stats, nil)
      |> assign(:preview_error, nil)
      |> assign(:preview_compiling, false)
-     |> assign(:show_new_file_dialog, false)
+     |> assign(:creating?, false)
+     |> assign(:new_file_name, "")
+     |> assign(:new_file_suggestions, [])
      |> assign(:file_view_mode, :tree)
      |> assign(:collapsed_dirs, MapSet.new())
      |> assign(:show_palette, false)
@@ -173,20 +175,35 @@ defmodule TypsterWeb.EditorLive.Index do
 
   @impl true
   def handle_event("new_file", _params, socket) do
-    {:noreply, assign(socket, :show_new_file_dialog, true)}
+    {:noreply,
+     socket
+     |> assign(:creating?, true)
+     |> assign(:new_file_name, "")
+     |> assign(:new_file_suggestions, [])}
   end
 
   @impl true
-  def handle_event("close_file_dialog", _params, socket) do
-    {:noreply, assign(socket, :show_new_file_dialog, false)}
+  def handle_event("cancel_new_file", _params, socket) do
+    {:noreply, assign(socket, creating?: false, new_file_name: "", new_file_suggestions: [])}
   end
 
   @impl true
-  def handle_event("create_file_from_dialog", %{"path" => path}, socket) do
+  def handle_event("suggest_new_file", %{"path" => name}, socket) do
+    suggestions = Files.new_file_suggestions(socket.assigns.file_tree, name)
+
+    {:noreply,
+     socket
+     |> assign(:new_file_name, name)
+     |> assign(:new_file_suggestions, suggestions)}
+  end
+
+  @impl true
+  def handle_event("create_file_from_dialog", %{"path" => typed}, socket) do
+    path = Files.resolve_new_file_path(socket.assigns.file_tree, typed)
+
     if Files.editable_file?(path) do
-      default_content = default_file_content(path)
-      socket = assign(socket, :show_new_file_dialog, false)
-      create_text_file(socket, path, default_content)
+      socket = assign(socket, creating?: false, new_file_name: "", new_file_suggestions: [])
+      create_text_file(socket, path, default_file_content(path))
     else
       {:noreply, put_flash(socket, :error, gettext("editor.flash.unsupported_file"))}
     end
@@ -262,9 +279,45 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   defp default_file_content(path) do
-    case Path.extname(path) do
-      ".typ" -> "#set page(margin: 2cm)\n\n= Introduction\n\nHello from Typster!"
-      _ -> ""
+    case path |> Path.extname() |> String.downcase() do
+      ".typ" ->
+        "#set page(margin: 2cm)\n\n= Introduction\n\nHello from Typster!"
+
+      ".tex" ->
+        "\\documentclass{article}\n\n\\begin{document}\n\n\\section{Introduction}\n\n\\end{document}\n"
+
+      _ ->
+        ""
+    end
+  end
+
+  # Glyph + color bucket for the live file-type chip in the inline create row.
+  defp draft_chip_ext(name, suggestions) do
+    cond do
+      ext_label(name) != "" -> ext_label(name)
+      suggestions != [] -> ext_label(hd(suggestions))
+      true -> "typ"
+    end
+  end
+
+  # Extension that pressing Enter will append, or `nil` when the name already
+  # carries one (so the "+ .ext" hint pill stays hidden).
+  defp draft_hint(name, suggestions) do
+    if ext_label(String.trim(name)) == "" and suggestions != [] do
+      Path.extname(hd(suggestions))
+    end
+  end
+
+  defp ext_label(path),
+    do: path |> Path.extname() |> String.trim_leading(".") |> String.downcase()
+
+  defp chip_glyph(ext) do
+    case ext do
+      "typ" -> "T"
+      "bib" -> "B"
+      "md" -> "M"
+      e when e in ~w(tex latex sty cls) -> "L"
+      e -> e |> String.first() |> Kernel.||("·") |> String.upcase()
     end
   end
 

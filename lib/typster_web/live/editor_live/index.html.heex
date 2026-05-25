@@ -110,12 +110,62 @@
             </button>
           </div>
 
-          <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) do %>
+          <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) and not @creating? do %>
             <div class="ts-empty" style="margin: 8px 14px; padding: 20px 12px;">
               {gettext("editor.no_files")}
             </div>
           <% else %>
             <ul class="ts-tree">
+              <li :if={@creating?} class="ts-tree__draft" id="new-file-draft">
+                <.form
+                  for={%{}}
+                  id="new-file-form"
+                  phx-change="suggest_new_file"
+                  phx-submit="create_file_from_dialog"
+                  phx-window-keydown="cancel_new_file"
+                  phx-key="Escape"
+                  phx-click-away="cancel_new_file"
+                >
+                  <div class="ts-draft__row">
+                    <span class={[
+                      "ts-filechip",
+                      "ts-filechip--#{draft_chip_ext(@new_file_name, @new_file_suggestions)}"
+                    ]}>
+                      {chip_glyph(draft_chip_ext(@new_file_name, @new_file_suggestions))}
+                    </span>
+                    <input
+                      class="ts-draft__input"
+                      name="path"
+                      value={@new_file_name}
+                      placeholder={gettext("editor.newfile.placeholder")}
+                      autocomplete="off"
+                      spellcheck="false"
+                      phx-mounted={JS.focus()}
+                    />
+                    <span
+                      :if={draft_hint(@new_file_name, @new_file_suggestions)}
+                      class="ts-exthint"
+                      title={gettext("editor.newfile.append_hint")}
+                    >
+                      + {draft_hint(@new_file_name, @new_file_suggestions)}
+                    </span>
+                  </div>
+                  <div :if={length(@new_file_suggestions) > 1} class="ts-suggest">
+                    <button
+                      :for={suggestion <- @new_file_suggestions}
+                      type="button"
+                      class="ts-suggest__chip"
+                      phx-click="create_file_from_dialog"
+                      phx-value-path={suggestion}
+                    >
+                      <span class={["ts-filechip", "ts-filechip--#{ext_label(suggestion)}"]}>
+                        {chip_glyph(ext_label(suggestion))}
+                      </span>
+                      {Path.basename(suggestion)}
+                    </button>
+                  </div>
+                </.form>
+              </li>
               <TypsterWeb.FileTree.tree_rows
                 nodes={TypsterWeb.FileTree.file_nodes(@file_tree, @file_view_mode)}
                 collapsed={@collapsed_dirs}
@@ -512,36 +562,4 @@
       </div>
     </div>
   </div>
-
-  <%= if @show_new_file_dialog do %>
-    <div class="ts-overlay" phx-click="close_file_dialog">
-      <div class="ts-dialog" phx-click="" phx-window-keydown="close_file_dialog" phx-key="Escape">
-        <div class="ts-dialog__header">
-          <h2 class="ts-dialog__title">{gettext("editor.new_file")}</h2>
-        </div>
-        <div class="ts-dialog__body">
-          <.form for={%{}} id="new-file-form" phx-submit="create_file_from_dialog">
-            <label class="ts-field">
-              <span class="ts-field__label">{gettext("editor.file_name")}</span>
-              <input
-                class="ts-input"
-                name="path"
-                autofocus
-                placeholder="main.typ"
-                required
-              />
-            </label>
-            <div class="ts-dialog__footer">
-              <button type="button" phx-click="close_file_dialog" class="ts-btn ts-btn--ghost">
-                {gettext("common.cancel")}
-              </button>
-              <button type="submit" class="ts-btn ts-btn--primary">
-                {gettext("editor.create_file")}
-              </button>
-            </div>
-          </.form>
-        </div>
-      </div>
-    </div>
-  <% end %>
 </Layouts.app>
