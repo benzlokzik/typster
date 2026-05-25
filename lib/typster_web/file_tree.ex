@@ -147,14 +147,12 @@ defmodule TypsterWeb.FileTree do
             }
             class="size-3"
           />
-          <i
-            class="ts-tree__ficon"
-            data-lucide={
+          <span class="ts-tree__ficon" aria-hidden="true">
+            <i data-lucide={
               if expanded?(@collapsed, node.path), do: "folder-open", else: "folder-closed"
-            }
-            aria-hidden="true"
-          >
-          </i>
+            }>
+            </i>
+          </span>
           <span class="truncate flex-1">{node.name}</span>
           <span class="ts-tree__count">{length(node.children)}</span>
         </li>

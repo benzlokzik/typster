@@ -174,13 +174,9 @@
                   phx-click-away="cancel_new_file"
                 >
                   <div class="ts-draft__row">
-                    <i
-                      :if={@new_kind == :folder}
-                      class="ts-tree__ficon"
-                      data-lucide="folder"
-                      aria-hidden="true"
-                    >
-                    </i>
+                    <span :if={@new_kind == :folder} class="ts-tree__ficon" aria-hidden="true">
+                      <i data-lucide="folder"></i>
+                    </span>
                     <span
                       :if={@new_kind == :file}
                       class={[
