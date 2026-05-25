@@ -139,6 +139,25 @@ defmodule TypsterWeb.EditorLiveTest do
     assert path_exists?(user, project, "main.typ")
   end
 
+  test "outline numbers headings and shows a section count",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "outline_parsed", %{
+      "items" => [
+        %{"level" => 1, "text" => "Quarterly Report", "line" => 1},
+        %{"level" => 2, "text" => "Summary", "line" => 3},
+        %{"level" => 2, "text" => "Key results", "line" => 7},
+        %{"level" => 3, "text" => "Uptime", "line" => 9}
+      ]
+    })
+
+    # level-1 title stays unnumbered; level 2 -> 1, 2; level 3 -> 2.1
+    assert has_element?(view, ".ts-outline__num", "2.1")
+    assert has_element?(view, ".ts-side__count", "4 sections")
+  end
+
   defp path_exists?(user, project, path) do
     scope = Typster.Accounts.Scope.for_user(user)
     Enum.any?(Typster.Files.get_file_tree(scope, project.id), &(&1.path == path))

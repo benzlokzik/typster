@@ -36,6 +36,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:show_palette, false)
      |> assign(:palette_query, "")
      |> stream(:outline, [])
+     |> assign(:outline_count, 0)
      |> assign(:page_title, project.name)
      |> allow_upload(:asset,
        accept: ~w(.pdf .png .jpg .jpeg .svg .webp .ttf .otf .woff .woff2),
@@ -103,19 +104,28 @@ defmodule TypsterWeb.EditorLive.Index do
 
   @impl true
   def handle_event("outline_parsed", %{"items" => items}, socket) do
-    outline =
+    {outline, _counters} =
       items
       |> Enum.with_index()
-      |> Enum.map(fn {item, idx} ->
-        %{
+      |> Enum.map_reduce(%{}, fn {item, idx}, counters ->
+        level = item["level"] || 1
+        {num, counters} = section_number(level, counters)
+
+        node = %{
           id: "outline-#{idx}",
-          level: item["level"] || 1,
+          level: level,
+          num: num,
           text: item["text"] || "",
           line: item["line"] || 1
         }
+
+        {node, counters}
       end)
 
-    {:noreply, stream(socket, :outline, outline, reset: true)}
+    {:noreply,
+     socket
+     |> assign(:outline_count, length(outline))
+     |> stream(:outline, outline, reset: true)}
   end
 
   @impl true
@@ -432,6 +442,20 @@ defmodule TypsterWeb.EditorLive.Index do
 
   defp pinned_files(file_tree), do: Enum.filter(file_tree, & &1.pinned)
   defp unpinned_files(file_tree), do: Enum.reject(file_tree, & &1.pinned)
+
+  # Hierarchical section numbers, with the level-1 title left unnumbered and
+  # numbering starting at level 2 (1, 2, 2.1, …) per the OutlineV2 design.
+  defp section_number(1, _counters), do: {"", %{}}
+
+  defp section_number(level, counters) do
+    counters =
+      counters
+      |> Map.update(level, 1, &(&1 + 1))
+      |> Map.reject(fn {l, _} -> l > level end)
+
+    num = 2..level |> Enum.map(&Map.get(counters, &1, 1)) |> Enum.join(".")
+    {num, counters}
+  end
 
   defp project_sources(file_tree) do
     file_tree

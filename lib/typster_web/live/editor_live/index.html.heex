@@ -203,7 +203,12 @@
             </ul>
           <% end %>
 
-          <div class="ts-side__head">{gettext("editor.outline")}</div>
+          <div class="ts-side__head">
+            <span>{gettext("editor.outline")}</span>
+            <span :if={@outline_count > 0} class="ts-side__count">
+              {ngettext("%{count} section", "%{count} sections", @outline_count)}
+            </span>
+          </div>
           <ul id="outline" phx-update="stream" class="ts-outline">
             <li class="ts-outline__empty only:block hidden" id="outline-empty">
               {gettext("editor.outline_empty")}
@@ -216,6 +221,7 @@
                 JS.dispatch("phx:editor-command", detail: %{cmd: "goto", line: heading.line})
               }
             >
+              <span :if={heading.num != ""} class="ts-outline__num">{heading.num}</span>
               <span class="truncate">{heading.text}</span>
             </li>
           </ul>
