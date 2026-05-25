@@ -139,6 +139,27 @@ defmodule TypsterWeb.EditorLiveTest do
     assert path_exists?(user, project, "main.typ")
   end
 
+  test "opening files adds tabs and closing a tab activates a neighbor",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    other = file_fixture(project, user, %{path: "sections/intro.typ"})
+    view = open_editor(conn, project)
+
+    # main.typ opens as the initial tab; open the second file.
+    view
+    |> element("[phx-click='select_file'][phx-value-file-id='#{other.id}']")
+    |> render_click()
+
+    assert view |> element(".ts-tab.is-active .ts-tab__label") |> render() =~ "intro.typ"
+
+    # Two tabs now open.
+    assert view |> render() |> then(&(Regex.scan(~r/ts-tab__label/, &1) |> length())) == 2
+
+    # Close the active tab → falls back to the remaining one.
+    view |> element(".ts-tab.is-active .ts-tab__close") |> render_click()
+    assert view |> element(".ts-tab.is-active .ts-tab__label") |> render() =~ "main.typ"
+  end
+
   test "the header breadcrumb shows the active file's path segments",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "sections/intro.typ"})

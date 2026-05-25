@@ -305,10 +305,37 @@
 
         <%!-- Source pane: tab bar + formatting toolbar + CodeMirror --%>
         <section class="ts-source">
-          <div class="ts-source__tabs">
-            <div class="ts-tab is-active">
-              <.icon name="hero-document" class="size-3" />
-              {if @current_file, do: @current_file.path, else: gettext("editor.no_file")}
+          <div class="ts-source__tabs" id="editor-tabs">
+            <%= for file <- open_tabs(@file_tree, @open_file_ids) do %>
+              <% {folder, name} = split_path(file.path) %>
+              <% kind = TypsterWeb.FileTree.file_chip_kind(file.path) %>
+              <div
+                class={["ts-tab", @current_file && @current_file.id == file.id && "is-active"]}
+                phx-click="select_file"
+                phx-value-file-id={file.id}
+              >
+                <span :if={file.pinned} class="ts-tab__pin" title={gettext("editor.tree.pinned")}>
+                  <.icon name="hero-map-pin-solid" class="size-3" />
+                </span>
+                <span class={["ts-filechip", "ts-filechip--#{kind}"]}>
+                  {TypsterWeb.FileTree.chip_glyph(kind)}
+                </span>
+                <span class="ts-tab__label">
+                  <span :if={folder} class="ts-tab__folder">{folder}/</span>{name}
+                </span>
+                <span
+                  class="ts-tab__close"
+                  phx-click="close_tab"
+                  phx-value-id={file.id}
+                  onclick="event.stopPropagation()"
+                  aria-label={gettext("editor.tab.close")}
+                >
+                  <.icon name="hero-x-mark" class="size-3" />
+                </span>
+              </div>
+            <% end %>
+            <div :if={@open_file_ids == []} class="ts-tab is-active ts-tab--empty">
+              {gettext("editor.no_file")}
             </div>
           </div>
 

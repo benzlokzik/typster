@@ -295,9 +295,20 @@
 
 /* ── Source pane ──────────────────────────────────────────────────────────── */
 .ts-source { display: flex; flex-direction: column; border-right: 1px solid var(--bd); min-height: 0; overflow: hidden; background: var(--bg); }
-.ts-source__tabs { display: flex; border-bottom: 1px solid var(--bd); background: var(--bg2); padding: 0 8px; flex-shrink: 0; }
-.ts-tab { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font: 13px 'Inter', system-ui, sans-serif; color: var(--fg2); border-radius: var(--r-sm) var(--r-sm) 0 0; border-bottom: 2px solid transparent; }
+.ts-source__tabs { display: flex; border-bottom: 1px solid var(--bd); background: var(--bg2); padding: 0 8px; flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
+.ts-source__tabs::-webkit-scrollbar { display: none; }
+.ts-tab { display: flex; align-items: center; gap: 6px; padding: 8px 10px; font: 13px 'Inter', system-ui, sans-serif; color: var(--fg2); border-radius: var(--r-sm) var(--r-sm) 0 0; border-bottom: 2px solid transparent; cursor: pointer; flex-shrink: 0; max-width: 220px; }
+.ts-tab:hover { background: var(--bd2); color: var(--fg); }
 .ts-tab.is-active { background: var(--bg); color: var(--fg); border-bottom-color: var(--pri); }
+.ts-tab--empty { color: var(--fg4); cursor: default; }
+.ts-tab--empty:hover { background: none; color: var(--fg4); }
+.ts-tab__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ts-tab__folder { color: var(--fg4); }
+.ts-tab.is-active .ts-tab__label { font-weight: 600; }
+.ts-tab__pin { display: inline-flex; align-items: center; color: var(--pri); flex-shrink: 0; }
+.ts-tab__close { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 4px; color: var(--fg4); flex-shrink: 0; opacity: 0; transition: opacity 120ms var(--ease); }
+.ts-tab:hover .ts-tab__close, .ts-tab.is-active .ts-tab__close { opacity: 1; }
+.ts-tab__close:hover { background: var(--bd2); color: var(--fg); }
 .ts-source__editor { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
 .ts-source__editor .cm-editor { height: 100%; width: 100%; display: flex; flex-direction: column; }
 .ts-source__editor .cm-scroller { overflow: auto; flex: 1; }

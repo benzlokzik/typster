@@ -20,6 +20,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:file_tree, file_tree)
      |> assign(:assets, assets)
      |> assign(:current_file, main_file)
+     |> assign(:open_file_ids, if(main_file, do: [main_file.id], else: []))
      |> assign(:content, if(main_file, do: main_file.content || "", else: ""))
      |> assign(:editor_language, editor_language(main_file))
      |> assign(:project_sources, project_sources(file_tree))
@@ -152,6 +153,7 @@ defmodule TypsterWeb.EditorLive.Index do
     if Files.editable_file?(file) do
       {:noreply,
        socket
+       |> open_tab(file_id)
        |> assign(:current_file, file)
        |> assign(:content, file.content || "")
        |> assign(:editor_language, editor_language(file))
@@ -164,6 +166,42 @@ defmodule TypsterWeb.EditorLive.Index do
        |> push_event("content_updated", %{content: file.content || ""})}
     else
       {:noreply, put_flash(socket, :error, gettext("editor.flash.binary_asset"))}
+    end
+  end
+
+  @impl true
+  def handle_event("close_tab", %{"id" => file_id}, socket) do
+    remaining = Enum.reject(socket.assigns.open_file_ids, &(&1 == file_id))
+    socket = assign(socket, :open_file_ids, remaining)
+    current = socket.assigns.current_file
+
+    if current && current.id == file_id do
+      # Activate the nearest remaining tab, or clear the editor when none remain.
+      case remaining |> List.last() |> next_open_file(socket) do
+        nil ->
+          {:noreply,
+           socket
+           |> assign(:current_file, nil)
+           |> assign(:content, "")
+           |> assign(:editor_language, "plain")
+           |> push_event("file_changed", %{file_id: nil, content: "", language: "plain"})
+           |> push_event("content_updated", %{content: ""})}
+
+        file ->
+          {:noreply,
+           socket
+           |> assign(:current_file, file)
+           |> assign(:content, file.content || "")
+           |> assign(:editor_language, editor_language(file))
+           |> push_event("file_changed", %{
+             file_id: file.id,
+             content: file.content || "",
+             language: editor_language(file)
+           })
+           |> push_event("content_updated", %{content: file.content || ""})}
+      end
+    else
+      {:noreply, socket}
     end
   end
 
@@ -301,13 +339,21 @@ defmodule TypsterWeb.EditorLive.Index do
     {:ok, _} = Files.delete_file(scope, file)
     file_tree = Files.get_file_tree(scope, socket.assigns.project.id)
 
+    open_ids = Enum.reject(socket.assigns.open_file_ids, &(&1 == file.id))
     current = socket.assigns.current_file
     was_open? = current && current.id == file.id
-    next_file = if was_open?, do: initial_file(file_tree), else: current
+
+    next_file =
+      cond do
+        not was_open? -> current
+        open_ids != [] -> Enum.find(file_tree, &(&1.id == List.last(open_ids)))
+        true -> initial_file(file_tree)
+      end
 
     socket =
       socket
       |> assign(:file_tree, file_tree)
+      |> assign(:open_file_ids, open_ids)
       |> assign(:project_sources, project_sources(file_tree))
       |> assign(:current_file, next_file)
       |> put_flash(:info, gettext("editor.flash.file_deleted"))
@@ -390,6 +436,7 @@ defmodule TypsterWeb.EditorLive.Index do
          |> assign(creating?: false, new_file_name: "", new_file_suggestions: [])
          |> assign(:file_tree, file_tree)
          |> assign(:project_sources, project_sources(file_tree))
+         |> open_tab(file.id)
          |> assign(:current_file, file)
          |> assign(:content, content)
          |> assign(:editor_language, editor_language(file))
@@ -491,6 +538,36 @@ defmodule TypsterWeb.EditorLive.Index do
     parts = String.split(path, "/")
     count = length(parts)
     parts |> Enum.with_index(1) |> Enum.map(fn {p, i} -> %{name: p, last: i == count} end)
+  end
+
+  # Append a file id to the open-tabs list (keeping order, no duplicates).
+  defp open_tab(socket, file_id) do
+    ids = socket.assigns.open_file_ids
+    if file_id in ids, do: socket, else: assign(socket, :open_file_ids, ids ++ [file_id])
+  end
+
+  defp next_open_file(nil, _socket), do: nil
+
+  defp next_open_file(file_id, socket),
+    do: Enum.find(socket.assigns.file_tree, &(&1.id == file_id))
+
+  # Open files as structs, in tab order, dropping any that no longer exist.
+  defp open_tabs(file_tree, open_file_ids) do
+    Enum.flat_map(open_file_ids, fn id ->
+      case Enum.find(file_tree, &(&1.id == id)),
+        do: (
+          nil -> []
+          file -> [file]
+        )
+    end)
+  end
+
+  # Split a path into {folder_or_nil, filename} for tab/crumb labels.
+  defp split_path(path) do
+    case Path.dirname(path) do
+      "." -> {nil, path}
+      dir -> {dir, Path.basename(path)}
+    end
   end
 
   defp pinned_files(file_tree), do: Enum.filter(file_tree, & &1.pinned)
