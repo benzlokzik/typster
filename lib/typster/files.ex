@@ -56,6 +56,14 @@ defmodule Typster.Files do
     Repo.delete(file)
   end
 
+  @doc "Pin or unpin a file (controls whether it appears in the sidebar's Pinned section)."
+  def set_pinned(%Scope{} = scope, %File{} = file, pinned) when is_boolean(pinned) do
+    scope
+    |> get_file!(file.id)
+    |> Ecto.Changeset.change(pinned: pinned)
+    |> Repo.update()
+  end
+
   def get_file_tree(%Scope{} = scope, project_id) do
     _project = Typster.Projects.get_project!(scope, project_id)
 

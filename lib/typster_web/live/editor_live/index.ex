@@ -231,6 +231,69 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   @impl true
+  def handle_event("toggle_pin", %{"id" => file_id}, socket) do
+    scope = socket.assigns.current_scope
+    file = Files.get_file!(scope, file_id)
+    {:ok, _} = Files.set_pinned(scope, file, not file.pinned)
+    file_tree = Files.get_file_tree(scope, socket.assigns.project.id)
+
+    {:noreply,
+     socket
+     |> assign(:file_tree, file_tree)
+     |> assign(:project_sources, project_sources(file_tree))}
+  end
+
+  @impl true
+  def handle_event("delete_file", %{"id" => file_id}, socket) do
+    scope = socket.assigns.current_scope
+    file = Files.get_file!(scope, file_id)
+    {:ok, _} = Files.delete_file(scope, file)
+    file_tree = Files.get_file_tree(scope, socket.assigns.project.id)
+
+    current = socket.assigns.current_file
+    was_open? = current && current.id == file.id
+    next_file = if was_open?, do: initial_file(file_tree), else: current
+
+    socket =
+      socket
+      |> assign(:file_tree, file_tree)
+      |> assign(:project_sources, project_sources(file_tree))
+      |> assign(:current_file, next_file)
+      |> put_flash(:info, gettext("editor.flash.file_deleted"))
+
+    if was_open? do
+      content = if next_file, do: next_file.content || "", else: ""
+
+      {:noreply,
+       socket
+       |> assign(:content, content)
+       |> assign(:editor_language, editor_language(next_file))
+       |> push_event("file_changed", %{
+         file_id: next_file && next_file.id,
+         content: content,
+         language: editor_language(next_file)
+       })
+       |> push_event("content_updated", %{content: content})}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("delete_asset", %{"id" => asset_id}, socket) do
+    scope = socket.assigns.current_scope
+    asset = Assets.get_asset!(scope, asset_id)
+    {:ok, _} = Assets.delete_asset(scope, asset)
+    assets = Assets.list_assets(scope, socket.assigns.project.id)
+
+    {:noreply,
+     socket
+     |> assign(:assets, assets)
+     |> assign(:project_assets, project_assets(assets))
+     |> put_flash(:info, gettext("editor.flash.asset_deleted"))}
+  end
+
+  @impl true
   def handle_event("validate_upload", _params, socket) do
     {:noreply, socket}
   end
@@ -366,6 +429,9 @@ defmodule TypsterWeb.EditorLive.Index do
   defp save_status_label("saving"), do: gettext("editor.status.saving")
   defp save_status_label("error"), do: gettext("editor.status.error")
   defp save_status_label(status), do: status
+
+  defp pinned_files(file_tree), do: Enum.filter(file_tree, & &1.pinned)
+  defp unpinned_files(file_tree), do: Enum.reject(file_tree, & &1.pinned)
 
   defp project_sources(file_tree) do
     file_tree

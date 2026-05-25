@@ -133,4 +133,23 @@ defmodule Typster.FilesTest do
       assert {:ok, _} = Files.create_file(scope, other.id, %{path: "main.typ"})
     end
   end
+
+  describe "set_pinned/3" do
+    setup do
+      user = Typster.AccountsFixtures.user_fixture()
+      %{scope: Typster.Accounts.Scope.for_user(user), project: project_fixture(user)}
+    end
+
+    test "toggles the pinned flag and persists it", %{scope: scope, project: project} do
+      {:ok, file} = Files.create_file(scope, project.id, %{path: "main.typ"})
+      refute file.pinned
+
+      assert {:ok, pinned} = Files.set_pinned(scope, file, true)
+      assert pinned.pinned
+      assert Files.get_file!(scope, file.id).pinned
+
+      assert {:ok, unpinned} = Files.set_pinned(scope, file, false)
+      refute unpinned.pinned
+    end
+  end
 end

@@ -103,6 +103,42 @@ defmodule TypsterWeb.EditorLiveTest do
     assert Enum.count(tree, &(&1.path == "main.typ")) == 1
   end
 
+  test "pinning a file moves it into the Pinned section", %{
+    conn: conn,
+    user: user,
+    project: project
+  } do
+    file = file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    refute has_element?(view, ".ts-side__head--sub")
+
+    view
+    |> element("button[phx-click='toggle_pin'][phx-value-id='#{file.id}']")
+    |> render_click()
+
+    assert has_element?(view, ".ts-side__head--sub", "Pinned")
+    assert has_element?(view, ".ts-tree__pin-ind")
+
+    scope = Typster.Accounts.Scope.for_user(user)
+    assert Typster.Files.get_file!(scope, file.id).pinned
+  end
+
+  test "deleting a file removes it from the tree", %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    other = file_fixture(project, user, %{path: "notes.md"})
+    view = open_editor(conn, project)
+
+    assert has_element?(view, "[phx-value-file-id='#{other.id}']")
+
+    view
+    |> element("button[phx-click='delete_file'][phx-value-id='#{other.id}']")
+    |> render_click()
+
+    refute path_exists?(user, project, "notes.md")
+    assert path_exists?(user, project, "main.typ")
+  end
+
   defp path_exists?(user, project, path) do
     scope = Typster.Accounts.Scope.for_user(user)
     Enum.any?(Typster.Files.get_file_tree(scope, project.id), &(&1.path == path))

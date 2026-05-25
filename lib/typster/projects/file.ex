@@ -9,6 +9,7 @@ defmodule Typster.Projects.File do
   schema "files" do
     field :path, :string
     field :content, :string
+    field :pinned, :boolean, default: false
     belongs_to :project, Typster.Projects.Project
     belongs_to :parent, Typster.Projects.File
     has_many :children, Typster.Projects.File, foreign_key: :parent_id

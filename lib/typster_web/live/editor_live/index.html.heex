@@ -120,6 +120,18 @@
             </button>
           </div>
 
+          <div :if={pinned_files(@file_tree) != []}>
+            <div class="ts-side__head ts-side__head--sub">{gettext("editor.pinned")}</div>
+            <ul class="ts-tree">
+              <TypsterWeb.FileTree.tree_rows
+                nodes={TypsterWeb.FileTree.file_nodes(pinned_files(@file_tree), :flat)}
+                collapsed={@collapsed_dirs}
+                current_id={@current_file && @current_file.id}
+              />
+            </ul>
+            <div class="ts-side__head ts-side__head--sub">{gettext("editor.files")}</div>
+          </div>
+
           <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) and not @creating? do %>
             <div class="ts-empty" style="margin: 8px 14px; padding: 20px 12px;">
               {gettext("editor.no_files")}
@@ -180,7 +192,9 @@
                 </.form>
               </li>
               <TypsterWeb.FileTree.tree_rows
-                nodes={TypsterWeb.FileTree.file_nodes(@file_tree, @file_view_mode)}
+                nodes={
+                  TypsterWeb.FileTree.file_nodes(unpinned_files(@file_tree), @file_view_mode)
+                }
                 collapsed={@collapsed_dirs}
                 current_id={@current_file && @current_file.id}
               />

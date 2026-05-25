@@ -201,6 +201,18 @@
 .ts-tree__count { margin-left: auto; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); background: var(--bd2); padding: 1px 6px; border-radius: 9999px; }
 .ts-tree__smart { margin-left: 4px; color: var(--fg4); font: 11px 'JetBrains Mono', ui-monospace, monospace; flex-shrink: 0; }
 
+/* ── Pin indicator + hover row actions (pin / delete) ─────────────────────── */
+.ts-side__head--sub { padding-top: 4px; }
+.ts-tree__pin-ind { display: inline-flex; align-items: center; flex-shrink: 0; color: var(--pri); margin-left: 4px; }
+.ts-tree__item.is-active .ts-tree__pin-ind { color: var(--pri-h); }
+.ts-tree__item:hover .ts-tree__pin-ind { display: none; }
+.ts-tree__actions { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; margin-left: 4px; opacity: 0; transition: opacity 150ms var(--ease); }
+.ts-tree__item:hover .ts-tree__actions { opacity: 1; }
+.ts-tree__act { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 0; background: none; border-radius: 5px; color: var(--fg3); cursor: pointer; }
+.ts-tree__act:hover { background: var(--bd2); color: var(--fg); }
+.ts-tree__act.is-on { color: var(--pri); }
+.ts-tree__act--danger:hover { background: var(--mk-error-50); color: var(--mk-error); }
+
 /* ── Typed file-type chip (square glyph, colored by extension) ────────────── */
 .ts-filechip {
   width: 18px; height: 18px; flex-shrink: 0;

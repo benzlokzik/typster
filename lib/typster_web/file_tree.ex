@@ -21,7 +21,13 @@ defmodule TypsterWeb.FileTree do
   def file_nodes(files, mode) do
     files
     |> Enum.map(fn f ->
-      %{path: f.path, id: f.id, editable: Typster.Files.editable_file?(f), asset?: false}
+      %{
+        path: f.path,
+        id: f.id,
+        editable: Typster.Files.editable_file?(f),
+        asset?: false,
+        pinned: Map.get(f, :pinned, false)
+      }
     end)
     |> by_mode(mode)
   end
@@ -147,6 +153,42 @@ defmodule TypsterWeb.FileTree do
           <span class="truncate flex-1">{node.name}</span>
           <span :if={Map.get(node, :smart)} class="ts-tree__smart">↳</span>
           <span :if={Map.get(node, :meta, "") != ""} class="ts-tree__pill">{node.meta}</span>
+          <span
+            :if={Map.get(node, :pinned, false)}
+            class="ts-tree__pin-ind"
+            title={gettext("editor.tree.pinned")}
+          >
+            <.icon name="hero-map-pin-solid" class="size-3" />
+          </span>
+          <span class="ts-tree__actions">
+            <button
+              :if={not node.asset?}
+              type="button"
+              class={["ts-tree__act", Map.get(node, :pinned, false) && "is-on"]}
+              phx-click="toggle_pin"
+              phx-value-id={node.id}
+              onclick="event.stopPropagation()"
+              aria-label={
+                if(Map.get(node, :pinned, false),
+                  do: gettext("editor.tree.unpin"),
+                  else: gettext("editor.tree.pin")
+                )
+              }
+            >
+              <.icon name="hero-map-pin" class="size-3" />
+            </button>
+            <button
+              type="button"
+              class="ts-tree__act ts-tree__act--danger"
+              phx-click={if node.asset?, do: "delete_asset", else: "delete_file"}
+              phx-value-id={node.id}
+              phx-confirm={gettext("editor.tree.delete_confirm")}
+              onclick="event.stopPropagation()"
+              aria-label={gettext("editor.tree.delete")}
+            >
+              <.icon name="hero-trash" class="size-3" />
+            </button>
+          </span>
         </li>
       <% end %>
     <% end %>
