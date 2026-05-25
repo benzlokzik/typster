@@ -1,6 +1,8 @@
 defmodule Typster.FilesTest do
   use Typster.DataCase, async: true
 
+  import Typster.ProjectsFixtures
+
   alias Typster.Files
 
   describe "file classification" do
@@ -107,6 +109,28 @@ defmodule Typster.FilesTest do
     test "detects an existing .bib file" do
       refute Files.has_bibliography?(["main.typ", "notes.md"])
       assert Files.has_bibliography?(["main.typ", "refs.bib"])
+    end
+  end
+
+  describe "create_file/3 path uniqueness" do
+    setup do
+      user = Typster.AccountsFixtures.user_fixture()
+      %{scope: Typster.Accounts.Scope.for_user(user), project: project_fixture(user)}
+    end
+
+    test "rejects a second file with the same path in the same project", %{
+      scope: scope,
+      project: project
+    } do
+      assert {:ok, _} = Files.create_file(scope, project.id, %{path: "main.typ", content: ""})
+      assert {:error, changeset} = Files.create_file(scope, project.id, %{path: "main.typ"})
+      assert %{path: ["already exists in this project"]} = errors_on(changeset)
+    end
+
+    test "allows the same path in a different project", %{scope: scope, project: project} do
+      other = project_fixture(scope)
+      assert {:ok, _} = Files.create_file(scope, project.id, %{path: "main.typ"})
+      assert {:ok, _} = Files.create_file(scope, other.id, %{path: "main.typ"})
     end
   end
 end

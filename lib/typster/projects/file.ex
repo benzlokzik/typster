@@ -22,5 +22,9 @@ defmodule Typster.Projects.File do
     |> cast(attrs, [:path, :content, :parent_id])
     |> validate_required([:path, :project_id])
     |> assoc_constraint(:project)
+    |> unique_constraint(:path,
+      name: :files_project_id_path_index,
+      message: "already exists in this project"
+    )
   end
 end
