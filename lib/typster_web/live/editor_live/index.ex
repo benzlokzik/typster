@@ -29,6 +29,8 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:preview_error, nil)
      |> assign(:preview_compiling, false)
      |> assign(:show_new_file_dialog, false)
+     |> assign(:file_view_mode, :tree)
+     |> assign(:collapsed_dirs, MapSet.new())
      |> assign(:show_palette, false)
      |> assign(:palette_query, "")
      |> stream(:outline, [])
@@ -150,6 +152,23 @@ defmodule TypsterWeb.EditorLive.Index do
     else
       {:noreply, put_flash(socket, :error, gettext("editor.flash.binary_asset"))}
     end
+  end
+
+  @impl true
+  def handle_event("set_file_view", %{"mode" => mode}, socket) do
+    {:noreply, assign(socket, :file_view_mode, TypsterWeb.FileTree.mode(mode))}
+  end
+
+  @impl true
+  def handle_event("toggle_dir", %{"path" => path}, socket) do
+    collapsed = socket.assigns.collapsed_dirs
+
+    collapsed =
+      if MapSet.member?(collapsed, path),
+        do: MapSet.delete(collapsed, path),
+        else: MapSet.put(collapsed, path)
+
+    {:noreply, assign(socket, :collapsed_dirs, collapsed)}
   end
 
   @impl true

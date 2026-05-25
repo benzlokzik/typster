@@ -197,7 +197,25 @@
 .ts-tree__item.is-disabled:hover { background: none; }
 .ts-tree__pill { margin-left: auto; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
 .ts-tree__dir { color: var(--fg); font-weight: 500; user-select: none; }
+.ts-tree__dir > span:nth-child(-n+2) { color: var(--fg3); }
 .ts-tree__count { margin-left: auto; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); background: var(--bd2); padding: 1px 6px; border-radius: 9999px; }
+.ts-tree__smart { margin-left: 4px; color: var(--fg4); font: 11px 'JetBrains Mono', ui-monospace, monospace; flex-shrink: 0; }
+
+/* ── File-tree view-mode switcher ─────────────────────────────────────────── */
+.ts-viewmenu { position: relative; }
+.ts-viewmenu__btn { gap: 5px; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.ts-viewmenu__pop {
+  position: absolute; top: 100%; right: 0; margin-top: 4px; width: 240px; padding: 6px; z-index: 20;
+  background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); box-shadow: var(--sh-lg);
+}
+.ts-viewmenu__h { padding: 6px 8px; font: 600 11px 'Inter', system-ui, sans-serif; color: var(--fg4); text-transform: uppercase; letter-spacing: .06em; }
+.ts-viewmenu__opt { display: flex; align-items: flex-start; gap: 8px; width: 100%; padding: 8px; border: 0; background: none; cursor: pointer; border-radius: var(--r-sm); text-align: left; color: var(--fg2); transition: background 200ms var(--ease); }
+.ts-viewmenu__opt:hover { background: var(--bd2); }
+.ts-viewmenu__opt.is-on { color: var(--fg); }
+.ts-viewmenu__opt strong { display: block; font: 500 13px 'Inter', system-ui, sans-serif; }
+.ts-viewmenu__opt em { display: block; font: 400 12px 'Inter', system-ui, sans-serif; font-style: normal; color: var(--fg3); margin-top: 1px; }
+.ts-viewmenu__check { margin-top: 3px; color: var(--pri); flex-shrink: 0; }
+.ts-viewmenu__dot { width: 12px; height: 12px; margin-top: 3px; border-radius: 50%; border: 1.5px solid var(--fg4); flex-shrink: 0; box-sizing: border-box; }
 
 /* ── Source pane ──────────────────────────────────────────────────────────── */
 .ts-source { display: flex; flex-direction: column; border-right: 1px solid var(--bd); min-height: 0; overflow: hidden; background: var(--bg); }

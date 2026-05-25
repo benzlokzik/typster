@@ -57,6 +57,51 @@
           <div class="ts-side__head">
             <span>{gettext("editor.files")}</span>
             <div class="ts-side__actions">
+              <div class="ts-viewmenu">
+                <button
+                  type="button"
+                  class="ts-btn ts-btn--ghost ts-btn--sm ts-viewmenu__btn"
+                  phx-click={JS.toggle(to: "#file-viewmenu")}
+                  aria-label={gettext("editor.view.label")}
+                >
+                  <.icon name="hero-arrows-right-left" class="size-3" />
+                  {TypsterWeb.FileTree.view_label(@file_view_mode)}
+                </button>
+                <div
+                  id="file-viewmenu"
+                  class="ts-viewmenu__pop hidden"
+                  phx-click-away={JS.hide(to: "#file-viewmenu")}
+                >
+                  <div class="ts-viewmenu__h">{gettext("editor.view.menu_title")}</div>
+                  <button
+                    :for={
+                      {m, label, desc} <- [
+                        {"tree", gettext("editor.view.tree"), gettext("editor.view.tree_desc")},
+                        {"smart", gettext("editor.view.smart_label"),
+                         gettext("editor.view.smart_desc")},
+                        {"flat", gettext("editor.view.flat_label"),
+                         gettext("editor.view.flat_desc")}
+                      ]
+                    }
+                    type="button"
+                    class={["ts-viewmenu__opt", to_string(@file_view_mode) == m && "is-on"]}
+                    phx-click={
+                      JS.hide(to: "#file-viewmenu") |> JS.push("set_file_view", value: %{mode: m})
+                    }
+                  >
+                    <.icon
+                      :if={to_string(@file_view_mode) == m}
+                      name="hero-check"
+                      class="size-3 ts-viewmenu__check"
+                    />
+                    <span :if={to_string(@file_view_mode) != m} class="ts-viewmenu__dot"></span>
+                    <span>
+                      <strong>{label}</strong>
+                      <em>{desc}</em>
+                    </span>
+                  </button>
+                </div>
+              </div>
               <button
                 id="create-main-file-button"
                 phx-click="new_file"
@@ -74,20 +119,11 @@
             </div>
           <% else %>
             <ul class="ts-tree">
-              <li
-                :for={file <- @file_tree}
-                id={"select-file-#{file.id}"}
-                phx-click={if Typster.Files.editable_file?(file), do: "select_file"}
-                phx-value-file-id={file.id}
-                class={[
-                  "ts-tree__item",
-                  !Typster.Files.editable_file?(file) && "is-disabled",
-                  @current_file && @current_file.id == file.id && "is-active"
-                ]}
-              >
-                <.icon name="hero-document-text" class="size-3.5" />
-                <span class="truncate flex-1">{file.path}</span>
-              </li>
+              <TypsterWeb.FileTree.tree_rows
+                nodes={TypsterWeb.FileTree.file_nodes(@file_tree, @file_view_mode)}
+                collapsed={@collapsed_dirs}
+                current_id={@current_file && @current_file.id}
+              />
             </ul>
           <% end %>
 
@@ -123,15 +159,10 @@
           </div>
 
           <ul class="ts-tree">
-            <li
-              :for={asset <- @assets}
-              id={"asset-entry-#{asset.id}"}
-              class="ts-tree__item is-disabled"
-            >
-              <.icon name="hero-photo" class="size-3.5" />
-              <span class="truncate flex-1">{asset.filename}</span>
-              <span class="ts-tree__pill">{gettext("editor.asset")}</span>
-            </li>
+            <TypsterWeb.FileTree.tree_rows
+              nodes={TypsterWeb.FileTree.asset_nodes(@assets, @file_view_mode)}
+              collapsed={@collapsed_dirs}
+            />
           </ul>
 
           <div class="ts-side__upload">
