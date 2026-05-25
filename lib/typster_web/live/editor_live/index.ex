@@ -282,9 +282,7 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   defp palette_files(file_tree, query) do
-    file_tree
-    |> Enum.filter(&Files.editable_file?/1)
-    |> Enum.filter(&palette_match?(query, &1.path))
+    Enum.filter(file_tree, &(Files.editable_file?(&1) and palette_match?(query, &1.path)))
   end
 
   defp save_status_label("saved"), do: gettext("editor.status.saved")
