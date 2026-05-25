@@ -78,4 +78,18 @@ test.describe('Product UI redesign', () => {
 
     await expect(cm).toContainText('*')
   })
+
+  test('download button exports the compiled document as a PDF', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Download E2E')
+    await addMainFile(page)
+
+    // Wait for the first preview render so the Typst worker WASM is initialized.
+    await expect(page.locator('#typst-svg-output')).toBeVisible({ timeout: 20_000 })
+
+    const downloadPromise = page.waitForEvent('download', { timeout: 30_000 })
+    await page.getByRole('button', { name: 'Download' }).click()
+
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toBe('main.pdf')
+  })
 })

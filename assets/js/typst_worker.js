@@ -2,6 +2,27 @@ let worker = null
 let previewContainer = null
 let pushEvent = null
 let compileStartedAt = null
+let pdfRequestSeq = 0
+const pendingPdfRequests = new Map()
+
+function triggerBrowserDownload(bytes, filename) {
+  const blob = new Blob([bytes], { type: "application/pdf" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  // Revoke on the next tick so the click-initiated navigation has consumed the URL.
+  setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+function pdfFilename(rawName) {
+  const base = (rawName || "").split("/").pop() || "document"
+  const stem = base.replace(/\.typ$/i, "") || "document"
+  return `${stem}.pdf`
+}
 
 function countPages(svg) {
   const matches = svg.match(/class="typst-page"/g)
@@ -67,6 +88,14 @@ export function initTypstWorker(hook) {
           }
           if (pushEvent) pushEvent("preview_error", { message: data.message || "Typst preview failed" })
           console.error("Typst compilation error:", data)
+        } else if (type === "pdf") {
+          const pending = pendingPdfRequests.get(data.requestId)
+          pendingPdfRequests.delete(data.requestId)
+          triggerBrowserDownload(data.pdf, (pending && pending.filename) || "document.pdf")
+        } else if (type === "pdf-error") {
+          pendingPdfRequests.delete(data.requestId)
+          if (pushEvent) pushEvent("preview_error", { message: data.message || "PDF export failed" })
+          console.error("Typst PDF export error:", data)
         }
       }
 
@@ -114,6 +143,15 @@ export function compileTypst(content, project = {}) {
       project: project
     })
   }
+}
+
+export function downloadTypstPdf(content, project = {}, fileName = null) {
+  if (!worker) initTypstWorker(null)
+  if (!worker) return
+
+  const requestId = ++pdfRequestSeq
+  pendingPdfRequests.set(requestId, { filename: pdfFilename(fileName) })
+  worker.postMessage({ type: "pdf", content, project, requestId })
 }
 
 export function destroyTypstWorker() {

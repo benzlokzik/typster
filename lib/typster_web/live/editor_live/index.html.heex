@@ -250,6 +250,7 @@
             phx-update="ignore"
             data-content={@content}
             data-file-id={if @current_file, do: @current_file.id, else: ""}
+            data-file-name={if @current_file, do: @current_file.path, else: ""}
             data-language={@editor_language}
             data-project-sources={Jason.encode!(@project_sources)}
             data-project-assets={Jason.encode!(@project_assets)}
@@ -324,8 +325,8 @@
             <button
               type="button"
               class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
-              disabled
-              title={gettext("editor.download_soon")}
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "download"})}
+              title={gettext("editor.download")}
               aria-label={gettext("editor.download")}
             >
               <.icon name="hero-arrow-down-tray" class="size-3.5" />

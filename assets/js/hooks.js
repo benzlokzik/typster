@@ -43,6 +43,8 @@ export const CodeMirror = {
       const { cmd, line } = event.detail || {}
       if (cmd === "compile") {
         this.editorInstance.compile()
+      } else if (cmd === "download") {
+        this.editorInstance.download()
       } else if (cmd) {
         this.editorInstance.runCommand(cmd, { line })
       }

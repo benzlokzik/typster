@@ -37,7 +37,7 @@ import { typst, setTypstTheme, registerTypstView } from "./typst_highlight"
 import { markdown } from "@codemirror/lang-markdown"
 import { yaml } from "@codemirror/lang-yaml"
 import { stex } from "@codemirror/legacy-modes/mode/stex"
-import { compileTypst } from "./typst_worker"
+import { compileTypst, downloadTypstPdf } from "./typst_worker"
 
 // Equivalent of `codemirror`'s `basicSetup`, assembled from granular packages.
 const basicSetup = [
@@ -374,6 +374,12 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     updateLanguage,
     runCommand: (cmd, arg) => runEditorCommand(editor, language, cmd, arg),
     compile: () => compileTypst(editor.state.doc.toString(), options.project || {}),
+    download: () =>
+      downloadTypstPdf(
+        editor.state.doc.toString(),
+        options.project || {},
+        container.dataset.fileName
+      ),
     destroy: () => {
       if (autosaveTimer) clearTimeout(autosaveTimer)
       if (compileTimer) clearTimeout(compileTimer)
