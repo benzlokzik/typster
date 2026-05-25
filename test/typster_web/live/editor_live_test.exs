@@ -158,6 +158,18 @@ defmodule TypsterWeb.EditorLiveTest do
     assert has_element?(view, ".ts-side__count", "4 sections")
   end
 
+  test "the new-folder button creates a folder seeded with a starter file",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    view |> element("#create-folder-button") |> render_click()
+    assert has_element?(view, "#new-file-draft #new-file-form")
+    view |> form("#new-file-form", %{path: "chapters"}) |> render_submit()
+
+    assert path_exists?(user, project, "chapters/untitled.typ")
+  end
+
   test "file rows render colored type chips by extension",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "main.typ"})

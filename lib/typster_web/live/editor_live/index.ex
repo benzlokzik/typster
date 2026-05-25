@@ -29,6 +29,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:preview_error, nil)
      |> assign(:preview_compiling, false)
      |> assign(:creating?, false)
+     |> assign(:new_kind, :file)
      |> assign(:new_file_name, "")
      |> assign(:new_file_suggestions, [])
      |> assign(:file_view_mode, :tree)
@@ -188,13 +189,53 @@ defmodule TypsterWeb.EditorLive.Index do
     {:noreply,
      socket
      |> assign(:creating?, true)
+     |> assign(:new_kind, :file)
+     |> assign(:new_file_name, "")
+     |> assign(:new_file_suggestions, [])}
+  end
+
+  @impl true
+  def handle_event("new_folder", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:creating?, true)
+     |> assign(:new_kind, :folder)
      |> assign(:new_file_name, "")
      |> assign(:new_file_suggestions, [])}
   end
 
   @impl true
   def handle_event("cancel_new_file", _params, socket) do
-    {:noreply, assign(socket, creating?: false, new_file_name: "", new_file_suggestions: [])}
+    {:noreply,
+     socket
+     |> assign(creating?: false, new_file_name: "", new_file_suggestions: [])
+     |> assign(:new_kind, :file)}
+  end
+
+  @impl true
+  def handle_event("create_folder_from_dialog", %{"path" => typed}, socket) do
+    folder = typed |> String.trim() |> String.trim("/")
+
+    cond do
+      folder == "" ->
+        {:noreply, socket}
+
+      folder_taken?(socket.assigns.file_tree, folder) ->
+        {:noreply,
+         socket
+         |> assign(:new_file_name, typed)
+         |> put_flash(:error, gettext("editor.flash.file_exists"))}
+
+      true ->
+        # Folders are path-derived, so a new folder is seeded with a starter file
+        # using the project's majority source type.
+        ext = Files.majority_source_extension(socket.assigns.file_tree)
+        path = "#{folder}/untitled#{ext}"
+
+        socket
+        |> assign(creating?: false, new_kind: :file, new_file_name: "", new_file_suggestions: [])
+        |> create_text_file(path, default_file_content(path))
+    end
   end
 
   @impl true
@@ -370,6 +411,9 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   defp path_taken?(file_tree, path), do: Enum.any?(file_tree, &(&1.path == path))
+
+  defp folder_taken?(file_tree, folder),
+    do: Enum.any?(file_tree, &String.starts_with?(&1.path, folder <> "/"))
 
   defp path_taken_error?(changeset) do
     Enum.any?(changeset.errors, fn {field, _} -> field == :path end)

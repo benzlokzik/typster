@@ -79,6 +79,14 @@
                 {TypsterWeb.FileTree.view_label(@file_view_mode)}
               </button>
               <button
+                id="create-folder-button"
+                phx-click="new_folder"
+                class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+                aria-label={gettext("editor.new_folder")}
+              >
+                <.icon name="hero-folder-plus" class="size-3" />
+              </button>
+              <button
                 id="create-main-file-button"
                 phx-click="new_file"
                 class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
@@ -144,30 +152,45 @@
                 <.form
                   for={%{}}
                   id="new-file-form"
-                  phx-change="suggest_new_file"
-                  phx-submit="create_file_from_dialog"
+                  phx-change={@new_kind == :file && "suggest_new_file"}
+                  phx-submit={
+                    if(@new_kind == :folder,
+                      do: "create_folder_from_dialog",
+                      else: "create_file_from_dialog"
+                    )
+                  }
                   phx-window-keydown="cancel_new_file"
                   phx-key="Escape"
                   phx-click-away="cancel_new_file"
                 >
                   <div class="ts-draft__row">
-                    <span class={[
-                      "ts-filechip",
-                      "ts-filechip--#{draft_chip_ext(@new_file_name, @new_file_suggestions)}"
-                    ]}>
+                    <span :if={@new_kind == :folder} class="ts-filechip ts-filechip--folder">
+                    </span>
+                    <span
+                      :if={@new_kind == :file}
+                      class={[
+                        "ts-filechip",
+                        "ts-filechip--#{draft_chip_ext(@new_file_name, @new_file_suggestions)}"
+                      ]}
+                    >
                       {chip_glyph(draft_chip_ext(@new_file_name, @new_file_suggestions))}
                     </span>
                     <input
                       class="ts-draft__input"
                       name="path"
                       value={@new_file_name}
-                      placeholder={gettext("editor.newfile.placeholder")}
+                      placeholder={
+                        if(@new_kind == :folder,
+                          do: gettext("editor.newfolder.placeholder"),
+                          else: gettext("editor.newfile.placeholder")
+                        )
+                      }
                       autocomplete="off"
                       spellcheck="false"
                       phx-mounted={JS.focus()}
                     />
                     <button
-                      :if={length(@new_file_suggestions) == 1}
+                      :if={@new_kind == :file and length(@new_file_suggestions) == 1}
                       type="button"
                       class="ts-exthint"
                       phx-click="create_file_from_dialog"
@@ -177,7 +200,10 @@
                       + {draft_hint(@new_file_name, @new_file_suggestions)}
                     </button>
                   </div>
-                  <div :if={length(@new_file_suggestions) > 1} class="ts-suggest">
+                  <div
+                    :if={@new_kind == :file and length(@new_file_suggestions) > 1}
+                    class="ts-suggest"
+                  >
                     <button
                       :for={suggestion <- @new_file_suggestions}
                       type="button"
