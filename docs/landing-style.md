@@ -287,10 +287,35 @@ italic accent. Key shared primitives added with the product-UI redesign:
 | `.ts-project-icon`| Serif-italic project initial tile (`--ts-icon` hue)       |
 | `.ts-swatch`      | Settings accent swatch (`--sw` hue)                       |
 | `.ts-emptystate`  | Serif "blank page" empty state                            |
+| `.ts-card--action`| Clickable action card (templates / import), `.ts-cards` row |
+| `.ts-prefrow`     | Settings preference row (label + control)                 |
 
 Formatting-toolbar glyphs use `lucide` (`data-lucide`, re-init via
-`window.mkIcons` on patches); brand marks use `simple-icons`; everything else
-uses heroicons `<.icon>`.
+`window.mkIcons` on LiveView patches); brand marks use `simple-icons`;
+everything else uses heroicons `<.icon name="hero-…">`.
+
+### Typst syntax highlighting (`typst_highlight.js`)
+
+The CodeMirror editor highlights Typst with **Shiki's official Typst TextMate
+grammar** (VS Code quality), painted as CodeMirror decorations — there is no
+mature Lezer Typst grammar yet (`codemirror-lang-typst` is on the README
+roadmap). It uses Shiki's **JavaScript regex engine** (`forgiving: true`, no
+extra oniguruma WASM) and the `github-light` / `github-dark` themes, swapping on
+theme change. Markup (`*bold*` / `_emph_`), `#` code, and `$ $` math are all
+distinguished.
+
+**Editor-CodeMirror caveat:** all CodeMirror imports must resolve to a *single*
+`@codemirror/view` / `@codemirror/state` instance (editor.js builds `basicSetup`
+from granular `@codemirror/*` packages, not the `codemirror` meta-package, and
+the lockfile pins one `@codemirror/view`). A second copy makes the decoration
+facet identity mismatch and CM silently drops Typst highlighting *and* keymaps.
+
+### Preview "paper" (`#typst-svg-output`)
+
+Compiled Typst renders to a transparent SVG with black glyphs. It is placed on a
+white "paper" card (shadow, centered, scales to width) so the document stays
+readable in **both** themes — the UI theme never tints the page, matching
+Overleaf / typst.app.
 
 ## Motion
 
@@ -316,18 +341,24 @@ uses heroicons `<.icon>`.
 
 ## Iconography
 
-- **Preferred sources:** search existing icon packs before inventing a new
-  mark. `lucide` and `simple-icons` are available in `assets/package.json`.
-- **Existing app icons:** `priv/static/images/icons/*.svg` contains
-  standalone monochrome SVG assets (`arrow-right`, `github`, `file`,
-  `image`, `bolt`, `command`, `eye`, `cloud-upload`, `share`, `font`,
-  `moon`, `sun`) rendered through `<.mk_icon name="..." class="..."/>`
-  from `TypsterWeb.MarketingIcons`.
-- **No raw SVG injection:** never paste or generate raw `<svg>` markup inside
-  JS, CSS, HEEx, or HTML. Only create a new standalone `.svg` asset when no
-  suitable package icon or existing app icon exists.
-- **Sizing utilities:** `.mk-icon-12 / -14 / -16` for explicit pixel
-  sizes when used outside icon-shaped containers.
+Three sources, by context — search them before inventing a mark:
+
+- **App UI (heroicons):** `<.icon name="hero-…" class="size-…"/>` from
+  `core_components.ex`. Rendered as a masked `<span>` — no JS init needed. Use
+  this for almost everything in the `.ts-*` app.
+- **`lucide` (glyphs heroicons lacks):** `<i data-lucide="bold">` upgraded to
+  `<svg>` by `window.mkIcons()` (app.js `createIcons` over a curated
+  `mkIconSet`). `mkIcons()` runs on `phx:page-loading-stop` and is re-invoked
+  from hooks on LiveView patches — any icon added by name to a template must
+  also be added to `mkIconSet`. Used by the editor formatting toolbar
+  (bold/italic/heading/list/sigma/link/table/image).
+- **`simple-icons` (brand marks):** e.g. `siGithub`, `siGoogle`, registered in
+  app.js `mkIconSet` and rendered via `data-lucide="github"`. Used for OAuth
+  buttons.
+
+**No raw SVG injection:** never paste or generate raw `<svg>` markup inside JS,
+CSS, HEEx, or HTML. Only create a new standalone `.svg` asset when no suitable
+package icon exists. (There is no `<.mk_icon>` helper or `priv/static/images/icons/`.)
 
 ## Semantic color tokens
 
