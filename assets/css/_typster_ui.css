@@ -228,6 +228,11 @@
 .ts-filechip--sty,
 .ts-filechip--cls { background: color-mix(in oklab, var(--mk-info) 16%, transparent); color: var(--mk-info-h); }
 .ts-filechip--md { background: color-mix(in oklab, var(--fg) 8%, transparent); color: var(--fg3); }
+.ts-filechip--csv { background: color-mix(in oklab, var(--mk-info) 16%, transparent); color: var(--mk-info-h); }
+.ts-filechip--img { background: color-mix(in oklab, var(--mk-success) 16%, transparent); color: var(--mk-success-h); }
+.ts-filechip--data { background: color-mix(in oklab, var(--mk-warning) 12%, transparent); color: var(--mk-warning-h); }
+.ts-filechip--file { background: var(--bd2); color: var(--fg3); }
+.ts-filechip--folder { background: color-mix(in oklab, var(--fg) 8%, transparent); color: var(--fg3); }
 
 /* ── Inline new-file draft row + smart extension hints ────────────────────── */
 .ts-tree__draft { list-style: none; padding: 2px 0; }

@@ -158,6 +158,16 @@ defmodule TypsterWeb.EditorLiveTest do
     assert has_element?(view, ".ts-side__count", "4 sections")
   end
 
+  test "file rows render colored type chips by extension",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    file_fixture(project, user, %{path: "refs.bib"})
+    view = open_editor(conn, project)
+
+    assert has_element?(view, ".ts-filechip--typ")
+    assert has_element?(view, ".ts-filechip--bib")
+  end
+
   defp path_exists?(user, project, path) do
     scope = Typster.Accounts.Scope.for_user(user)
     Enum.any?(Typster.Files.get_file_tree(scope, project.id), &(&1.path == path))

@@ -101,6 +101,30 @@ defmodule TypsterWeb.FileTree do
   defp leaf_dom_id(%{asset?: true, id: id}), do: "asset-entry-#{id}"
   defp leaf_dom_id(%{id: id}), do: "select-file-#{id}"
 
+  @doc "Color/glyph bucket for a file's typed chip, from its extension."
+  def file_chip_kind(name) do
+    case name |> Path.extname() |> String.downcase() do
+      ".typ" -> "typ"
+      ".bib" -> "bib"
+      ext when ext in ~w(.tex .latex .sty .cls) -> "tex"
+      ".md" -> "md"
+      ext when ext in ~w(.csv .tsv) -> "csv"
+      ext when ext in ~w(.png .jpg .jpeg .gif .svg .webp) -> "img"
+      ext when ext in ~w(.yaml .yml .toml .json) -> "data"
+      _ -> "file"
+    end
+  end
+
+  @doc "Single-character glyph shown inside a file's typed chip."
+  def chip_glyph("typ"), do: "T"
+  def chip_glyph("bib"), do: "B"
+  def chip_glyph("tex"), do: "L"
+  def chip_glyph("md"), do: "M"
+  def chip_glyph("csv"), do: "≡"
+  def chip_glyph("img"), do: "▢"
+  def chip_glyph("data"), do: "{}"
+  def chip_glyph(_), do: "·"
+
   attr :nodes, :list, required: true
   attr :depth, :integer, default: 0
   attr :collapsed, :any, required: true
@@ -123,10 +147,7 @@ defmodule TypsterWeb.FileTree do
             }
             class="size-3"
           />
-          <.icon
-            name={if expanded?(@collapsed, node.path), do: "hero-folder-open", else: "hero-folder"}
-            class="size-3.5"
-          />
+          <span class="ts-filechip ts-filechip--folder" aria-hidden="true"></span>
           <span class="truncate flex-1">{node.name}</span>
           <span class="ts-tree__count">{length(node.children)}</span>
         </li>
@@ -149,7 +170,8 @@ defmodule TypsterWeb.FileTree do
           ]}
           style={"padding-left: #{6 + @depth * 14 + 14}px"}
         >
-          <.icon name={if node.asset?, do: "hero-photo", else: "hero-document-text"} class="size-3.5" />
+          <% kind = if node.asset?, do: "img", else: file_chip_kind(node.name) %>
+          <span class={["ts-filechip", "ts-filechip--#{kind}"]}>{chip_glyph(kind)}</span>
           <span class="truncate flex-1">{node.name}</span>
           <span :if={Map.get(node, :smart)} class="ts-tree__smart">↳</span>
           <span :if={Map.get(node, :meta, "") != ""} class="ts-tree__pill">{node.meta}</span>
