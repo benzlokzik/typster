@@ -65,7 +65,7 @@
     <div class="ts-editor__body">
       <div class="ts-window ts-editor__panes">
         <%!-- Sidebar: file tree + outline + assets --%>
-        <aside class="ts-side">
+        <aside class="ts-side" id="editor-sidebar" phx-hook="LucideIcons">
           <div class="ts-side__search">
             <div class="ts-search ts-search--sm">
               <.icon name="hero-magnifying-glass" class="size-3.5" />
@@ -174,8 +174,13 @@
                   phx-click-away="cancel_new_file"
                 >
                   <div class="ts-draft__row">
-                    <span :if={@new_kind == :folder} class="ts-filechip ts-filechip--folder">
-                    </span>
+                    <i
+                      :if={@new_kind == :folder}
+                      class="ts-tree__ficon"
+                      data-lucide="folder"
+                      aria-hidden="true"
+                    >
+                    </i>
                     <span
                       :if={@new_kind == :file}
                       class={[
@@ -367,7 +372,7 @@
 
         <%!-- Source pane: tab bar + formatting toolbar + CodeMirror --%>
         <section class="ts-source">
-          <div class="ts-source__tabs" id="editor-tabs">
+          <div class="ts-source__tabs" id="editor-tabs" phx-hook="LucideIcons">
             <%= for file <- open_tabs(@file_tree, @open_file_ids) do %>
               <% {folder, name} = split_path(file.path) %>
               <% kind = TypsterWeb.FileTree.file_chip_kind(file.path) %>
@@ -377,7 +382,7 @@
                 phx-value-file-id={file.id}
               >
                 <span :if={file.pinned} class="ts-tab__pin" title={gettext("editor.tree.pinned")}>
-                  <.icon name="hero-map-pin-solid" class="size-3" />
+                  <i data-lucide="pin" aria-hidden="true"></i>
                 </span>
                 <span class={["ts-filechip", "ts-filechip--#{kind}"]}>
                   {TypsterWeb.FileTree.chip_glyph(kind)}

@@ -147,7 +147,14 @@ defmodule TypsterWeb.FileTree do
             }
             class="size-3"
           />
-          <span class="ts-filechip ts-filechip--folder" aria-hidden="true"></span>
+          <i
+            class="ts-tree__ficon"
+            data-lucide={
+              if expanded?(@collapsed, node.path), do: "folder-open", else: "folder-closed"
+            }
+            aria-hidden="true"
+          >
+          </i>
           <span class="truncate flex-1">{node.name}</span>
           <span class="ts-tree__count">{length(node.children)}</span>
         </li>
@@ -180,7 +187,7 @@ defmodule TypsterWeb.FileTree do
             class="ts-tree__pin-ind"
             title={gettext("editor.tree.pinned")}
           >
-            <.icon name="hero-map-pin-solid" class="size-3" />
+            <i data-lucide="pin" aria-hidden="true"></i>
           </span>
           <span class="ts-tree__actions">
             <button
@@ -197,7 +204,11 @@ defmodule TypsterWeb.FileTree do
                 )
               }
             >
-              <.icon name="hero-map-pin" class="size-3" />
+              <i
+                data-lucide={if Map.get(node, :pinned, false), do: "pin-off", else: "pin"}
+                aria-hidden="true"
+              >
+              </i>
             </button>
             <button
               type="button"

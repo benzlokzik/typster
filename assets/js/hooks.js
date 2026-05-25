@@ -353,3 +353,11 @@ export const PreviewZoom = {
     if (this.clickHandler) this.el.removeEventListener("click", this.clickHandler)
   }
 }
+
+// Re-render lucide `<i data-lucide>` icons inside a container that LiveView
+// patches (the file tree and tab bar). The global mkIcons() only runs on full
+// page loads, so without this, icons inside diffed regions would not paint.
+export const LucideIcons = {
+  mounted() { window.mkIcons?.(this.el) },
+  updated() { window.mkIcons?.(this.el) }
+}

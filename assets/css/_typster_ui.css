@@ -217,6 +217,11 @@
 .ts-tree__act:hover { background: var(--bd2); color: var(--fg); }
 .ts-tree__act.is-on { color: var(--pri); }
 .ts-tree__act--danger:hover { background: var(--mk-error-50); color: var(--mk-error); }
+.ts-tree__ficon { display: inline-flex; align-items: center; flex-shrink: 0; color: var(--fg2); }
+.ts-tree__ficon svg { width: 15px; height: 15px; }
+.ts-tree__pin-ind svg { width: 13px; height: 13px; }
+.ts-tree__act svg { width: 14px; height: 14px; }
+.ts-tab__pin svg { width: 13px; height: 13px; }
 
 /* ── Typed file-type chip (square glyph, colored by extension) ────────────── */
 .ts-filechip {
