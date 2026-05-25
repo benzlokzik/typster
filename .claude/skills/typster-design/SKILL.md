@@ -73,7 +73,7 @@ Dialog titles support `<em>` for Instrument Serif italic — consistent with her
 
 **Product UI (`.ts-*`).** App-side primitives in `_typster_ui.css`: `.ts-serif` (serif accent), `.ts-seg` (segmented control), `.ts-pill` (status pill), `.ts-window`/`.ts-formatbar`/`.ts-outline`/`.ts-statusbar` (editor chrome), `.ts-project-icon`, `.ts-swatch`, `.ts-emptystate`, `.ts-card--action`, `.ts-prefrow`. Full table + behavior in `docs/landing-style.md` → "Product UI (`.ts-*`)". Extend these before inventing app components.
 
-**Editor (CodeMirror) caveat.** Typst highlighting is Shiki-based decorations (`typst_highlight.js`); all CodeMirror imports must resolve to a **single** `@codemirror/view`/`state` instance (editor.js composes `basicSetup` from granular `@codemirror/*` packages, not the `codemirror` meta-package) or decorations and keymaps silently break. A proper `codemirror-lang-typst` Lezer grammar is a tracked README roadmap item.
+**Editor (CodeMirror) caveat.** Typst highlighting is Shiki-based decorations (`typst_highlight.js`); all CodeMirror imports must resolve to a **single** `@codemirror/view`/`state` instance (editor.js composes `basicSetup` from granular `@codemirror/*` packages, not the `codemirror` meta-package) or decorations and keymaps silently break. A proper `codemirror-lang-typst` Lezer grammar is a tracked README roadmap item. Find & replace uses a **custom panel** (`.ts-cm-search`, `cm_search_panel.js` via `search({ createPanel })`) — token-styled icon toggles (`Aa`/`.*`/whole-word), a live match count, and a labelled Select all / Replace all — opened by the format-bar Find button (`cmd: "search"`) or ⌘F. Don't reintroduce CodeMirror's default search panel.
 
 ## Updating the guides
 

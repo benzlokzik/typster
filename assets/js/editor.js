@@ -25,7 +25,8 @@ import {
   foldKeymap
 } from "@codemirror/language"
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
-import { searchKeymap, highlightSelectionMatches } from "@codemirror/search"
+import { searchKeymap, highlightSelectionMatches, openSearchPanel } from "@codemirror/search"
+import { searchPanelExtensions } from "./cm_search_panel"
 import {
   autocompletion,
   completionKeymap,
@@ -58,6 +59,7 @@ const basicSetup = [
   crosshairCursor(),
   highlightActiveLine(),
   highlightSelectionMatches(),
+  ...searchPanelExtensions,
   keymap.of([
     ...closeBracketsKeymap,
     ...defaultKeymap,
@@ -373,6 +375,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     updateTheme,
     updateLanguage,
     runCommand: (cmd, arg) => runEditorCommand(editor, language, cmd, arg),
+    openSearch: () => openSearchPanel(editor),
     compile: () => compileTypst(editor.state.doc.toString(), options.project || {}),
     download: () =>
       downloadTypstPdf(

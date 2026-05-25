@@ -1,0 +1,91 @@
+/* ── CodeMirror search/replace panel (.ts-cm-search) ─────────────────────────
+   Custom panel supplied via search({ createPanel }) in cm_search_panel.js.
+   Token-driven so light/dark/[data-accent] all work with no JS color logic. */
+
+.cm-panels {
+  background: var(--bg2);
+  color: var(--fg);
+  border: 0;
+}
+.cm-panels.cm-panels-top {
+  border-bottom: 1px solid var(--bd);
+}
+
+.ts-cm-search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  font: 13px 'Inter', system-ui, sans-serif;
+}
+
+.ts-cm-search__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ts-cm-search__row--replace {
+  padding-top: 6px;
+  border-top: 1px solid var(--bd);
+}
+
+.ts-cm-search__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ts-cm-search__input {
+  height: 30px;
+  width: 200px;
+  padding: 0 10px;
+  border: 1px solid var(--bd);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--fg);
+  outline: none;
+  font: 13px 'Inter', system-ui, sans-serif;
+  transition: box-shadow 200ms var(--ease);
+}
+.ts-cm-search__input::placeholder {
+  color: var(--fg4);
+}
+.ts-cm-search__input:focus {
+  box-shadow: var(--ring);
+}
+
+.ts-cm-search__count {
+  min-width: 72px;
+  font-size: 12px;
+  color: var(--fg3);
+  white-space: nowrap;
+}
+
+/* Icon buttons sit on the existing .ts-btn primitives; size the upgraded svg. */
+.ts-cm-search__btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ts-cm-search__toggle {
+  font: 600 12px 'JetBrains Mono', ui-monospace, monospace;
+}
+.ts-cm-search__toggle.is-active {
+  background: var(--pri-50);
+  color: var(--pri);
+  border-color: var(--pri);
+}
+
+.ts-cm-search__close {
+  margin-left: auto;
+}
+
+/* Invalid regular expression: flag both the input and the count text. */
+.ts-cm-search--invalid .ts-cm-search__input {
+  border-color: var(--mk-error);
+  box-shadow: 0 0 0 1px var(--mk-error);
+}
+.ts-cm-search--invalid .ts-cm-search__count {
+  color: var(--mk-error);
+}

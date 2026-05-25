@@ -18,7 +18,7 @@
 // To load it, simply add a second `<link>` to your `root.html.heex` file.
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
-import { createIcons, ArrowRight, Bell, Bold, BookText, ChartNoAxesColumn, ChevronDown, CircleCheck, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Play, Plus, ReceiptText, RefreshCw, Search, Share2, Sigma, Sparkles, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, X as XIcon, Zap } from "lucide"
+import { createIcons, ArrowDown, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, ChevronDown, CircleCheck, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Share2, Sigma, Sparkles, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X as XIcon, Zap } from "lucide"
 import { siGithub, siGoogle } from "simple-icons"
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
@@ -60,7 +60,7 @@ window.liveSocket = liveSocket
 
 const Github = [["path", { d: siGithub.path, fill: "currentColor", stroke: "none" }]]
 const Google = [["path", { d: siGoogle.path, fill: "currentColor", stroke: "none" }]]
-const mkIconSet = { ArrowRight, Bell, Bold, BookText, ChartNoAxesColumn, ChevronDown, CircleCheck, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Play, Plus, ReceiptText, RefreshCw, Search, Share2, Sigma, Sparkles, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, X: XIcon, Zap, Github, Google }
+const mkIconSet = { ArrowDown, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, ChevronDown, CircleCheck, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Share2, Sigma, Sparkles, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X: XIcon, Zap, Github, Google }
 const mkIcons = (root = document) => {
   createIcons({ icons: mkIconSet, root })
   root.querySelectorAll("svg[data-lucide]").forEach((svg) => svg.removeAttribute("data-lucide"))

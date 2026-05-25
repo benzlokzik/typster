@@ -299,6 +299,19 @@ italic accent. Key shared primitives added with the product-UI redesign:
 | `.ts-emptystate`  | Serif "blank page" empty state                            |
 | `.ts-card--action`| Clickable action card (templates / import), `.ts-cards` row |
 | `.ts-prefrow`     | Settings preference row (label + control)                 |
+| `.ts-cm-search`   | Custom CodeMirror find & replace panel (`_codemirror.css`) |
+
+### Find & replace panel (`.ts-cm-search`)
+Custom CodeMirror search panel supplied by `cm_search_panel.js` via
+`search({ createPanel })`, replacing CM's stock panel. A find row (input +
+live match count "3 of 12"/"No results"/"Invalid regex", `Aa`/`.*`/whole-word
+icon toggles with an `.is-active` accent state, ↑/↓ nav, a labelled "Select
+all", close) over a separated replace row ("Replace" / "Replace all"). Every
+control has a `title` + `aria-label`. Styled entirely from tokens in
+`_codemirror.css` (no JS colors), so light/dark/accent are free. Opened via the
+format-bar Find button (`<i data-lucide="search">`, `cmd: "search"` →
+`editorInstance.openSearch()`) or ⌘F. Behaviour comes from the official
+`@codemirror/search` commands; action buttons flush the debounced query first.
 
 Formatting-toolbar glyphs use `lucide` (`data-lucide`, re-init via
 `window.mkIcons` on LiveView patches); brand marks use `simple-icons`;

@@ -45,6 +45,8 @@ export const CodeMirror = {
         this.editorInstance.compile()
       } else if (cmd === "download") {
         this.editorInstance.download()
+      } else if (cmd === "search") {
+        this.editorInstance.openSearch()
       } else if (cmd) {
         this.editorInstance.runCommand(cmd, { line })
       }

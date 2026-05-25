@@ -239,6 +239,16 @@
             >
               <i data-lucide="image" aria-hidden="true"></i>
             </button>
+            <span class="ts-formatbar__sep"></span>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "search"})}
+              aria-label={gettext("editor.find")}
+              title={gettext("editor.find")}
+            >
+              <i data-lucide="search" aria-hidden="true"></i>
+            </button>
             <span :if={@current_file} class="ts-formatbar__hint">
               {@editor_language} · {@current_file.path}
             </span>
