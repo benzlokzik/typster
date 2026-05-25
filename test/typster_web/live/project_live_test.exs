@@ -22,6 +22,32 @@ defmodule TypsterWeb.ProjectLiveTest do
     refute html =~ "Hidden Project"
   end
 
+  test "project index renders the filter segments and a serif heading", %{conn: conn} do
+    user = Typster.AccountsFixtures.user_fixture()
+    conn = log_in_user(conn, user)
+
+    {:ok, view, _html} = live(conn, ~p"/projects")
+
+    assert has_element?(view, "h1 .ts-serif")
+    assert has_element?(view, "#filter-all.is-active")
+    assert has_element?(view, "#filter-recent")
+    assert has_element?(view, "#filter-starred")
+  end
+
+  test "filtering to starred shows the empty state", %{conn: conn} do
+    user = Typster.AccountsFixtures.user_fixture()
+    conn = log_in_user(conn, user)
+    project_fixture(user, %{name: "Visible Project"})
+
+    {:ok, view, _html} = live(conn, ~p"/projects")
+    assert render(view) =~ "Visible Project"
+
+    view |> element("#filter-starred") |> render_click()
+
+    refute render(view) =~ "Visible Project"
+    assert has_element?(view, "#filter-starred.is-active")
+  end
+
   test "editor prefers main.typ as the selected file", %{conn: conn} do
     user = Typster.AccountsFixtures.user_fixture()
     conn = log_in_user(conn, user)
@@ -32,6 +58,24 @@ defmodule TypsterWeb.ProjectLiveTest do
     {:ok, view, _html} = live(conn, ~p"/projects/#{project.id}/edit")
 
     assert has_element?(view, "#editor-container[data-file-id=\"#{main_file.id}\"]")
+  end
+
+  test "editor renders the format toolbar and opens the command palette", %{conn: conn} do
+    user = Typster.AccountsFixtures.user_fixture()
+    conn = log_in_user(conn, user)
+    project = project_fixture(user)
+    file_fixture(project, user, %{path: "main.typ", content: "= Main"})
+
+    {:ok, view, _html} = live(conn, ~p"/projects/#{project.id}/edit")
+
+    assert has_element?(view, "#editor-shell .ts-formatbar")
+    assert has_element?(view, ".ts-preview__bar .ts-pill")
+    refute has_element?(view, "#command-palette")
+
+    view |> element("button", "⌘K") |> render_click()
+
+    assert has_element?(view, "#command-palette")
+    assert has_element?(view, "#command-palette #palette-input")
   end
 
   test "show page lists uploaded assets", %{conn: conn} do

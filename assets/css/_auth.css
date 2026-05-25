@@ -4,14 +4,35 @@
 .auth-page { min-height: 100dvh; display: flex; flex-direction: column; }
 
 .auth-main {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 94px 16px 40px; /* 14px nav offset + 56px nav + 24px gap */
+  overflow: hidden;
 }
 
+/* Ambient accent glow behind the card (static, decorative) */
+.auth-main::before,
+.auth-main::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: var(--mk-pri);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-main::before { width: 460px; height: 460px; top: -160px; left: -120px; opacity: 0.10; }
+.auth-main::after { width: 520px; height: 520px; right: -100px; bottom: -200px; opacity: 0.07; }
+[data-theme="dark"] .auth-main::before { opacity: 0.16; }
+[data-theme="dark"] .auth-main::after { opacity: 0.12; }
+
 .auth-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 400px;
   background: var(--mk-bg);
@@ -21,6 +42,11 @@
   box-shadow: var(--mk-sh-lg);
   box-sizing: border-box;
 }
+
+/* OAuth buttons (inactive placeholders) */
+.auth-oauth { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+.auth-oauth .mk-btn svg,
+.auth-oauth .mk-btn i { width: 16px; height: 16px; }
 
 /* Heading — Inter 700 body + Instrument Serif italic for the brand name */
 .auth-card h1 {

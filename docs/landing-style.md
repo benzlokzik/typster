@@ -34,6 +34,12 @@ Defined as CSS custom properties on `:root` (light) and overridden under
 | `--mk-pri-50`    | `#eef2ff`   | rgba indigo | Pill background, soft chips |
 | `--mk-pri-100`   | `#e0e7ff`   |             | Pill border                 |
 
+The brand mark (`.mk-brand-mark`) fills its tile with an accent-aware
+diagonal gradient: `135deg, var(--mk-pri) → color-mix(--mk-pri-h, #000)`.
+It tracks the active accent (indigo/violet/sky/emerald/rose) and stays
+visible in both themes. This is the one place — alongside the CTA band —
+where the brand gradient appears; never apply it broadly.
+
 ### Neutrals
 | Token         | Light       | Dark        | Usage                       |
 | ------------- | ----------- | ----------- | --------------------------- |
@@ -45,6 +51,16 @@ Defined as CSS custom properties on `:root` (light) and overridden under
 | `--mk-bd2`    | `#f4f4f5`   | `#1f1f23`   | Surface hover, separators   |
 | `--mk-bg`     | `#ffffff`   | `#0a0a0b`   | Card surface                |
 | `--mk-bg2`    | `#fafafa`   | `#111114`   | Tinted section bg           |
+| `--mk-bg3`    | `#f1f1f3`   | `#18181b`   | Inset surface (3rd tier)    |
+
+### Accent theming (`[data-accent]`)
+The product UI lets a user pick an accent. `_accent.css` overrides
+`--mk-pri`/`-h`/`-50`/`-100` on a `[data-accent="…"]` ancestor (`indigo`
+default, plus `violet`, `sky`, `emerald`, `rose`), with `[data-theme="dark"]`
+descendant variants. The app applies it via `data-accent` on the `.ts-app`
+wrapper from `current_scope.user.accent_color`; dark mode wins on specificity
+because `data-theme` lives on `<html>` and `data-accent` on a descendant. The
+focus ring (`--ring`) derives from `--mk-pri` via `color-mix`, so it retints too.
 
 ### Page background
 - `html` and `body` share `#eef0f4` (light) / `#15131f` (dark) — solid
@@ -108,6 +124,10 @@ intentionally removed in favor of a calmer, brushed-silver field.
   hover bg).
 - Active state scales to `0.97`, transitions `120–160ms` with
   `--mk-ease-out` (`cubic-bezier(0.23, 1, 0.32, 1)`).
+- Disabled (`:disabled` / `[disabled]`): `opacity 0.45`, `cursor:
+  not-allowed`; hover and active states are suppressed (gated on
+  `:not(:disabled)`). Used for not-yet-wired placeholders such as the
+  inactive OAuth buttons in the auth card.
 
 ### Pill (`.mk-pill`)
 - Small rounded chip with brand-50 fill, brand-100 border,
@@ -258,6 +278,68 @@ Full-width brand-color block with white headline + light button.
 4-column layout: brand block + 3 link columns. Compact bottom row with
 copyright and tagline.
 
+## Product UI (`.ts-*`)
+
+The authenticated app (editor, projects, settings) uses a `.ts-*` class system
+in `_typster_ui.css`, aliasing the `--mk-*` tokens (so dark mode + accent come
+for free). It reuses the landing's floating `.mk-nav` and the Instrument Serif
+italic accent. Key shared primitives added with the product-UI redesign:
+
+| Class             | Role                                                      |
+| ----------------- | --------------------------------------------------------- |
+| `.ts-serif`       | Instrument Serif italic accent (mirrors landing `<em>`)   |
+| `.ts-seg`         | Segmented control (theme/filter switches)                 |
+| `.ts-pill`        | Status pill (`--accent`/`--success`/`--error` variants)   |
+| `.ts-window`      | Rounded chrome wrapping the 3-pane editor                 |
+| `.ts-formatbar`   | WYSIWYG formatting toolbar row (separate from tabs)        |
+| `.ts-outline`     | Live document outline (parsed headings)                   |
+| `.ts-statusbar`   | Editor status bar (Ln/Col, language, ⌘K hint)             |
+| `.ts-project-icon`| Serif-italic project initial tile (`--ts-icon` hue)       |
+| `.ts-swatch`      | Settings accent swatch (`--sw` hue)                       |
+| `.ts-emptystate`  | Serif "blank page" empty state                            |
+| `.ts-card--action`| Clickable action card (templates / import), `.ts-cards` row |
+| `.ts-prefrow`     | Settings preference row (label + control)                 |
+| `.ts-cm-search`   | Custom CodeMirror find & replace panel (`_codemirror.css`) |
+
+### Find & replace panel (`.ts-cm-search`)
+Custom CodeMirror search panel supplied by `cm_search_panel.js` via
+`search({ createPanel })`, replacing CM's stock panel. A find row (input +
+live match count "3 of 12"/"No results"/"Invalid regex", `Aa`/`.*`/whole-word
+icon toggles with an `.is-active` accent state, ↑/↓ nav, a labelled "Select
+all", close) over a separated replace row ("Replace" / "Replace all"). Every
+control has a `title` + `aria-label`. Styled entirely from tokens in
+`_codemirror.css` (no JS colors), so light/dark/accent are free. Opened via the
+format-bar Find button (`<i data-lucide="search">`, `cmd: "search"` →
+`editorInstance.openSearch()`) or ⌘F. Behaviour comes from the official
+`@codemirror/search` commands; action buttons flush the debounced query first.
+
+Formatting-toolbar glyphs use `lucide` (`data-lucide`, re-init via
+`window.mkIcons` on LiveView patches); brand marks use `simple-icons`;
+everything else uses heroicons `<.icon name="hero-…">`.
+
+### Typst syntax highlighting (`typst_highlight.js`)
+
+The CodeMirror editor highlights Typst with **Shiki's official Typst TextMate
+grammar** (VS Code quality), painted as CodeMirror decorations — there is no
+mature Lezer Typst grammar yet (`codemirror-lang-typst` is on the README
+roadmap). It uses Shiki's **JavaScript regex engine** (`forgiving: true`, no
+extra oniguruma WASM) and the `github-light` / `github-dark` themes, swapping on
+theme change. Markup (`*bold*` / `_emph_`), `#` code, and `$ $` math are all
+distinguished.
+
+**Editor-CodeMirror caveat:** all CodeMirror imports must resolve to a *single*
+`@codemirror/view` / `@codemirror/state` instance (editor.js builds `basicSetup`
+from granular `@codemirror/*` packages, not the `codemirror` meta-package, and
+the lockfile pins one `@codemirror/view`). A second copy makes the decoration
+facet identity mismatch and CM silently drops Typst highlighting *and* keymaps.
+
+### Preview "paper" (`#typst-svg-output`)
+
+Compiled Typst renders to a transparent SVG with black glyphs. It is placed on a
+white "paper" card (shadow, centered, scales to width) so the document stays
+readable in **both** themes — the UI theme never tints the page, matching
+Overleaf / typst.app.
+
 ## Motion
 
 - **Scroll-revealed elements:** any node with `.mk-reveal` (or children
@@ -282,18 +364,27 @@ copyright and tagline.
 
 ## Iconography
 
-- **Preferred sources:** search existing icon packs before inventing a new
-  mark. `lucide` and `simple-icons` are available in `assets/package.json`.
-- **Existing app icons:** `priv/static/images/icons/*.svg` contains
-  standalone monochrome SVG assets (`arrow-right`, `github`, `file`,
-  `image`, `bolt`, `command`, `eye`, `cloud-upload`, `share`, `font`,
-  `moon`, `sun`) rendered through `<.mk_icon name="..." class="..."/>`
-  from `TypsterWeb.MarketingIcons`.
-- **No raw SVG injection:** never paste or generate raw `<svg>` markup inside
-  JS, CSS, HEEx, or HTML. Only create a new standalone `.svg` asset when no
-  suitable package icon or existing app icon exists.
-- **Sizing utilities:** `.mk-icon-12 / -14 / -16` for explicit pixel
-  sizes when used outside icon-shaped containers.
+Three sources, by context — search them before inventing a mark:
+
+- **App UI (heroicons):** `<.icon name="hero-…" class="size-…"/>` from
+  `core_components.ex`. Rendered as a masked `<span>` — no JS init needed. Use
+  this for almost everything in the `.ts-*` app.
+- **`lucide` (glyphs heroicons lacks):** `<i data-lucide="bold">` upgraded to
+  `<svg>` by `window.mkIcons()` (app.js `createIcons` over a curated
+  `mkIconSet`). `mkIcons()` runs on `phx:page-loading-stop` and is re-invoked
+  from hooks on LiveView patches — any icon added by name to a template must
+  also be added to `mkIconSet`. Used by the editor formatting toolbar
+  (bold/italic/heading/list/sigma/link/table/image).
+- **`simple-icons` (brand marks):** e.g. `siGithub`, `siGoogle`, registered in
+  app.js `mkIconSet` and rendered via `data-lucide="github"`. Used for OAuth
+  buttons.
+
+**No inline SVG, ever:** never write or generate raw `<svg>` markup inside HEEx,
+HTML, JS, or CSS. SVGs must be stored **outside** as standalone `.svg` asset
+files and referenced by path (`<img src>`, CSS `background`/`mask`, or a
+component that loads the file). When no package icon fits, add a new external
+`.svg` and reference it — do not paste the markup into a template. (There is no
+`<.mk_icon>` helper or `priv/static/images/icons/`.)
 
 ## Semantic color tokens
 

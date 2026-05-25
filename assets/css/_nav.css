@@ -74,7 +74,9 @@
 .mk-brand-mark {
   width: 28px;
   height: 28px;
-  background: var(--mk-pri);
+  /* Brand gradient — accent-aware (works for every --mk-pri), the darker
+     stop carries a clear diagonal sheen on the small tile. */
+  background: linear-gradient(135deg, var(--mk-pri) 0%, color-mix(in srgb, var(--mk-pri-h) 72%, #000) 100%);
   border-radius: 7px;
   display: flex;
   align-items: center;
@@ -103,7 +105,12 @@
   text-decoration: none;
   white-space: nowrap;
 }
-.mk-btn:active { transform: scale(0.97); }
+.mk-btn:not(:disabled):active { transform: scale(0.97); }
+.mk-btn:disabled,
+.mk-btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .mk-btn-lg { height: 48px; padding: 0 24px; font-size: 14px; font-weight: 600; border-radius: var(--mk-r); }
 .mk-btn-sm { height: 34px; padding: 0 14px; font-size: 12.5px; }
 .mk-btn-primary { background: var(--mk-pri); color: #fff; }
@@ -111,10 +118,10 @@
 .mk-btn-outline { border-color: var(--mk-bd); color: var(--mk-fg2); background: var(--mk-bg); }
 .mk-btn-ghost { color: var(--mk-fg2); }
 @media (hover: hover) and (pointer: fine) {
-  .mk-btn-primary:hover { background: var(--mk-pri-h); }
-  .mk-btn-outline:hover { background: var(--mk-bd2); color: var(--mk-fg); }
-  .mk-btn-ghost:hover { background: var(--mk-bd2); color: var(--mk-fg); }
-  .mk-btn-light:hover { background: #f4f4f5; }
+  .mk-btn-primary:not(:disabled):hover { background: var(--mk-pri-h); }
+  .mk-btn-outline:not(:disabled):hover { background: var(--mk-bd2); color: var(--mk-fg); }
+  .mk-btn-ghost:not(:disabled):hover { background: var(--mk-bd2); color: var(--mk-fg); }
+  .mk-btn-light:not(:disabled):hover { background: #f4f4f5; }
 }
 
 /* ── Theme toggle ───────────────────────────────────────────────────────── */

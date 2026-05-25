@@ -14,6 +14,8 @@ defmodule TypsterWeb.UserLive.Registration do
         <.link navigate={~p"/users/log-in"}>{gettext("auth.log_in")}</.link>
       </p>
 
+      <Layouts.auth_oauth />
+
       <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
         <.input
           field={@form[:email]}

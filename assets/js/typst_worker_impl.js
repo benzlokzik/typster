@@ -22,8 +22,21 @@ async function ensureInitialized() {
   await $typst.svg({ mainContent: "" }).catch(() => {})
 }
 
+async function loadSources(content, project) {
+  $typst.setMainFilePath("/main.typ")
+  await $typst.addSource("/main.typ", content || "")
+
+  if (project?.sources) {
+    for (const source of project.sources) {
+      if (source.path !== "/main.typ" && source.path !== "main.typ") {
+        await $typst.addSource(`/${source.path}`, source.content || "")
+      }
+    }
+  }
+}
+
 self.onmessage = async function (event) {
-  const { type, content, project } = event.data
+  const { type, content, project, requestId } = event.data
 
   if (type === "compile") {
     const myId = ++latestCompileId
@@ -31,17 +44,8 @@ self.onmessage = async function (event) {
       await ensureInitialized()
       if (myId !== latestCompileId) return
 
-      $typst.setMainFilePath("/main.typ")
-      await $typst.addSource("/main.typ", content || "")
+      await loadSources(content, project)
       if (myId !== latestCompileId) return
-
-      if (project?.sources) {
-        for (const source of project.sources) {
-          if (source.path !== "/main.typ" && source.path !== "main.typ") {
-            await $typst.addSource(`/${source.path}`, source.content || "")
-          }
-        }
-      }
 
       const svg = await $typst.svg({ mainFilePath: "/main.typ" })
       if (myId !== latestCompileId) return
@@ -50,6 +54,18 @@ self.onmessage = async function (event) {
     } catch (error) {
       if (myId !== latestCompileId) return
       self.postMessage({ type: "error", data: { message: error.message } })
+    }
+  } else if (type === "pdf") {
+    // Export bypasses latestCompileId: a download is an explicit one-off and must
+    // not be cancelled by a concurrent live-preview compile.
+    try {
+      await ensureInitialized()
+      await loadSources(content, project)
+
+      const pdf = await $typst.pdf({ mainFilePath: "/main.typ" })
+      self.postMessage({ type: "pdf", data: { pdf, requestId } }, [pdf.buffer])
+    } catch (error) {
+      self.postMessage({ type: "pdf-error", data: { message: error.message, requestId } })
     }
   }
 }

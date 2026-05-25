@@ -1,68 +1,70 @@
 <section id="pricing" class="mk-section">
   <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">Pricing</p>
-    <h2 class="mk-section-h mk-reveal">Simple plans. No surprises.</h2>
+    <p class="mk-eyebrow mk-reveal">{gettext("landing.pricing.eyebrow")}</p>
+    <h2 class="mk-section-h mk-reveal">{gettext("landing.pricing.h")}</h2>
     <p class="mk-section-sub mk-reveal">
-      Free covers most writers. Pro and Team unlock when you outgrow it.
+      {gettext("landing.pricing.sub")}
     </p>
     <div class="mk-price-grid mk-reveal-group">
       <div class="mk-price">
-        <p class="mk-price-name">Free</p>
-        <p class="mk-price-desc">Everything you need to start writing.</p>
-        <div class="mk-price-amt">$0 <small>forever</small></div>
+        <p class="mk-price-name">{gettext("landing.pricing.free.name")}</p>
+        <p class="mk-price-desc">{gettext("landing.pricing.free.desc")}</p>
+        <div class="mk-price-amt">$0 <small>{gettext("landing.pricing.free.period")}</small></div>
         <.link
           navigate={~p"/users/register"}
           class="mk-btn mk-btn-outline"
           style="width:100%;justify-content:center;margin-top:18px"
         >
-          Start free
+          {gettext("landing.pricing.free.cta")}
         </.link>
         <ul class="mk-price-list">
-          <li><span class="mk-price-check">✓</span> 3 projects</li>
-          <li><span class="mk-price-check">✓</span> 100 MB asset storage</li>
-          <li><span class="mk-price-check">✓</span> Public share links</li>
-          <li><span class="mk-price-check">✓</span> Community support</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.free.f1")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.free.f2")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.free.f3")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.free.f4")}</li>
         </ul>
       </div>
       <div class="mk-price mk-price-featured">
-        <div class="mk-price-pop">Most popular</div>
-        <p class="mk-price-name">Pro</p>
+        <div class="mk-price-pop">{gettext("landing.pricing.popular")}</div>
+        <p class="mk-price-name">{gettext("landing.pricing.pro.name")}</p>
         <p class="mk-price-desc">
-          For working writers — unlimited projects, custom fonts, private sharing.
+          {gettext("landing.pricing.pro.desc")}
         </p>
-        <div class="mk-price-amt">$8 <small>per month</small></div>
+        <div class="mk-price-amt">$8 <small>{gettext("landing.pricing.pro.period")}</small></div>
         <.link
           navigate={~p"/users/register"}
           class="mk-btn mk-btn-primary"
           style="width:100%;justify-content:center;margin-top:18px"
         >
-          Try Pro free
+          {gettext("landing.pricing.pro.cta")}
         </.link>
         <ul class="mk-price-list">
-          <li><span class="mk-price-check">✓</span> Unlimited projects</li>
-          <li><span class="mk-price-check">✓</span> 5 GB asset storage</li>
-          <li><span class="mk-price-check">✓</span> Private share links</li>
-          <li><span class="mk-price-check">✓</span> Custom fonts</li>
-          <li><span class="mk-price-check">✓</span> Email support</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.pro.f1")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.pro.f2")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.pro.f3")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.pro.f4")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.pro.f5")}</li>
         </ul>
       </div>
       <div class="mk-price">
-        <p class="mk-price-name">Team</p>
-        <p class="mk-price-desc">For organizations producing documents at scale.</p>
-        <div class="mk-price-amt">$24 <small>per seat / mo</small></div>
+        <p class="mk-price-name">{gettext("landing.pricing.team.name")}</p>
+        <p class="mk-price-desc">{gettext("landing.pricing.team.desc")}</p>
+        <div class="mk-price-amt">
+          $24 <small>{gettext("landing.pricing.team.period")}</small>
+        </div>
         <a
           href="mailto:hello@typster.app"
           class="mk-btn mk-btn-outline"
           style="width:100%;justify-content:center;margin-top:18px"
         >
-          Contact sales
+          {gettext("landing.pricing.team.cta")}
         </a>
         <ul class="mk-price-list">
-          <li><span class="mk-price-check">✓</span> Everything in Pro</li>
-          <li><span class="mk-price-check">✓</span> Shared workspaces</li>
-          <li><span class="mk-price-check">✓</span> SSO + audit log</li>
-          <li><span class="mk-price-check">✓</span> Priority support</li>
-          <li><span class="mk-price-check">✓</span> 99.9% SLA</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.team.f1")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.team.f2")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.team.f3")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.team.f4")}</li>
+          <li><span class="mk-price-check">✓</span> {gettext("landing.pricing.team.f5")}</li>
         </ul>
       </div>
     </div>

@@ -13,6 +13,7 @@
   --mk-bd2: #f4f4f5;
   --mk-bg: #ffffff;
   --mk-bg2: #fafafa;
+  --mk-bg3: #f1f1f3;
   --mk-r: 0.75rem;
   --mk-r-sm: 0.5rem;
   --mk-r-lg: 1rem;
@@ -72,6 +73,7 @@
   --mk-bd2: #1f1f23;
   --mk-bg: #0a0a0b;
   --mk-bg2: #111114;
+  --mk-bg3: #18181b;
   --mk-sh-sm: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.35);
   --mk-sh-md: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -2px rgba(0,0,0,.3);
   --mk-sh-lg: 0 10px 15px -3px rgba(0,0,0,.5), 0 4px 6px -4px rgba(0,0,0,.3);
@@ -111,6 +113,7 @@
     --mk-bd2: #1f1f23;
     --mk-bg: #0a0a0b;
     --mk-bg2: #111114;
+    --mk-bg3: #18181b;
     --mk-sh-sm: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.35);
     --mk-sh-md: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -2px rgba(0,0,0,.3);
     --mk-sh-lg: 0 10px 15px -3px rgba(0,0,0,.5), 0 4px 6px -4px rgba(0,0,0,.3);

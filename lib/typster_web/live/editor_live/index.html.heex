@@ -1,5 +1,5 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="ts-editor">
+  <div class="ts-editor" id="editor-shell" phx-hook="CommandPalette">
     <%!-- Editor top bar: breadcrumb, save status, actions --%>
     <div class="ts-editor__bar">
       <.link navigate={~p"/projects"} class="ts-btn ts-btn--ghost ts-btn--sm">
@@ -19,162 +19,500 @@
 
       <div class="ts-spacer" />
 
-      <button class="ts-btn ts-btn--primary ts-btn--sm">
+      <button type="button" class="ts-btn ts-btn--ghost ts-btn--sm" phx-click="open_palette">
+        <.icon name="hero-command-line" class="size-3" /> {gettext("editor.command")}
+      </button>
+      <button
+        type="button"
+        class="ts-btn ts-btn--ghost ts-btn--sm"
+        disabled
+        title={gettext("editor.share_soon")}
+      >
+        <.icon name="hero-arrow-up-tray" class="size-3" /> {gettext("editor.share")}
+      </button>
+      <button
+        type="button"
+        class="ts-btn ts-btn--primary ts-btn--sm"
+        phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "compile"})}
+      >
         <.icon name="hero-play" class="size-3" /> {gettext("editor.compile")}
       </button>
     </div>
 
-    <%!-- Three-pane layout --%>
-    <div class="ts-editor__panes">
-      <%!-- Sidebar: file tree + assets --%>
-      <aside class="ts-side">
-        <div class="ts-side__head">
-          <span>{gettext("editor.files")}</span>
-          <div class="ts-side__actions">
+    <%!-- Three-pane window --%>
+    <div class="ts-editor__body">
+      <div class="ts-window ts-editor__panes">
+        <%!-- Sidebar: file tree + outline + assets --%>
+        <aside class="ts-side">
+          <div class="ts-side__search">
+            <div class="ts-search ts-search--sm">
+              <.icon name="hero-magnifying-glass" class="size-3.5" />
+              <input
+                placeholder={gettext("editor.find_in_project")}
+                aria-label={gettext("editor.find_in_project")}
+              />
+            </div>
+          </div>
+
+          <div class="ts-side__head">
+            <span>{gettext("editor.files")}</span>
+            <div class="ts-side__actions">
+              <button
+                type="button"
+                class="ts-btn ts-btn--ghost ts-btn--sm ts-viewmenu__btn"
+                phx-click={JS.toggle(to: "#file-viewmenu")}
+                aria-label={gettext("editor.view.label")}
+              >
+                <.icon name="hero-arrows-right-left" class="size-3" />
+                {TypsterWeb.FileTree.view_label(@file_view_mode)}
+              </button>
+              <button
+                id="create-main-file-button"
+                phx-click="new_file"
+                class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+                aria-label={gettext("editor.new_file")}
+              >
+                <.icon name="hero-plus" class="size-3" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="file-viewmenu"
+            class="ts-viewmenu__pop hidden"
+            phx-click-away={JS.hide(to: "#file-viewmenu")}
+          >
             <button
-              id="create-main-file-button"
-              phx-click="new_file"
-              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
-              aria-label={gettext("editor.new_file")}
+              :for={
+                {m, label, desc} <- [
+                  {"tree", gettext("editor.view.tree"), gettext("editor.view.tree_desc")},
+                  {"smart", gettext("editor.view.smart_label"),
+                   gettext("editor.view.smart_desc")},
+                  {"flat", gettext("editor.view.flat_label"), gettext("editor.view.flat_desc")}
+                ]
+              }
+              type="button"
+              class={["ts-viewmenu__opt", to_string(@file_view_mode) == m && "is-on"]}
+              phx-click={
+                JS.hide(to: "#file-viewmenu") |> JS.push("set_file_view", value: %{mode: m})
+              }
             >
-              <.icon name="hero-plus" class="size-3" />
+              <.icon
+                :if={to_string(@file_view_mode) == m}
+                name="hero-check"
+                class="size-3 ts-viewmenu__check"
+              />
+              <span :if={to_string(@file_view_mode) != m} class="ts-viewmenu__dot"></span>
+              <span>
+                <strong>{label}</strong>
+                <em>{desc}</em>
+              </span>
             </button>
           </div>
-        </div>
 
-        <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) do %>
-          <div class="ts-empty" style="margin: 8px 14px; padding: 20px 12px;">
-            {gettext("editor.no_files")}
-          </div>
-        <% else %>
-          <ul class="ts-tree">
+          <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) do %>
+            <div class="ts-empty" style="margin: 8px 14px; padding: 20px 12px;">
+              {gettext("editor.no_files")}
+            </div>
+          <% else %>
+            <ul class="ts-tree">
+              <TypsterWeb.FileTree.tree_rows
+                nodes={TypsterWeb.FileTree.file_nodes(@file_tree, @file_view_mode)}
+                collapsed={@collapsed_dirs}
+                current_id={@current_file && @current_file.id}
+              />
+            </ul>
+          <% end %>
+
+          <div class="ts-side__head">{gettext("editor.outline")}</div>
+          <ul id="outline" phx-update="stream" class="ts-outline">
+            <li class="ts-outline__empty only:block hidden" id="outline-empty">
+              {gettext("editor.outline_empty")}
+            </li>
             <li
-              :for={file <- @file_tree}
-              id={"select-file-#{file.id}"}
-              phx-click={if Typster.Files.editable_file?(file), do: "select_file"}
-              phx-value-file-id={file.id}
-              class={[
-                "ts-tree__item",
-                !Typster.Files.editable_file?(file) && "is-disabled",
-                @current_file && @current_file.id == file.id && "is-active"
-              ]}
+              :for={{id, heading} <- @streams.outline}
+              id={id}
+              class={["ts-outline__item", "level-#{heading.level}"]}
+              phx-click={
+                JS.dispatch("phx:editor-command", detail: %{cmd: "goto", line: heading.line})
+              }
             >
-              <.icon name="hero-document-text" class="size-3.5" />
-              <span class="truncate flex-1">{file.path}</span>
+              <span class="truncate">{heading.text}</span>
             </li>
           </ul>
-        <% end %>
 
-        <div class="ts-side__head" style="margin-top: auto;">
-          <span>{gettext("editor.assets")}</span>
-          <div class="ts-side__actions">
-            <label
-              for="asset-file-input"
-              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
-              aria-label={gettext("editor.upload_asset")}
-              style="cursor: pointer;"
-            >
-              <.icon name="hero-arrow-up-tray" class="size-3" />
-            </label>
+          <div class="ts-side__head" style="margin-top: auto;">
+            <span>{gettext("editor.assets")}</span>
+            <div class="ts-side__actions">
+              <label
+                for="asset-file-input"
+                class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+                aria-label={gettext("editor.upload_asset")}
+                style="cursor: pointer;"
+              >
+                <.icon name="hero-arrow-up-tray" class="size-3" />
+              </label>
+            </div>
           </div>
-        </div>
 
-        <ul class="ts-tree">
-          <li
-            :for={asset <- @assets}
-            id={"asset-entry-#{asset.id}"}
-            class="ts-tree__item is-disabled"
-          >
-            <.icon name="hero-photo" class="size-3.5" />
-            <span class="truncate flex-1">{asset.filename}</span>
-            <span class="ts-tree__pill">{gettext("editor.asset")}</span>
-          </li>
-        </ul>
+          <ul class="ts-tree">
+            <TypsterWeb.FileTree.tree_rows
+              nodes={TypsterWeb.FileTree.asset_nodes(@assets, @file_view_mode)}
+              collapsed={@collapsed_dirs}
+            />
+          </ul>
 
-        <div class="ts-side__upload">
-          <.form
-            id="asset-upload-form"
-            for={%{}}
-            phx-change="validate_upload"
-            phx-submit="save_upload"
-          >
-            <.live_file_input upload={@uploads.asset} id="asset-file-input" class="hidden" />
+          <div class="ts-side__upload">
+            <.form
+              id="asset-upload-form"
+              for={%{}}
+              phx-change="validate_upload"
+              phx-submit="save_upload"
+            >
+              <.live_file_input upload={@uploads.asset} id="asset-file-input" class="hidden" />
+              <button
+                id="upload-asset-button"
+                type="submit"
+                class="ts-btn ts-btn--outline ts-btn--sm"
+                style="width: 100%;"
+              >
+                {gettext("editor.upload_asset")}
+              </button>
+            </.form>
+          </div>
+        </aside>
+
+        <%!-- Source pane: tab bar + formatting toolbar + CodeMirror --%>
+        <section class="ts-source">
+          <div class="ts-source__tabs">
+            <div class="ts-tab is-active">
+              <.icon name="hero-document" class="size-3" />
+              {if @current_file, do: @current_file.path, else: gettext("editor.no_file")}
+            </div>
+          </div>
+
+          <div class="ts-formatbar">
             <button
-              id="upload-asset-button"
-              type="submit"
-              class="ts-btn ts-btn--outline ts-btn--sm"
-              style="width: 100%;"
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "bold"})}
+              aria-label={gettext("editor.format.bold")}
+              title={gettext("editor.format.bold")}
             >
-              {gettext("editor.upload_asset")}
+              <i data-lucide="bold" aria-hidden="true"></i>
             </button>
-          </.form>
-        </div>
-      </aside>
-
-      <%!-- Source pane: tab bar + CodeMirror + status bar --%>
-      <section class="ts-source">
-        <div class="ts-source__tabs">
-          <div class="ts-tab is-active">
-            <.icon name="hero-document" class="size-3" />
-            {if @current_file, do: @current_file.path, else: gettext("editor.no_file")}
-          </div>
-        </div>
-
-        <div
-          id="editor-container"
-          phx-hook="CodeMirror"
-          phx-update="ignore"
-          data-content={@content}
-          data-file-id={if @current_file, do: @current_file.id, else: ""}
-          data-language={@editor_language}
-          data-project-sources={Jason.encode!(@project_sources)}
-          data-project-assets={Jason.encode!(@project_assets)}
-          class="ts-source__editor"
-          style={if !@current_file, do: "display:none", else: ""}
-        >
-        </div>
-        <div :if={!@current_file} class="ts-preview__placeholder">
-          <span style="color: var(--fg4);">
-            <.icon name="hero-pencil-square" class="size-8" />
-          </span>
-          <p>{gettext("editor.select_file_placeholder")}</p>
-        </div>
-
-        <div class="ts-source__status">
-          <span>{String.upcase(@editor_language)}</span>
-          <span>UTF-8</span>
-          <div class="ts-spacer" />
-        </div>
-      </section>
-
-      <%!-- Preview pane --%>
-      <section class="ts-preview">
-        <div class="ts-preview__bar">
-          <span>{gettext("editor.preview")}</span>
-          <div class="ts-spacer" />
-          <button
-            class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
-            aria-label={gettext("editor.download")}
-          >
-            <.icon name="hero-arrow-down-tray" class="size-3.5" />
-          </button>
-        </div>
-        <div
-          id="preview-container"
-          phx-hook="Preview"
-          phx-update="ignore"
-          class="ts-preview__scroll"
-        >
-          <div id="preview-placeholder" class="ts-preview__placeholder">
-            <span style="color: var(--fg4);">
-              <.icon name="hero-eye" class="size-8" />
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "italic"})}
+              aria-label={gettext("editor.format.italic")}
+              title={gettext("editor.format.italic")}
+            >
+              <i data-lucide="italic" aria-hidden="true"></i>
+            </button>
+            <span class="ts-formatbar__sep"></span>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "heading"})}
+              aria-label={gettext("editor.format.heading")}
+              title={gettext("editor.format.heading")}
+            >
+              <i data-lucide="heading" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "list"})}
+              aria-label={gettext("editor.format.list")}
+              title={gettext("editor.format.list")}
+            >
+              <i data-lucide="list" aria-hidden="true"></i>
+            </button>
+            <span class="ts-formatbar__sep"></span>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "math"})}
+              aria-label={gettext("editor.format.math")}
+              title={gettext("editor.format.math")}
+            >
+              <i data-lucide="sigma" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "link"})}
+              aria-label={gettext("editor.format.link")}
+              title={gettext("editor.format.link")}
+            >
+              <i data-lucide="link-2" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "table"})}
+              aria-label={gettext("editor.format.table")}
+              title={gettext("editor.format.table")}
+            >
+              <i data-lucide="table" aria-hidden="true"></i>
+            </button>
+            <span class="ts-formatbar__sep"></span>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "image"})}
+              aria-label={gettext("editor.format.image")}
+              title={gettext("editor.format.image")}
+            >
+              <i data-lucide="image" aria-hidden="true"></i>
+            </button>
+            <span class="ts-formatbar__sep"></span>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "search"})}
+              aria-label={gettext("editor.find")}
+              title={gettext("editor.find")}
+            >
+              <i data-lucide="search" aria-hidden="true"></i>
+            </button>
+            <span :if={@current_file} class="ts-formatbar__hint">
+              {@editor_language} · {@current_file.path}
             </span>
-            <p>{gettext("editor.preview_placeholder")}</p>
           </div>
+
+          <div
+            id="editor-container"
+            phx-hook="CodeMirror"
+            phx-update="ignore"
+            data-content={@content}
+            data-file-id={if @current_file, do: @current_file.id, else: ""}
+            data-file-name={if @current_file, do: @current_file.path, else: ""}
+            data-language={@editor_language}
+            data-project-sources={Jason.encode!(@project_sources)}
+            data-project-assets={Jason.encode!(@project_assets)}
+            class="ts-source__editor"
+            style={if !@current_file, do: "display:none", else: ""}
+          >
+          </div>
+          <div :if={!@current_file} class="ts-emptystate">
+            <div class="ts-emptystate__tile ts-serif">T</div>
+            <h3 class="ts-emptystate__title">
+              {gettext("editor.empty.title_lead")}
+              <span class="ts-serif">{gettext("editor.empty.title_accent")}</span>
+            </h3>
+            <p class="ts-emptystate__sub">{gettext("editor.empty.sub")}</p>
+            <div class="ts-emptystate__actions">
+              <button type="button" phx-click="new_file" class="ts-btn ts-btn--primary ts-btn--sm">
+                <.icon name="hero-plus" class="size-3" /> {gettext("editor.empty.new_file")}
+              </button>
+              <button
+                type="button"
+                class="ts-btn ts-btn--outline ts-btn--sm"
+                disabled
+                title={gettext("editor.empty.template_soon")}
+              >
+                {gettext("editor.empty.open_template")}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <%!-- Preview pane --%>
+        <section class="ts-preview">
+          <div class="ts-preview__bar">
+            <span>{gettext("editor.preview")}</span>
+            <%= cond do %>
+              <% @preview_error -> %>
+                <span class="ts-pill ts-pill--error">
+                  <span class="ts-pill__dot"></span>{gettext("editor.preview_failed")}
+                </span>
+              <% @preview_compiling -> %>
+                <span class="ts-pill ts-pill--accent">
+                  <span class="ts-pill__dot"></span>{gettext("editor.compiling")}
+                </span>
+              <% @preview_stats -> %>
+                <span class="ts-pill ts-pill--success">
+                  <span class="ts-pill__dot"></span>{gettext("editor.compiled")}
+                </span>
+                <span :if={@preview_stats.ms} class="ts-preview__ms">{@preview_stats.ms}ms</span>
+              <% true -> %>
+                <span class="ts-pill">
+                  <span class="ts-pill__dot"></span>{gettext("editor.status_ready")}
+                </span>
+            <% end %>
+            <div class="ts-spacer" />
+            <div id="preview-zoom" phx-hook="PreviewZoom" phx-update="ignore" class="ts-seg">
+              <button type="button" data-zoom="out" aria-label={gettext("editor.zoom_out")}>
+                −
+              </button>
+              <button type="button" data-zoom="reset" id="zoom-level">100%</button>
+              <button type="button" data-zoom="in" aria-label={gettext("editor.zoom_in")}>
+                +
+              </button>
+            </div>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "compile"})}
+              aria-label={gettext("editor.refresh")}
+            >
+              <.icon name="hero-arrow-path" class="size-3.5" />
+            </button>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "download"})}
+              title={gettext("editor.download")}
+              aria-label={gettext("editor.download")}
+            >
+              <.icon name="hero-arrow-down-tray" class="size-3.5" />
+            </button>
+          </div>
+          <div
+            id="preview-container"
+            phx-hook="Preview"
+            phx-update="ignore"
+            class="ts-preview__scroll"
+          >
+            <div id="preview-placeholder" class="ts-preview__placeholder">
+              <span style="color: var(--fg4);">
+                <.icon name="hero-eye" class="size-8" />
+              </span>
+              <p>{gettext("editor.preview_placeholder")}</p>
+            </div>
+          </div>
+        </section>
+
+        <%!-- Status bar — spans all panes --%>
+        <div class="ts-statusbar">
+          <span class="ts-statusbar__item">
+            <span class="ts-statusbar__dot"></span>{String.upcase(@editor_language)}
+          </span>
+          <span class="ts-statusbar__sep"></span>
+          <span id="status-cursor" phx-update="ignore" class="ts-statusbar__item">
+            Ln 1, Col 1
+          </span>
+          <span class="ts-statusbar__sep"></span>
+          <span class="ts-statusbar__item">UTF-8</span>
+          <span class="ts-statusbar__sep"></span>
+          <span class="ts-statusbar__item">LF</span>
+          <div class="ts-spacer" />
+          <span class="ts-statusbar__item">{gettext("editor.command_hint")}</span>
         </div>
-      </section>
+      </div>
     </div>
   </div>
+
+  <%!-- ⌘K command palette --%>
+  <div
+    :if={@show_palette}
+    class="ts-overlay"
+    phx-click="close_palette"
+    phx-window-keydown="close_palette"
+    phx-key="Escape"
+  >
+    <div id="command-palette" phx-hook="Palette" class="ts-palette" phx-click="">
+      <div class="ts-palette__input">
+        <.icon name="hero-magnifying-glass" class="size-4" />
+        <input
+          id="palette-input"
+          name="query"
+          value={@palette_query}
+          phx-keyup="filter_palette"
+          phx-debounce="80"
+          placeholder={gettext("editor.palette.placeholder")}
+          autocomplete="off"
+        />
+        <span class="ts-kbd">ESC</span>
+      </div>
+      <div class="ts-palette__list">
+        <div
+          :if={
+            palette_match?(@palette_query, gettext("editor.palette.compile")) or
+              palette_match?(@palette_query, gettext("editor.palette.settings"))
+          }
+          class="ts-palette__group"
+        >
+          {gettext("editor.palette.suggested")}
+        </div>
+        <button
+          :if={palette_match?(@palette_query, gettext("editor.palette.compile"))}
+          type="button"
+          class="ts-palette__item"
+          phx-click={
+            JS.dispatch("phx:editor-command", detail: %{cmd: "compile"})
+            |> JS.push("close_palette")
+          }
+        >
+          <.icon name="hero-play" class="size-4" />
+          <span>{gettext("editor.palette.compile")}</span>
+          <span class="ts-kbd">⌘↵</span>
+        </button>
+        <button
+          :if={palette_match?(@palette_query, gettext("editor.palette.settings"))}
+          type="button"
+          class="ts-palette__item"
+          phx-click={JS.navigate(~p"/users/settings")}
+        >
+          <.icon name="hero-cog-6-tooth" class="size-4" />
+          <span>{gettext("editor.palette.settings")}</span>
+        </button>
+
+        <div :if={palette_files(@file_tree, @palette_query) != []} class="ts-palette__group">
+          {gettext("editor.palette.files")}
+        </div>
+        <button
+          :for={file <- palette_files(@file_tree, @palette_query)}
+          type="button"
+          class="ts-palette__item"
+          phx-click={
+            JS.push("select_file", value: %{"file-id" => file.id})
+            |> JS.push("close_palette")
+          }
+        >
+          <.icon name="hero-document" class="size-4" />
+          <span>{file.path}</span>
+        </button>
+
+        <div
+          :if={
+            palette_match?(@palette_query, gettext("editor.palette.equation")) or
+              palette_match?(@palette_query, gettext("editor.palette.table"))
+          }
+          class="ts-palette__group"
+        >
+          {gettext("editor.palette.insert")}
+        </div>
+        <button
+          :if={palette_match?(@palette_query, gettext("editor.palette.equation"))}
+          type="button"
+          class="ts-palette__item"
+          phx-click={
+            JS.dispatch("phx:editor-command", detail: %{cmd: "math"})
+            |> JS.push("close_palette")
+          }
+        >
+          <.icon name="hero-variable" class="size-4" />
+          <span>{gettext("editor.palette.equation")}</span>
+        </button>
+        <button
+          :if={palette_match?(@palette_query, gettext("editor.palette.table"))}
+          type="button"
+          class="ts-palette__item"
+          phx-click={
+            JS.dispatch("phx:editor-command", detail: %{cmd: "table"})
+            |> JS.push("close_palette")
+          }
+        >
+          <.icon name="hero-table-cells" class="size-4" />
+          <span>{gettext("editor.palette.table")}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <%= if @show_new_file_dialog do %>
     <div class="ts-overlay" phx-click="close_file_dialog">
       <div class="ts-dialog" phx-click="" phx-window-keydown="close_file_dialog" phx-key="Escape">

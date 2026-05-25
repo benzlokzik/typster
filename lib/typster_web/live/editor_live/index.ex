@@ -27,7 +27,13 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:save_status, "saved")
      |> assign(:preview_stats, nil)
      |> assign(:preview_error, nil)
+     |> assign(:preview_compiling, false)
      |> assign(:show_new_file_dialog, false)
+     |> assign(:file_view_mode, :tree)
+     |> assign(:collapsed_dirs, MapSet.new())
+     |> assign(:show_palette, false)
+     |> assign(:palette_query, "")
+     |> stream(:outline, [])
      |> assign(:page_title, project.name)
      |> allow_upload(:asset,
        accept: ~w(.pdf .png .jpg .jpeg .svg .webp .ttf .otf .woff .woff2),
@@ -74,21 +80,55 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   @impl true
-  def handle_event(
-        "update_preview",
-        %{"source_count" => source_count, "asset_count" => asset_count},
-        socket
-      ) do
+  def handle_event("compile_started", _params, socket) do
+    {:noreply, assign(socket, preview_compiling: true, preview_error: nil)}
+  end
+
+  @impl true
+  def handle_event("update_preview", params, socket) do
     {:noreply,
      assign(socket,
-       preview_stats: %{source_count: source_count, asset_count: asset_count},
+       preview_stats: %{ms: params["ms"], pages: params["pages"]},
+       preview_compiling: false,
        preview_error: nil
      )}
   end
 
   @impl true
   def handle_event("preview_error", %{"message" => message}, socket) do
-    {:noreply, assign(socket, :preview_error, message)}
+    {:noreply, assign(socket, preview_error: message, preview_compiling: false)}
+  end
+
+  @impl true
+  def handle_event("outline_parsed", %{"items" => items}, socket) do
+    outline =
+      items
+      |> Enum.with_index()
+      |> Enum.map(fn {item, idx} ->
+        %{
+          id: "outline-#{idx}",
+          level: item["level"] || 1,
+          text: item["text"] || "",
+          line: item["line"] || 1
+        }
+      end)
+
+    {:noreply, stream(socket, :outline, outline, reset: true)}
+  end
+
+  @impl true
+  def handle_event("open_palette", _params, socket) do
+    {:noreply, assign(socket, show_palette: true, palette_query: "")}
+  end
+
+  @impl true
+  def handle_event("close_palette", _params, socket) do
+    {:noreply, assign(socket, :show_palette, false)}
+  end
+
+  @impl true
+  def handle_event("filter_palette", %{"value" => query}, socket) do
+    {:noreply, assign(socket, :palette_query, query)}
   end
 
   @impl true
@@ -112,6 +152,23 @@ defmodule TypsterWeb.EditorLive.Index do
     else
       {:noreply, put_flash(socket, :error, gettext("editor.flash.binary_asset"))}
     end
+  end
+
+  @impl true
+  def handle_event("set_file_view", %{"mode" => mode}, socket) do
+    {:noreply, assign(socket, :file_view_mode, TypsterWeb.FileTree.mode(mode))}
+  end
+
+  @impl true
+  def handle_event("toggle_dir", %{"path" => path}, socket) do
+    collapsed = socket.assigns.collapsed_dirs
+
+    collapsed =
+      if MapSet.member?(collapsed, path),
+        do: MapSet.delete(collapsed, path),
+        else: MapSet.put(collapsed, path)
+
+    {:noreply, assign(socket, :collapsed_dirs, collapsed)}
   end
 
   @impl true
@@ -218,6 +275,15 @@ defmodule TypsterWeb.EditorLive.Index do
 
   defp editor_language(nil), do: "plain"
   defp editor_language(file), do: Files.editor_language(file.path)
+
+  defp palette_match?(query, label) do
+    query = String.trim(query || "")
+    query == "" or String.contains?(String.downcase(label), String.downcase(query))
+  end
+
+  defp palette_files(file_tree, query) do
+    Enum.filter(file_tree, &(Files.editable_file?(&1) and palette_match?(query, &1.path)))
+  end
 
   defp save_status_label("saved"), do: gettext("editor.status.saved")
   defp save_status_label("saving"), do: gettext("editor.status.saving")

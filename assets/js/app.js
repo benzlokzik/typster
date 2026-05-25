@@ -18,8 +18,8 @@
 // To load it, simply add a second `<link>` to your `root.html.heex` file.
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
-import { createIcons, ArrowRight, Bell, BookText, ChartNoAxesColumn, CircleCheck, CircleX, CloudUpload, Command, Eye, File, FileInput, FileText, GraduationCap, Image, Info, Moon, NotebookPen, PenLine, ReceiptText, Share2, Sparkles, Sun, TriangleAlert, Type, Users, X as XIcon, Zap } from "lucide"
-import { siGithub } from "simple-icons"
+import { createIcons, ArrowDown, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, ChevronDown, CircleCheck, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Share2, Sigma, Sparkles, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X as XIcon, Zap } from "lucide"
+import { siGithub, siGoogle } from "simple-icons"
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
 import {Socket} from "phoenix"
@@ -36,7 +36,11 @@ const liveSocket = new LiveSocket("/live", Socket, {
     ...colocatedHooks,
     CodeMirror: Hooks.CodeMirror,
     Preview: Hooks.Preview,
-    SaveStatus: Hooks.SaveStatus
+    SaveStatus: Hooks.SaveStatus,
+    PreviewZoom: Hooks.PreviewZoom,
+    CommandPalette: Hooks.CommandPalette,
+    Palette: Hooks.Palette,
+    SlashFocus: Hooks.SlashFocus
   },
 })
 
@@ -55,11 +59,13 @@ liveSocket.connect()
 window.liveSocket = liveSocket
 
 const Github = [["path", { d: siGithub.path, fill: "currentColor", stroke: "none" }]]
-const mkIconSet = { ArrowRight, Bell, BookText, ChartNoAxesColumn, CircleCheck, CircleX, CloudUpload, Command, Eye, File, FileInput, FileText, GraduationCap, Image, Info, Moon, NotebookPen, PenLine, ReceiptText, Share2, Sparkles, Sun, TriangleAlert, Type, Users, X: XIcon, Zap, Github }
+const Google = [["path", { d: siGoogle.path, fill: "currentColor", stroke: "none" }]]
+const mkIconSet = { ArrowDown, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, ChevronDown, CircleCheck, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Share2, Sigma, Sparkles, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X: XIcon, Zap, Github, Google }
 const mkIcons = (root = document) => {
   createIcons({ icons: mkIconSet, root })
   root.querySelectorAll("svg[data-lucide]").forEach((svg) => svg.removeAttribute("data-lucide"))
 }
+window.mkIcons = mkIcons
 mkIcons()
 
 // ── Theme toggle (view-transition pour reveal) ────────────────────────────

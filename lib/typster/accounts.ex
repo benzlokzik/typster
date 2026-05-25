@@ -167,6 +167,37 @@ defmodule Typster.Accounts do
     |> update_user_and_delete_all_tokens()
   end
 
+  @doc """
+  Returns an `%Ecto.Changeset{}` for changing the user's product-UI preferences.
+
+  ## Examples
+
+      iex> change_user_preferences(user)
+      %Ecto.Changeset{data: %User{}}
+
+  """
+  def change_user_preferences(user, attrs \\ %{}) do
+    User.preferences_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the user's product-UI preferences (e.g. accent color).
+
+  ## Examples
+
+      iex> update_user_preferences(user, %{accent_color: "violet"})
+      {:ok, %User{}}
+
+      iex> update_user_preferences(user, %{accent_color: "bogus"})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_preferences(user, attrs) do
+    user
+    |> User.preferences_changeset(attrs)
+    |> Repo.update()
+  end
+
   ## Session
 
   @doc """

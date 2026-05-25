@@ -6,6 +6,11 @@ defmodule Typster.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @accent_colors ~w(indigo violet sky emerald rose)
+
+  @doc "The accent color keys a user may choose for the product UI."
+  def accent_colors, do: @accent_colors
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "users" do
@@ -14,6 +19,7 @@ defmodule Typster.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
+    field :accent_color, :string, default: "indigo"
     has_many :projects, Typster.Projects.Project
 
     timestamps(type: :utc_datetime)
@@ -111,6 +117,16 @@ defmodule Typster.Accounts.User do
     else
       changeset
     end
+  end
+
+  @doc """
+  A user changeset for product-UI preferences (accent color).
+  """
+  def preferences_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:accent_color])
+    |> validate_required([:accent_color])
+    |> validate_inclusion(:accent_color, @accent_colors)
   end
 
   @doc """

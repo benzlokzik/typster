@@ -32,7 +32,14 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: [/auth\.setup\.mjs/, /editor_load\.spec\.mjs/, /wasm\.spec\.mjs/, /preview\.spec\.mjs/]
+      testIgnore: [
+        /auth\.setup\.mjs/,
+        /editor_load\.spec\.mjs/,
+        /wasm\.spec\.mjs/,
+        /preview\.spec\.mjs/,
+        /redesign\.spec\.mjs/,
+        /search_panel\.spec\.mjs/
+      ]
     },
     {
       name: "chromium-authenticated",
@@ -40,7 +47,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         storageState: authFile
       },
-      testMatch: [/editor_load\.spec\.mjs/, /wasm\.spec\.mjs/, /preview\.spec\.mjs/],
+      testMatch: [/editor_load\.spec\.mjs/, /wasm\.spec\.mjs/, /preview\.spec\.mjs/, /redesign\.spec\.mjs/, /search_panel\.spec\.mjs/],
       dependencies: ["setup"]
     }
   ]

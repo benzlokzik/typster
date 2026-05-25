@@ -4,6 +4,7 @@
 :root {
   --bg: var(--mk-bg);
   --bg2: var(--mk-bg2);
+  --bg3: var(--mk-bg3);
   --fg: var(--mk-fg);
   --fg2: var(--mk-fg2);
   --fg3: var(--mk-fg3);
@@ -20,12 +21,14 @@
   --sh-lg: var(--mk-sh-lg);
   --sh-2xl: var(--mk-sh-2xl);
   --ease: var(--mk-ease);
-  --ring: 0 0 0 3px rgba(79, 70, 229, 0.30);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--mk-pri) 30%, transparent);
 }
 
 /* ── Layout shell ─────────────────────────────────────────────────────────── */
-.ts-app { display: flex; flex-direction: column; height: 100dvh; background: var(--bg); color: var(--fg); }
-.ts-main { flex: 1; overflow: auto; background: var(--bg); }
+.ts-app { position: relative; isolation: isolate; display: flex; flex-direction: column; height: 100dvh; background: var(--bg); color: var(--fg); }
+/* Transparent so the `.ts-app::before` page texture shows through on the
+   projects/settings surfaces (content cards carry their own background). */
+.ts-main { flex: 1; overflow: auto; background: transparent; }
 .ts-page { max-width: 960px; margin: 0 auto; padding: 40px 32px; }
 .ts-page--narrow { max-width: 680px; }
 .ts-spacer { flex: 1; }
@@ -128,8 +131,21 @@
 .ts-list__main { flex: 1; min-width: 0; }
 .ts-list__title { font: 500 14px 'Inter', system-ui, sans-serif; color: var(--fg); }
 .ts-list__sub { font: 400 12px 'Inter', system-ui, sans-serif; color: var(--fg3); margin-top: 2px; }
-.ts-list__actions { display: flex; gap: 4px; flex-shrink: 0; }
+.ts-list__actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity 120ms var(--ease); }
+.ts-list__row:hover .ts-list__actions, .ts-list__row:focus-within .ts-list__actions { opacity: 1; }
 .ts-empty { padding: 32px; text-align: center; color: var(--fg3); border: 1px dashed var(--bd); border-radius: var(--r); font: 14px 'Inter', system-ui, sans-serif; }
+
+/* ── Action cards (templates / import) ─────────────────────────────────────── */
+.ts-cards { display: flex; gap: 12px; margin-top: 22px; }
+.ts-card--action { flex: 1; display: flex; align-items: center; gap: 12px; margin-bottom: 0; padding: 16px; text-align: left; cursor: pointer; background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); box-shadow: var(--sh-sm); color: var(--fg); font: inherit; transition: all 200ms var(--ease); }
+.ts-card--action:hover { box-shadow: var(--sh-md); transform: translateY(-1px); }
+.ts-card--action.is-disabled { opacity: .6; cursor: not-allowed; }
+.ts-card--action.is-disabled:hover { box-shadow: var(--sh-sm); transform: none; }
+.ts-card__action-icon { width: 38px; height: 38px; border-radius: var(--r-sm); display: grid; place-items: center; background: var(--pri-50); color: var(--pri); flex-shrink: 0; }
+.ts-card__action-icon--success { background: var(--mk-success-50); color: var(--mk-success); }
+.ts-card__action-body { flex: 1; min-width: 0; }
+.ts-card__action-title { font: 600 13.5px 'Inter', system-ui, sans-serif; color: var(--fg); }
+.ts-card__action-sub { font: 12px 'Inter', system-ui, sans-serif; color: var(--fg3); margin-top: 2px; }
 
 /* ── Cards ────────────────────────────────────────────────────────────────── */
 .ts-card { border: 1px solid var(--bd); border-radius: var(--r); background: var(--bg); box-shadow: var(--sh-sm); margin-bottom: 16px; overflow: hidden; }
@@ -162,10 +178,14 @@
 .ts-savestat--saving .ts-savestat__dot { background: var(--mk-warning); }
 .ts-savestat--error .ts-savestat__dot { background: var(--mk-error); }
 
-.ts-editor__panes { flex: 1; display: grid; grid-template-columns: 240px 1fr 1fr; min-height: 0; overflow: hidden; }
+.ts-editor__body { flex: 1; min-height: 0; padding: 12px 16px 16px; display: flex; }
+.ts-editor__panes { flex: 1; display: grid; grid-template-columns: 230px 1fr 1fr; grid-template-rows: 1fr auto; min-height: 0; }
 
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
-.ts-side { border-right: 1px solid var(--bd); background: var(--bg2); overflow: auto; padding: 8px 0; display: flex; flex-direction: column; }
+.ts-side { border-right: 1px solid var(--bd); background: var(--bg2); overflow: auto; padding: 8px 0; display: flex; flex-direction: column; min-height: 0; }
+.ts-side__search { padding: 10px 12px 4px; flex-shrink: 0; }
+.ts-search--sm { max-width: none; height: 30px; font-size: 12px; }
+.ts-search--sm input { font-size: 12px; }
 .ts-side__head { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px 6px; font: 600 11px 'Inter', system-ui, sans-serif; color: var(--fg3); text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; }
 .ts-side__actions { display: flex; align-items: center; gap: 2px; }
 .ts-tree { display: flex; flex-direction: column; padding: 0 6px 12px; list-style: none; margin: 0; }
@@ -177,7 +197,26 @@
 .ts-tree__item.is-disabled:hover { background: none; }
 .ts-tree__pill { margin-left: auto; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
 .ts-tree__dir { color: var(--fg); font-weight: 500; user-select: none; }
+.ts-tree__dir > span:nth-child(-n+2) { color: var(--fg3); }
 .ts-tree__count { margin-left: auto; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); background: var(--bd2); padding: 1px 6px; border-radius: 9999px; }
+.ts-tree__smart { margin-left: 4px; color: var(--fg4); font: 11px 'JetBrains Mono', ui-monospace, monospace; flex-shrink: 0; }
+
+/* ── File-tree view-mode switcher ─────────────────────────────────────────── */
+/* The sidebar is a narrow `overflow:auto` scroller, so the menu renders in-flow
+   (full width, pushing the tree down) rather than as an absolute overlay that
+   the scroll container would clip. */
+.ts-viewmenu__btn { gap: 5px; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.ts-viewmenu__pop {
+  margin: 0 8px 8px; padding: 6px;
+  background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); box-shadow: var(--sh-md);
+}
+.ts-viewmenu__opt { display: flex; align-items: flex-start; gap: 8px; width: 100%; padding: 8px; border: 0; background: none; cursor: pointer; border-radius: var(--r-sm); text-align: left; color: var(--fg2); transition: background 200ms var(--ease); }
+.ts-viewmenu__opt:hover { background: var(--bd2); }
+.ts-viewmenu__opt.is-on { color: var(--fg); }
+.ts-viewmenu__opt strong { display: block; font: 500 13px 'Inter', system-ui, sans-serif; }
+.ts-viewmenu__opt em { display: block; font: 400 12px 'Inter', system-ui, sans-serif; font-style: normal; color: var(--fg3); margin-top: 1px; }
+.ts-viewmenu__check { margin-top: 3px; color: var(--pri); flex-shrink: 0; }
+.ts-viewmenu__dot { width: 12px; height: 12px; margin-top: 3px; border-radius: 50%; border: 1.5px solid var(--fg4); flex-shrink: 0; box-sizing: border-box; }
 
 /* ── Source pane ──────────────────────────────────────────────────────────── */
 .ts-source { display: flex; flex-direction: column; border-right: 1px solid var(--bd); min-height: 0; overflow: hidden; background: var(--bg); }
@@ -188,13 +227,33 @@
 .ts-source__editor .cm-editor { height: 100%; width: 100%; display: flex; flex-direction: column; }
 .ts-source__editor .cm-scroller { overflow: auto; flex: 1; }
 .ts-source__status { display: flex; align-items: center; gap: 14px; height: 24px; padding: 0 12px; border-top: 1px solid var(--bd); font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg3); background: var(--bg2); flex-shrink: 0; }
+.ts-formatbar svg { width: 15px; height: 15px; }
+
+/* ── Status bar (spans all editor panes) ───────────────────────────────────── */
+.ts-statusbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; height: 28px; padding: 0 14px; border-top: 1px solid var(--bd); background: var(--bg2); font: 500 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg3); }
+.ts-statusbar__item { display: inline-flex; align-items: center; gap: 6px; }
+.ts-statusbar__sep { width: 1px; height: 12px; background: var(--bd); flex-shrink: 0; }
+.ts-statusbar__dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--mk-success); flex-shrink: 0; }
 
 /* ── Preview pane ─────────────────────────────────────────────────────────── */
 .ts-preview { display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: var(--bg2); }
 .ts-preview__bar { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--bd); background: var(--bg); font: 500 12px 'Inter', system-ui, sans-serif; color: var(--fg2); flex-shrink: 0; }
 .ts-preview__scroll { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .ts-preview__placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--fg3); font: 13px 'Inter', system-ui, sans-serif; }
+.ts-preview__ms { font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
+
+/* ── Serif empty state (no file open) ──────────────────────────────────────── */
+.ts-emptystate { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; padding: 24px; text-align: center; }
+.ts-emptystate__tile { width: 72px; height: 72px; border-radius: var(--r); background: var(--pri-50); color: var(--pri); display: grid; place-items: center; font-size: 36px; border: 1px solid var(--mk-pri-100); margin-bottom: 6px; }
+.ts-emptystate__title { font: 700 20px 'Inter', system-ui, sans-serif; letter-spacing: -0.02em; margin: 0; color: var(--fg); }
+.ts-emptystate__sub { font: 13.5px/1.5 'Inter', system-ui, sans-serif; color: var(--fg3); margin: 0; max-width: 300px; }
+.ts-emptystate__actions { display: flex; gap: 8px; margin-top: 8px; }
 .ts-pdf { width: 100%; max-width: 520px; background: #fff; box-shadow: var(--sh-md); padding: 48px 56px; font: 11pt/1.5 'New Computer Modern', Cambria, Georgia, serif; color: #111; border-radius: 2px; min-height: 680px; }
+
+/* Rendered Typst output is transparent with black glyphs — render it on white
+   "paper" so it stays readable regardless of the (light/dark) UI theme. */
+#typst-svg-output { width: 100%; max-width: 600px; background: #fff; border-radius: 2px; box-shadow: var(--sh-md); }
+#typst-svg-output svg { display: block; width: 100%; height: auto; border-radius: 2px; }
 
 /* ── Command palette ──────────────────────────────────────────────────────── */
 .ts-palette { width: 520px; max-width: calc(100vw - 32px); background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); box-shadow: var(--sh-2xl); overflow: hidden; margin-top: -15vh; animation: ts-zoom 200ms var(--ease); }
@@ -204,9 +263,57 @@
 .ts-palette__item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-sm); font: 500 13px 'Inter', system-ui, sans-serif; color: var(--fg2); cursor: pointer; }
 .ts-palette__item.is-active, .ts-palette__item:hover { background: var(--pri-50); color: var(--pri-h); }
 .ts-palette__item .ts-kbd { margin-left: auto; }
+.ts-palette__list button.ts-palette__item { width: 100%; background: transparent; border: 0; text-align: left; font-family: inherit; }
+.ts-palette__item .size-4 { flex-shrink: 0; }
+.ts-outline__empty { padding: 4px 14px 10px; color: var(--fg4); font: 12px 'Inter', system-ui, sans-serif; }
 
 /* ── Keyboard hints ───────────────────────────────────────────────────────── */
 .ts-kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 4px; background: var(--bd2); border: 1px solid var(--bd); border-bottom-width: 2px; color: var(--fg2); font: 500 10px 'JetBrains Mono', ui-monospace, monospace; }
 
 /* ── Sidebar upload zone ──────────────────────────────────────────────────── */
 .ts-side__upload { padding: 8px 14px; border-top: 1px solid var(--bd); flex-shrink: 0; }
+
+/* ── Serif accent (mirrors landing <em>, Instrument Serif italic) ──────────── */
+.ts-serif { font-family: 'Instrument Serif', 'Times New Roman', serif; font-style: italic; font-weight: 400; color: var(--pri); letter-spacing: -0.01em; }
+
+/* ── Segmented control ─────────────────────────────────────────────────────── */
+.ts-seg { display: inline-flex; background: var(--bg2); border: 1px solid var(--bd); border-radius: var(--r-sm); padding: 3px; gap: 2px; }
+.ts-seg button { font: 500 12px 'Inter', system-ui, sans-serif; padding: 5px 10px; border-radius: 6px; background: transparent; border: 0; color: var(--fg2); cursor: pointer; transition: all 200ms var(--ease); }
+.ts-seg button:hover { color: var(--fg); }
+.ts-seg button.is-active { background: var(--bg); color: var(--fg); box-shadow: var(--sh-sm); }
+
+/* ── Status pills ──────────────────────────────────────────────────────────── */
+.ts-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 9999px; font: 500 12px 'Inter', system-ui, sans-serif; border: 1px solid var(--bd); background: var(--bg); color: var(--fg3); }
+.ts-pill__dot { width: 6px; height: 6px; border-radius: 9999px; background: currentColor; flex-shrink: 0; }
+.ts-pill--accent { background: var(--pri-50); color: var(--pri-h); border-color: var(--mk-pri-100); }
+.ts-pill--success { background: var(--mk-success-50); color: var(--mk-success-h); border-color: var(--mk-success-bd); }
+.ts-pill--error { background: var(--mk-error-50); color: var(--mk-error-h); border-color: var(--mk-error-bd); }
+
+/* ── Window chrome (rounded panel wrapping editor panes) ───────────────────── */
+.ts-window { border: 1px solid var(--bd); border-radius: var(--r); background: var(--bg); box-shadow: var(--sh-lg); overflow: hidden; }
+
+/* ── Formatting toolbar (WYSIWYG row, separate from tabs) ──────────────────── */
+.ts-formatbar { display: flex; align-items: center; gap: 2px; padding: 5px 8px; background: var(--bg); border-bottom: 1px solid var(--bd); flex-shrink: 0; }
+.ts-formatbar__sep { width: 1px; height: 16px; background: var(--bd); margin: 0 4px; flex-shrink: 0; }
+.ts-formatbar__hint { margin-left: auto; font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); padding-right: 6px; white-space: nowrap; }
+
+/* ── Outline ───────────────────────────────────────────────────────────────── */
+.ts-outline { display: flex; flex-direction: column; padding: 0 6px 12px; list-style: none; margin: 0; }
+.ts-outline__item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; font: 12.5px 'Inter', system-ui, sans-serif; color: var(--fg3); cursor: pointer; border-left: 2px solid transparent; border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.ts-outline__item:hover { color: var(--fg); }
+.ts-outline__item.is-active { color: var(--pri); border-left-color: var(--pri); background: var(--pri-50); }
+.ts-outline__item.level-2 { padding-left: 22px; font-size: 12px; }
+.ts-outline__item.level-3 { padding-left: 34px; font-size: 12px; color: var(--fg4); }
+
+/* ── Project initial tile (serif, accent-tinted; --ts-icon overrides hue) ──── */
+.ts-project-icon { width: 40px; height: 40px; border-radius: var(--r-sm); display: grid; place-items: center; flex-shrink: 0; font-family: 'Instrument Serif', 'Times New Roman', serif; font-style: italic; font-weight: 400; font-size: 19px; background: color-mix(in srgb, var(--ts-icon, var(--pri)) 14%, transparent); color: var(--ts-icon, var(--pri)); }
+
+/* ── Settings preference rows + accent swatches ────────────────────────────── */
+.ts-prefrow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--bd2); }
+.ts-prefrow:first-child { border-top: 0; padding-top: 0; }
+.ts-prefrow__label { font: 500 13.5px 'Inter', system-ui, sans-serif; color: var(--fg); }
+.ts-prefrow__hint { font: 12px 'Inter', system-ui, sans-serif; color: var(--fg3); margin-top: 2px; }
+.ts-swatches { display: flex; gap: 8px; align-items: center; }
+.ts-swatch { width: 26px; height: 26px; border-radius: var(--r-sm); background: var(--sw); border: 2px solid transparent; box-shadow: var(--sh-sm); cursor: pointer; padding: 0; transition: transform 120ms var(--ease); }
+.ts-swatch:hover { transform: translateY(-1px); }
+.ts-swatch.is-active { border-color: var(--fg); box-shadow: 0 0 0 2px var(--bg); }

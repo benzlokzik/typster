@@ -381,6 +381,7 @@ And **never** do this:
 - If using external data providers, keep credentials in environment variables.
 - Be careful with scraping limits and TOS.
 - Make regular commits to the repository using for commit messages template: `feat/core/bug/chore/etc: short description (#<issue number>)`
+- commit description must be detailed enough to understand the change without looking at the code, and must be short enough to be easily readable in the git log
 
 <!-- development-guidelines-end -->
 

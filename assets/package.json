@@ -5,6 +5,8 @@
   "scripts": {
     "test:e2e": "playwright test",
     "test:e2e:theme": "playwright test e2e/theme_stability.spec.mjs e2e/theme_pour.spec.mjs",
+    "lint:css": "stylelint \"css/**/*.css\"",
+    "lint:css:fix": "stylelint \"css/**/*.css\" --fix",
     "dev": "bun run --watch",
     "build": "bun run"
   },
@@ -16,33 +18,43 @@
     "../deps/*"
   ],
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.2",
     "@codemirror/commands": "^6.10.1",
     "@codemirror/lang-lezer": "^6.0.2",
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/lang-yaml": "^6.1.2",
     "@codemirror/language": "^6.11.3",
     "@codemirror/legacy-modes": "^6.4.2",
+    "@codemirror/lint": "^6.9.6",
+    "@codemirror/search": "^6.7.0",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.39.4",
     "@lezer/highlight": "^1.2.3",
     "@myriaddreamin/typst-ts-renderer": "^0.7.0-rc2",
     "@myriaddreamin/typst-ts-web-compiler": "^0.7.0-rc2",
     "@myriaddreamin/typst.ts": "^0.7.0-rc2",
+    "@shikijs/engine-javascript": "^4.1.0",
+    "@shikijs/langs": "^4.1.0",
+    "@shikijs/themes": "^4.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "codemirror": "^6.0.2",
     "lucide": "^1.14.0",
     "phoenix": "workspace:*",
     "phoenix_html": "workspace:*",
     "phoenix_live_view": "workspace:*",
+    "shiki": "^4.1.0",
     "simple-icons": "^16.18.0",
     "tailwind-merge": "^3.4.0"
   },
   "overrides": {
-    "@codemirror/state": "6.6.0"
+    "@codemirror/state": "6.6.0",
+    "@codemirror/view": "6.43.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "playwright": "1.59.1"
+    "playwright": "1.59.1",
+    "stylelint": "^17.12.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-order": "^8.1.1"
   }
 }

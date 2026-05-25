@@ -25,16 +25,46 @@ function editorOptions(element) {
 }
 
 export const CodeMirror = {
+  editorCallbacks() {
+    return {
+      onCursor: (line, col) => {
+        const el = document.getElementById("status-cursor")
+        if (el) el.textContent = `Ln ${line}, Col ${col}`
+      },
+      onOutline: (items) => {
+        this.pushEvent("outline_parsed", { items })
+      }
+    }
+  },
+
+  setupCommandHandler() {
+    this.commandHandler = (event) => {
+      if (!this.editorInstance) return
+      const { cmd, line } = event.detail || {}
+      if (cmd === "compile") {
+        this.editorInstance.compile()
+      } else if (cmd === "download") {
+        this.editorInstance.download()
+      } else if (cmd === "search") {
+        this.editorInstance.openSearch()
+      } else if (cmd) {
+        this.editorInstance.runCommand(cmd, { line })
+      }
+    }
+    window.addEventListener("phx:editor-command", this.commandHandler)
+  },
+
   mounted() {
     const container = this.el
     const rawContent = this.el.dataset.content || ""
     const content = parseContent(rawContent)
     const fileId = this.el.dataset.fileId || null
-    const options = editorOptions(this.el)
+    const options = { ...editorOptions(this.el), ...this.editorCallbacks() }
 
     if (!container) return
 
     this.previousFileId = fileId
+    this.setupCommandHandler()
 
     if (fileId) {
       this.editorInstance = initEditor(
@@ -55,7 +85,7 @@ export const CodeMirror = {
     this.handleEvent("file_changed", ({ file_id, content, language }) => {
       const newFileId = file_id || null
       const newContent = parseContent(content || "")
-      const options = editorOptions(this.el)
+      const options = { ...editorOptions(this.el), ...this.editorCallbacks() }
       options.language = language || options.language
 
       this.el.style.display = newFileId ? "" : "none"
@@ -153,6 +183,10 @@ export const CodeMirror = {
 
   destroyed() {
     this.cleanupThemeHandlers()
+    if (this.commandHandler) {
+      window.removeEventListener("phx:editor-command", this.commandHandler)
+      this.commandHandler = null
+    }
     if (this.editorInstance) {
       destroyEditor(this.editorInstance)
       this.editorInstance = null
@@ -189,4 +223,133 @@ export const Preview = {
 
 export const SaveStatus = {
   updated() {}
+}
+
+// Editor shell: captures ⌘K / Ctrl+K to open the command palette, and
+// re-initializes lucide icons after LiveView patches (the format toolbar and
+// palette render <i data-lucide> nodes that need svg upgrading on each patch).
+export const CommandPalette = {
+  mounted() {
+    if (window.mkIcons) window.mkIcons(this.el)
+
+    this.keyHandler = (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault()
+        this.pushEvent("open_palette", {})
+      }
+    }
+    window.addEventListener("keydown", this.keyHandler)
+  },
+
+  updated() {
+    if (window.mkIcons) window.mkIcons(this.el)
+  },
+
+  destroyed() {
+    if (this.keyHandler) window.removeEventListener("keydown", this.keyHandler)
+  }
+}
+
+// Focus a search input when "/" is pressed outside of any text field.
+export const SlashFocus = {
+  mounted() {
+    this.handler = (event) => {
+      const tag = document.activeElement && document.activeElement.tagName
+      if (event.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
+        event.preventDefault()
+        this.el.focus()
+      }
+    }
+    window.addEventListener("keydown", this.handler)
+  },
+
+  destroyed() {
+    if (this.handler) window.removeEventListener("keydown", this.handler)
+  }
+}
+
+// Command palette keyboard navigation. Mounted only while the palette is open;
+// owns active-item highlighting and Enter-to-activate (clicks the focused row,
+// triggering whatever phx-click / JS.dispatch it carries).
+export const Palette = {
+  items() {
+    return Array.from(this.el.querySelectorAll(".ts-palette__item"))
+  },
+
+  setActive(idx) {
+    const items = this.items()
+    if (!items.length) return
+    this.active = (idx + items.length) % items.length
+    items.forEach((el, i) => el.classList.toggle("is-active", i === this.active))
+    items[this.active].scrollIntoView({ block: "nearest" })
+  },
+
+  mounted() {
+    if (window.mkIcons) window.mkIcons(this.el)
+    this.active = 0
+    this.setActive(0)
+
+    const input = this.el.querySelector("#palette-input")
+    if (input) input.focus()
+
+    this.keyHandler = (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault()
+        this.setActive(this.active + 1)
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault()
+        this.setActive(this.active - 1)
+      } else if (event.key === "Enter") {
+        const items = this.items()
+        if (items[this.active]) {
+          event.preventDefault()
+          items[this.active].click()
+        }
+      }
+    }
+    this.el.addEventListener("keydown", this.keyHandler)
+  },
+
+  updated() {
+    if (window.mkIcons) window.mkIcons(this.el)
+    this.setActive(this.active || 0)
+  },
+
+  destroyed() {
+    if (this.keyHandler) this.el.removeEventListener("keydown", this.keyHandler)
+  }
+}
+
+// Client-side zoom for the rendered Typst SVG. Owns its own DOM
+// (phx-update="ignore") so LiveView patches to the preview bar don't reset it.
+export const PreviewZoom = {
+  mounted() {
+    this.zoom = 100
+    this.label = this.el.querySelector("#zoom-level")
+
+    this.apply = () => {
+      const svg = document.querySelector("#typst-svg-output")
+      if (svg) {
+        svg.style.transformOrigin = "top center"
+        svg.style.transform = `scale(${this.zoom / 100})`
+      }
+      if (this.label) this.label.textContent = `${this.zoom}%`
+    }
+
+    this.clickHandler = (event) => {
+      const button = event.target.closest("[data-zoom]")
+      if (!button) return
+      const dir = button.dataset.zoom
+      if (dir === "in") this.zoom = Math.min(this.zoom + 10, 300)
+      else if (dir === "out") this.zoom = Math.max(this.zoom - 10, 30)
+      else this.zoom = 100
+      this.apply()
+    }
+
+    this.el.addEventListener("click", this.clickHandler)
+  },
+
+  destroyed() {
+    if (this.clickHandler) this.el.removeEventListener("click", this.clickHandler)
+  }
 }
