@@ -366,6 +366,13 @@ html:not(.is-mac) .ts-other { display: inline-flex; }
 .ts-cmdk { gap: 6px; }
 .ts-cmdk__icon svg { width: 14px; height: 14px; }
 
+/* ── Your templates ───────────────────────────────────────────────────────── */
+.ts-tpl { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+.ts-tpl__row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--r-sm); background: var(--bg2); border: 1px solid var(--bd); }
+.ts-tpl__name { flex: 1; min-width: 0; font: 500 12.5px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg); }
+.ts-tpl__drop { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1.5px dashed var(--bd2); border-radius: var(--r-sm); color: var(--fg3); font: 12px 'Inter', system-ui, sans-serif; cursor: pointer; transition: border-color 150ms var(--ease), color 150ms var(--ease); }
+.ts-tpl__drop:hover { border-color: var(--pri); color: var(--fg); }
+
 /* ── Sidebar upload zone ──────────────────────────────────────────────────── */
 .ts-side__upload { padding: 8px 14px; border-top: 1px solid var(--bd); flex-shrink: 0; }
 

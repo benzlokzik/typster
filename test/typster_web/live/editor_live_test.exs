@@ -200,6 +200,27 @@ defmodule TypsterWeb.EditorLiveTest do
     assert path_exists?(user, project, "chapters/untitled.typ")
   end
 
+  test "using a template stages its content into the file you create",
+       %{conn: conn, user: user, project: project} do
+    scope = Typster.Accounts.Scope.for_user(user)
+
+    {:ok, tpl} =
+      Typster.Templates.create_template(scope, %{name: "ieee.typ", content: "= From tpl"})
+
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    view
+    |> element("button[phx-click='use_template'][phx-value-id='#{tpl.id}']")
+    |> render_click()
+
+    assert has_element?(view, "#new-file-draft")
+    view |> form("#new-file-form", %{path: "paper.typ"}) |> render_submit()
+
+    created = Enum.find(Typster.Files.get_file_tree(scope, project.id), &(&1.path == "paper.typ"))
+    assert created.content == "= From tpl"
+  end
+
   test "file rows render colored type chips by extension",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "main.typ"})

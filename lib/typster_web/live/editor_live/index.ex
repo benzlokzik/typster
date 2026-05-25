@@ -5,6 +5,7 @@ defmodule TypsterWeb.EditorLive.Index do
   alias Typster.Files
   alias Typster.Projects
   alias Typster.Revisions
+  alias Typster.Templates
 
   @impl true
   def mount(%{"id" => project_id}, _session, socket) do
@@ -33,6 +34,8 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:new_kind, :file)
      |> assign(:new_file_name, "")
      |> assign(:new_file_suggestions, [])
+     |> assign(:template_content, nil)
+     |> assign(:templates, Templates.list_templates(scope))
      |> assign(:file_view_mode, :tree)
      |> assign(:collapsed_dirs, MapSet.new())
      |> assign(:show_palette, false)
@@ -44,6 +47,11 @@ defmodule TypsterWeb.EditorLive.Index do
        accept: ~w(.pdf .png .jpg .jpeg .svg .webp .ttf .otf .woff .woff2),
        max_entries: 5,
        max_file_size: 20_000_000
+     )
+     |> allow_upload(:template,
+       accept: :any,
+       max_entries: 1,
+       max_file_size: 2_000_000
      )}
   end
 
@@ -229,7 +237,8 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:creating?, true)
      |> assign(:new_kind, :file)
      |> assign(:new_file_name, "")
-     |> assign(:new_file_suggestions, [])}
+     |> assign(:new_file_suggestions, [])
+     |> assign(:template_content, nil)}
   end
 
   @impl true
@@ -239,7 +248,8 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:creating?, true)
      |> assign(:new_kind, :folder)
      |> assign(:new_file_name, "")
-     |> assign(:new_file_suggestions, [])}
+     |> assign(:new_file_suggestions, [])
+     |> assign(:template_content, nil)}
   end
 
   @impl true
@@ -247,7 +257,58 @@ defmodule TypsterWeb.EditorLive.Index do
     {:noreply,
      socket
      |> assign(creating?: false, new_file_name: "", new_file_suggestions: [])
-     |> assign(:new_kind, :file)}
+     |> assign(:new_kind, :file)
+     |> assign(:template_content, nil)}
+  end
+
+  @impl true
+  def handle_event("validate_template", _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("save_template", _params, socket) do
+    scope = socket.assigns.current_scope
+
+    results =
+      consume_uploaded_entries(socket, :template, fn %{path: path}, entry ->
+        Templates.create_template(scope, %{
+          name: entry.client_name,
+          content: File.read!(path)
+        })
+      end)
+
+    if Enum.any?(results, &match?({:error, _}, &1)) do
+      {:noreply, put_flash(socket, :error, gettext("editor.flash.template_failed"))}
+    else
+      {:noreply,
+       socket
+       |> assign(:templates, Templates.list_templates(scope))
+       |> put_flash(:info, gettext("editor.flash.template_saved"))}
+    end
+  end
+
+  @impl true
+  def handle_event("use_template", %{"id" => id}, socket) do
+    template = Templates.get_template!(socket.assigns.current_scope, id)
+    stem = Path.rootname(template.name)
+
+    {:noreply,
+     socket
+     |> assign(:creating?, true)
+     |> assign(:new_kind, :file)
+     |> assign(:new_file_name, stem)
+     |> assign(
+       :new_file_suggestions,
+       Files.new_file_suggestions(socket.assigns.file_tree, stem)
+     )
+     |> assign(:template_content, template.content || "")}
+  end
+
+  @impl true
+  def handle_event("delete_template", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+    template = Templates.get_template!(scope, id)
+    {:ok, _} = Templates.delete_template(scope, template)
+    {:noreply, assign(socket, :templates, Templates.list_templates(scope))}
   end
 
   @impl true
@@ -306,7 +367,8 @@ defmodule TypsterWeb.EditorLive.Index do
          |> put_flash(:error, gettext("editor.flash.file_exists"))}
 
       true ->
-        create_text_file(socket, path, default_file_content(path))
+        content = socket.assigns.template_content || default_file_content(path)
+        create_text_file(assign(socket, :template_content, nil), path, content)
     end
   end
 
