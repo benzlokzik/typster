@@ -49,10 +49,10 @@ test.describe('Typst WASM compilation pipeline', () => {
     await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
 
     await page.locator('#create-main-file-button').click()
-    await expect(page.locator('.ts-dialog')).toBeVisible()
-    await page.locator('.ts-dialog input[name="path"]').fill('main.typ')
-    await page.locator('.ts-dialog button[type="submit"]').click()
-    await expect(page.locator('.ts-dialog')).not.toBeVisible()
+    const draftInput = page.locator('#new-file-form input[name="path"]')
+    await expect(draftInput).toBeVisible()
+    await draftInput.fill('main.typ')
+    await draftInput.press('Enter')
 
     const cmContent = page.locator('#editor-container .cm-content')
     await expect(cmContent).toBeVisible({ timeout: 10_000 })

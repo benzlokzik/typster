@@ -25,12 +25,12 @@ test.describe('Typster Editor Workflow', () => {
   test('should create a project and load the editor with a file', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'E2E Smoke Test')
 
-    // Click the "+" sidebar button — opens the new-file dialog
+    // Click the "+" sidebar button — reveals the inline new-file draft row
     await page.locator('#create-main-file-button').click()
-    await expect(page.locator('.ts-dialog')).toBeVisible()
-    await page.locator('.ts-dialog input[name="path"]').fill('main.typ')
-    await page.locator('.ts-dialog button[type="submit"]').click()
-    await expect(page.locator('.ts-dialog')).not.toBeVisible()
+    const draftInput = page.locator('#new-file-form input[name="path"]')
+    await expect(draftInput).toBeVisible()
+    await draftInput.fill('main.typ')
+    await draftInput.press('Enter')
 
     // main.typ should appear in the file tree
     await expect(
@@ -45,12 +45,12 @@ test.describe('Typster Editor Workflow', () => {
   test('should edit content in CodeMirror, autosave, and persist after reload', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'E2E Autosave Test')
 
-    // Create main.typ via the new-file dialog
+    // Create main.typ via the inline new-file draft row
     await page.locator('#create-main-file-button').click()
-    await expect(page.locator('.ts-dialog')).toBeVisible()
-    await page.locator('.ts-dialog input[name="path"]').fill('main.typ')
-    await page.locator('.ts-dialog button[type="submit"]').click()
-    await expect(page.locator('.ts-dialog')).not.toBeVisible()
+    const draftInput = page.locator('#new-file-form input[name="path"]')
+    await expect(draftInput).toBeVisible()
+    await draftInput.fill('main.typ')
+    await draftInput.press('Enter')
 
     // Wait for CodeMirror to initialize inside the container
     const cmContent = page.locator('#editor-container .cm-content')
