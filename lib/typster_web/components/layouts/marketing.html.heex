@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <.live_title
-      default="Typster — The Typst editor for writing that lands"
+      default={gettext("landing.meta.title")}
       suffix=" · Typster"
     >
       {assigns[:page_title]}
@@ -70,10 +70,10 @@
   <body class="mk-body">
     <.mk_nav current_scope={@current_scope}>
       <:nav_links>
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
-        <a href="https://typst.app/docs" target="_blank">Docs</a>
+        <a href="#features">{gettext("landing.nav.features")}</a>
+        <a href="#pricing">{gettext("landing.nav.pricing")}</a>
+        <a href="#faq">{gettext("landing.nav.faq")}</a>
+        <a href="https://typst.app/docs" target="_blank">{gettext("landing.nav.docs")}</a>
       </:nav_links>
     </.mk_nav>
     {@inner_content}

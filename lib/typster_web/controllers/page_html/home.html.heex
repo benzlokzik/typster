@@ -5,19 +5,19 @@
   <div class="mk-stats-grid mk-reveal-group">
     <div class="mk-stat">
       <div class="mk-stat-n">2<span>,400</span></div>
-      <div class="mk-stat-l">Typsters writing weekly</div>
+      <div class="mk-stat-l">{gettext("landing.stats.weekly")}</div>
     </div>
     <div class="mk-stat">
       <div class="mk-stat-n">18<span>k</span></div>
-      <div class="mk-stat-l">PDFs rendered this week</div>
+      <div class="mk-stat-l">{gettext("landing.stats.pdfs")}</div>
     </div>
     <div class="mk-stat">
       <div class="mk-stat-n"><span>~</span>200ms</div>
-      <div class="mk-stat-l">From save to PDF</div>
+      <div class="mk-stat-l">{gettext("landing.stats.save")}</div>
     </div>
     <div class="mk-stat">
       <div class="mk-stat-n">100<span>%</span></div>
-      <div class="mk-stat-l">In-browser. Always.</div>
+      <div class="mk-stat-l">{gettext("landing.stats.browser")}</div>
     </div>
   </div>
 </div>
@@ -25,28 +25,28 @@
 <%!-- How it works ──────────────────────────────────────────────────── --%>
 <section class="mk-section mk-hiw-section">
   <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">How it works</p>
-    <h2 class="mk-section-h mk-reveal">From idea to PDF in seconds.</h2>
+    <p class="mk-eyebrow mk-reveal">{gettext("landing.hiw.eyebrow")}</p>
+    <h2 class="mk-section-h mk-reveal">{gettext("landing.hiw.h")}</h2>
     <div class="mk-hiw-steps mk-reveal-group">
       <div class="mk-hiw-step">
         <div class="mk-hiw-num">01</div>
-        <h3 class="mk-hiw-title">Write</h3>
+        <h3 class="mk-hiw-title">{gettext("landing.hiw.write.title")}</h3>
         <p class="mk-hiw-desc">
-          Open Typster. Type Typst. Nothing to install, configure, or babysit — just a blank file and your ideas.
+          {gettext("landing.hiw.write.desc")}
         </p>
       </div>
       <div class="mk-hiw-step">
         <div class="mk-hiw-num">02</div>
-        <h3 class="mk-hiw-title">Compile</h3>
+        <h3 class="mk-hiw-title">{gettext("landing.hiw.compile.title")}</h3>
         <p class="mk-hiw-desc">
-          Hit save. The preview updates next to your source — edge-rendered, usually before your finger leaves ⌘S.
+          {gettext("landing.hiw.compile.desc")}
         </p>
       </div>
       <div class="mk-hiw-step">
         <div class="mk-hiw-num">03</div>
-        <h3 class="mk-hiw-title">Share</h3>
+        <h3 class="mk-hiw-title">{gettext("landing.hiw.share.title")}</h3>
         <p class="mk-hiw-desc">
-          Download the PDF or copy a read-only link. Recipients open it in their browser — no account needed.
+          {gettext("landing.hiw.share.desc")}
         </p>
       </div>
     </div>
@@ -56,46 +56,46 @@
 <%!-- Features ─────────────────────────────────────────────────────── --%>
 <section id="features" class="mk-section mk-section-tinted">
   <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">Why Typster</p>
-    <h2 class="mk-section-h mk-reveal">Built for writers who care about output.</h2>
+    <p class="mk-eyebrow mk-reveal">{gettext("landing.features.eyebrow")}</p>
+    <h2 class="mk-section-h mk-reveal">{gettext("landing.features.h")}</h2>
     <p class="mk-section-sub mk-reveal">
-      All the rigor of LaTeX. None of the package hell. None of the waiting.
+      {gettext("landing.features.sub")}
     </p>
     <div class="mk-feat-grid mk-reveal-group">
       <.icon_card icon="zap">
-        <:title>Compile in milliseconds</:title>
+        <:title>{gettext("landing.feat.compile.title")}</:title>
         <:body>
-          Edge-rendered Typst compilation. Save → see the PDF before your finger leaves ⌘S.
+          {gettext("landing.feat.compile.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="command">
-        <:title>Keyboard-first</:title>
+        <:title>{gettext("landing.feat.keyboard.title")}</:title>
         <:body>
-          Every action lives behind ⌘⇧P. Save, search, switch, share — your hands stay on home row.
+          {gettext("landing.feat.keyboard.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="eye">
-        <:title>Live three-pane layout</:title>
+        <:title>{gettext("landing.feat.layout.title")}</:title>
         <:body>
-          Files · source · preview, all on screen. Resize once — Typster remembers next time you open the project.
+          {gettext("landing.feat.layout.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="cloud-upload">
-        <:title>Cloud projects</:title>
+        <:title>{gettext("landing.feat.cloud.title")}</:title>
         <:body>
-          Auto-saved, auto-synced. Open any project on any device, exactly where you left it.
+          {gettext("landing.feat.cloud.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="share-2">
-        <:title>Shareable links</:title>
+        <:title>{gettext("landing.feat.share.title")}</:title>
         <:body>
-          Send a read-only link. Recipients open the PDF in-browser, no account needed.
+          {gettext("landing.feat.share.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="type">
-        <:title>Bring your fonts</:title>
+        <:title>{gettext("landing.feat.fonts.title")}</:title>
         <:body>
-          Upload TTF/OTF per project. Typster reads them on every compile — exactly as authored, no substitutions.
+          {gettext("landing.feat.fonts.body")}
         </:body>
       </.icon_card>
     </div>
@@ -104,44 +104,44 @@
 
 <%!-- Keyboard band ────────────────────────────────────────────────── --%>
 <section class="mk-section mk-kb-band">
-  <p class="mk-eyebrow">Keyboard-first</p>
-  <h2 class="mk-section-h">Touch the mouse less.</h2>
+  <p class="mk-eyebrow">{gettext("landing.kb.eyebrow")}</p>
+  <h2 class="mk-section-h">{gettext("landing.kb.h")}</h2>
   <p class="mk-section-sub">
-    Every Typster command, two keystrokes away. Built for writers who think in shortcuts.
+    {gettext("landing.kb.sub")}
   </p>
   <div class="mk-kb-grid mk-reveal-group">
     <div class="mk-kb-row">
-      <span class="mk-kb-label">Save document</span>
+      <span class="mk-kb-label">{gettext("landing.kb.save")}</span>
       <span class="mk-kb-keys"><kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">S</kbd></span>
     </div>
     <div class="mk-kb-row">
-      <span class="mk-kb-label">Command palette</span>
+      <span class="mk-kb-label">{gettext("landing.kb.palette")}</span>
       <span class="mk-kb-keys">
         <kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">⇧</kbd><kbd class="mk-kb-key">P</kbd>
       </span>
     </div>
     <div class="mk-kb-row">
-      <span class="mk-kb-label">Toggle sidebar</span>
+      <span class="mk-kb-label">{gettext("landing.kb.sidebar")}</span>
       <span class="mk-kb-keys"><kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">B</kbd></span>
     </div>
     <div class="mk-kb-row">
-      <span class="mk-kb-label">Toggle preview</span>
+      <span class="mk-kb-label">{gettext("landing.kb.preview")}</span>
       <span class="mk-kb-keys"><kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">E</kbd></span>
     </div>
     <div class="mk-kb-row">
-      <span class="mk-kb-label">Search in file</span>
+      <span class="mk-kb-label">{gettext("landing.kb.search")}</span>
       <span class="mk-kb-keys"><kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">/</kbd></span>
     </div>
     <div class="mk-kb-row">
-      <span class="mk-kb-label">New file</span>
+      <span class="mk-kb-label">{gettext("landing.kb.newfile")}</span>
       <span class="mk-kb-keys"><kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">N</kbd></span>
     </div>
     <div class="mk-kb-row">
-      <span class="mk-kb-label">Close file</span>
+      <span class="mk-kb-label">{gettext("landing.kb.closefile")}</span>
       <span class="mk-kb-keys"><kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">W</kbd></span>
     </div>
     <div class="mk-kb-row">
-      <span class="mk-kb-label">Switch to file 1–9</span>
+      <span class="mk-kb-label">{gettext("landing.kb.switch")}</span>
       <span class="mk-kb-keys">
         <kbd class="mk-kb-key">⌘</kbd><kbd class="mk-kb-key">1-9</kbd>
       </span>
@@ -154,37 +154,37 @@
 <%!-- Use cases ─────────────────────────────────────────────────────── --%>
 <section class="mk-section mk-usecase-section">
   <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">Use cases</p>
-    <h2 class="mk-section-h mk-reveal">Whatever you're writing, <em>Typster</em> fits.</h2>
+    <p class="mk-eyebrow mk-reveal">{gettext("landing.usecase.eyebrow")}</p>
+    <h2 class="mk-section-h mk-reveal">{raw(gettext("landing.usecase.h"))}</h2>
     <div class="mk-usecase-grid mk-reveal-group">
       <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="graduation-cap">
-        <:title>Academic papers</:title>
+        <:title>{gettext("landing.usecase.academic.title")}</:title>
         <:body>
-          Multi-column layouts, citations, math equations, and bibliography — exactly as journals require.
+          {gettext("landing.usecase.academic.body")}
         </:body>
       </.icon_card>
       <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="file-text">
-        <:title>CVs & Resumes</:title>
+        <:title>{gettext("landing.usecase.cv.title")}</:title>
         <:body>
-          Pixel-perfect one-pagers. Update once, every position reflows without fighting Word styles.
+          {gettext("landing.usecase.cv.body")}
         </:body>
       </.icon_card>
       <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="chart-no-axes-column">
-        <:title>Technical reports</:title>
+        <:title>{gettext("landing.usecase.reports.title")}</:title>
         <:body>
-          Tables, code blocks, cross-references, and version-controlled source. No more PDF drift.
+          {gettext("landing.usecase.reports.body")}
         </:body>
       </.icon_card>
       <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="receipt-text">
-        <:title>Invoices & contracts</:title>
+        <:title>{gettext("landing.usecase.invoices.title")}</:title>
         <:body>
-          Branded documents from structured data. Typster keeps every invoice consistent — no design tool required.
+          {gettext("landing.usecase.invoices.body")}
         </:body>
       </.icon_card>
       <.icon_card class="mk-usecase" icon_class="mk-usecase-icon" icon="notebook-pen">
-        <:title>Lecture notes</:title>
+        <:title>{gettext("landing.usecase.notes.title")}</:title>
         <:body>
-          Math-heavy handouts that don't look like they came from Word '97. PDF in seconds.
+          {gettext("landing.usecase.notes.body")}
         </:body>
       </.icon_card>
     </div>
@@ -194,50 +194,65 @@
 <%!-- Roadmap ──────────────────────────────────────────────────────── --%>
 <section class="mk-section mk-section-tinted">
   <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">On the roadmap</p>
-    <h2 class="mk-section-h mk-reveal">Where <em>Typster</em> is heading.</h2>
+    <p class="mk-eyebrow mk-reveal">{gettext("landing.roadmap.eyebrow")}</p>
+    <h2 class="mk-section-h mk-reveal">{raw(gettext("landing.roadmap.h"))}</h2>
     <p class="mk-section-sub mk-reveal">
-      Already in the lab; landing over the next few quarters. Built in the open — no vapor.
+      {gettext("landing.roadmap.sub")}
     </p>
     <div class="mk-feat-grid mk-reveal-group">
       <.icon_card icon="users">
         <:title>
-          Live collaboration <span class="mk-badge mk-badge-primary mk-badge-sm">Soon</span>
+          {gettext("landing.roadmap.collab.title")}
+          <span class="mk-badge mk-badge-primary mk-badge-sm">
+            {gettext("landing.badge.soon")}
+          </span>
         </:title>
         <:body>
-          Share an editing pane with co-authors. Cursors, selections, and inline comments — same keyboard-first flow, two writers.
+          {gettext("landing.roadmap.collab.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="book-text">
         <:title>
-          Zotero sync <span class="mk-badge mk-badge-primary mk-badge-sm">Soon</span>
+          {gettext("landing.roadmap.zotero.title")}
+          <span class="mk-badge mk-badge-primary mk-badge-sm">
+            {gettext("landing.badge.soon")}
+          </span>
         </:title>
         <:body>
-          Connect your Zotero library to any project. Cite by hotkey, auto-import <code>.bib</code>, refs stay in sync — no more pasting keys by hand.
+          {raw(gettext("landing.roadmap.zotero.body"))}
         </:body>
       </.icon_card>
       <.icon_card icon="sparkles">
         <:title>
-          AI writing assist <span class="mk-badge mk-badge-primary mk-badge-sm">Soon</span>
+          {gettext("landing.roadmap.ai.title")}
+          <span class="mk-badge mk-badge-primary mk-badge-sm">
+            {gettext("landing.badge.soon")}
+          </span>
         </:title>
         <:body>
-          Section drafts, citation suggestions, and Typst-aware refactors. Opt-in per project — your draft stays yours.
+          {gettext("landing.roadmap.ai.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="file-input">
         <:title>
-          Project from source <span class="mk-badge mk-badge-default mk-badge-sm">Later</span>
+          {gettext("landing.roadmap.source.title")}
+          <span class="mk-badge mk-badge-default mk-badge-sm">
+            {gettext("landing.badge.later")}
+          </span>
         </:title>
         <:body>
-          Drop a markdown bundle, paper PDF, or notes folder. Typster scaffolds a Typst project — chapters, refs, layout — that you own end-to-end.
+          {gettext("landing.roadmap.source.body")}
         </:body>
       </.icon_card>
       <.icon_card icon="pen-line">
         <:title>
-          WYSIWYG mode <span class="mk-badge mk-badge-default mk-badge-sm">Later</span>
+          {gettext("landing.roadmap.wysiwyg.title")}
+          <span class="mk-badge mk-badge-default mk-badge-sm">
+            {gettext("landing.badge.later")}
+          </span>
         </:title>
         <:body>
-          Toggle into a rendered view to type, format, and place figures without touching markup. Switch back to source whenever the math gets serious.
+          {gettext("landing.roadmap.wysiwyg.body")}
         </:body>
       </.icon_card>
     </div>
@@ -249,45 +264,45 @@
 <%!-- FAQ ─────────────────────────────────────────────────────────── --%>
 <section id="faq" class="mk-section">
   <div class="mk-container">
-    <p class="mk-eyebrow mk-reveal">FAQ</p>
-    <h2 class="mk-section-h mk-reveal">Questions, answered.</h2>
+    <p class="mk-eyebrow mk-reveal">{gettext("landing.faq.eyebrow")}</p>
+    <h2 class="mk-section-h mk-reveal">{gettext("landing.faq.h")}</h2>
     <div class="mk-faq mk-reveal-group">
       <details class="mk-faq-item">
-        <summary>Do I need to install anything? <span class="mk-faq-icon">+</span></summary>
+        <summary>{gettext("landing.faq.q1")} <span class="mk-faq-icon">+</span></summary>
         <p>
-          Nope. Typster runs in your browser; the Typst compiler is bundled in our edge runtime. Open the tab and write.
+          {gettext("landing.faq.a1")}
         </p>
       </details>
       <details class="mk-faq-item">
-        <summary>Why not just use Overleaf? <span class="mk-faq-icon">+</span></summary>
+        <summary>{gettext("landing.faq.q2")} <span class="mk-faq-icon">+</span></summary>
         <p>
-          If LaTeX works for you, stay there. Typst has simpler syntax, compiles in milliseconds, and stays out of your way. Typster is the editor that lets it.
+          {gettext("landing.faq.a2")}
         </p>
       </details>
       <details class="mk-faq-item">
         <summary>
-          Will Typster work for my dissertation? <span class="mk-faq-icon">+</span>
+          {gettext("landing.faq.q3")} <span class="mk-faq-icon">+</span>
         </summary>
         <p>
-          Yes. Multi-file projects, citations (<code>.bib</code>), custom fonts, byte-stable compiles, and your committee's template — all supported.
+          {raw(gettext("landing.faq.a3"))}
         </p>
       </details>
       <details class="mk-faq-item">
-        <summary>Can I bring my own fonts? <span class="mk-faq-icon">+</span></summary>
+        <summary>{gettext("landing.faq.q4")} <span class="mk-faq-icon">+</span></summary>
         <p>
-          Yes — upload TTF or OTF per project, or paste a Google Fonts URL and Typster will fetch them for you. Either way, your typefaces compile every time, no substitutions.
+          {gettext("landing.faq.a4")}
         </p>
       </details>
       <details class="mk-faq-item">
-        <summary>Is there a desktop app? <span class="mk-faq-icon">+</span></summary>
+        <summary>{gettext("landing.faq.q5")} <span class="mk-faq-icon">+</span></summary>
         <p>
-          On the roadmap. Until then, the web app is keyboard-first and works offline once loaded — most writers don't notice the difference.
+          {gettext("landing.faq.a5")}
         </p>
       </details>
       <details class="mk-faq-item">
-        <summary>Is my work private? <span class="mk-faq-icon">+</span></summary>
+        <summary>{gettext("landing.faq.q6")} <span class="mk-faq-icon">+</span></summary>
         <p>
-          Projects are private by default. Sharing is opt-in and revocable, per project, per link.
+          {gettext("landing.faq.a6")}
         </p>
       </details>
     </div>
@@ -296,10 +311,10 @@
 
 <%!-- CTA band ─────────────────────────────────────────────────────── --%>
 <section class="mk-cta-band">
-  <h2>Stop fighting your editor. Become a <em>Typster</em>.</h2>
-  <p>2,400 writers already locked in. Free forever, no card.</p>
+  <h2>{raw(gettext("landing.cta.h"))}</h2>
+  <p>{gettext("landing.cta.sub")}</p>
   <.link navigate={~p"/users/register"} class="mk-btn mk-btn-light mk-btn-lg">
-    Create your free account <i data-lucide="arrow-right" class="mk-icon-14"></i>
+    {gettext("landing.cta.button")} <i data-lucide="arrow-right" class="mk-icon-14"></i>
   </.link>
 </section>
 
@@ -311,34 +326,34 @@
         <div class="mk-brand-mark">T</div>
         <span>Typster</span>
       </div>
-      <p>The Typst editor for writing that lands.<br />Made by the open-source community.</p>
+      <p>{raw(gettext("landing.foot.tagline"))}</p>
     </div>
     <div class="mk-foot-cols">
       <div class="mk-foot-col">
-        <h5>Product</h5>
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#">Changelog</a>
-        <a href="#">Roadmap</a>
+        <h5>{gettext("landing.foot.product")}</h5>
+        <a href="#features">{gettext("landing.foot.features")}</a>
+        <a href="#pricing">{gettext("landing.foot.pricing")}</a>
+        <a href="#">{gettext("landing.foot.changelog")}</a>
+        <a href="#">{gettext("landing.foot.roadmap")}</a>
       </div>
       <div class="mk-foot-col">
-        <h5>Resources</h5>
-        <a href="https://typst.app/docs" target="_blank">Docs</a>
-        <a href="#">Typst guide</a>
-        <a href="#">Templates</a>
-        <a href="#">Status</a>
+        <h5>{gettext("landing.foot.resources")}</h5>
+        <a href="https://typst.app/docs" target="_blank">{gettext("landing.foot.docs")}</a>
+        <a href="#">{gettext("landing.foot.guide")}</a>
+        <a href="#">{gettext("landing.foot.templates")}</a>
+        <a href="#">{gettext("landing.foot.status")}</a>
       </div>
       <div class="mk-foot-col">
-        <h5>Company</h5>
-        <a href="#">About</a>
-        <a href="#">Blog</a>
-        <a href="#">Contact</a>
-        <a href="#">Privacy</a>
+        <h5>{gettext("landing.foot.company")}</h5>
+        <a href="#">{gettext("landing.foot.about")}</a>
+        <a href="#">{gettext("landing.foot.blog")}</a>
+        <a href="#">{gettext("landing.foot.contact")}</a>
+        <a href="#">{gettext("landing.foot.privacy")}</a>
       </div>
     </div>
   </div>
   <div class="mk-foot-bottom">
-    <span>© 2026 Typster. AGPL-3.0 licensed.</span>
-    <span>Made with Typst, Phoenix, and care.</span>
+    <span>{gettext("landing.foot.copyright")}</span>
+    <span>{gettext("landing.foot.madewith")}</span>
   </div>
 </footer>
