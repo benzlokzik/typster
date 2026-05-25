@@ -229,6 +229,11 @@
 .ts-emptystate__actions { display: flex; gap: 8px; margin-top: 8px; }
 .ts-pdf { width: 100%; max-width: 520px; background: #fff; box-shadow: var(--sh-md); padding: 48px 56px; font: 11pt/1.5 'New Computer Modern', Cambria, Georgia, serif; color: #111; border-radius: 2px; min-height: 680px; }
 
+/* Rendered Typst output is transparent with black glyphs — render it on white
+   "paper" so it stays readable regardless of the (light/dark) UI theme. */
+#typst-svg-output { width: 100%; max-width: 600px; background: #fff; border-radius: 2px; box-shadow: var(--sh-md); }
+#typst-svg-output svg { display: block; width: 100%; height: auto; border-radius: 2px; }
+
 /* ── Command palette ──────────────────────────────────────────────────────── */
 .ts-palette { width: 520px; max-width: calc(100vw - 32px); background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); box-shadow: var(--sh-2xl); overflow: hidden; margin-top: -15vh; animation: ts-zoom 200ms var(--ease); }
 .ts-palette__input { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--bd); color: var(--fg3); }
