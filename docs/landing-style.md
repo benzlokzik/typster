@@ -34,6 +34,12 @@ Defined as CSS custom properties on `:root` (light) and overridden under
 | `--mk-pri-50`    | `#eef2ff`   | rgba indigo | Pill background, soft chips |
 | `--mk-pri-100`   | `#e0e7ff`   |             | Pill border                 |
 
+The brand mark (`.mk-brand-mark`) fills its tile with an accent-aware
+diagonal gradient: `135deg, var(--mk-pri) → color-mix(--mk-pri-h, #000)`.
+It tracks the active accent (indigo/violet/sky/emerald/rose) and stays
+visible in both themes. This is the one place — alongside the CTA band —
+where the brand gradient appears; never apply it broadly.
+
 ### Neutrals
 | Token         | Light       | Dark        | Usage                       |
 | ------------- | ----------- | ----------- | --------------------------- |
@@ -118,6 +124,10 @@ intentionally removed in favor of a calmer, brushed-silver field.
   hover bg).
 - Active state scales to `0.97`, transitions `120–160ms` with
   `--mk-ease-out` (`cubic-bezier(0.23, 1, 0.32, 1)`).
+- Disabled (`:disabled` / `[disabled]`): `opacity 0.45`, `cursor:
+  not-allowed`; hover and active states are suppressed (gated on
+  `:not(:disabled)`). Used for not-yet-wired placeholders such as the
+  inactive OAuth buttons in the auth card.
 
 ### Pill (`.mk-pill`)
 - Small rounded chip with brand-50 fill, brand-100 border,
