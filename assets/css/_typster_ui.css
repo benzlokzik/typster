@@ -25,8 +25,10 @@
 }
 
 /* ── Layout shell ─────────────────────────────────────────────────────────── */
-.ts-app { display: flex; flex-direction: column; height: 100dvh; background: var(--bg); color: var(--fg); }
-.ts-main { flex: 1; overflow: auto; background: var(--bg); }
+.ts-app { position: relative; isolation: isolate; display: flex; flex-direction: column; height: 100dvh; background: var(--bg); color: var(--fg); }
+/* Transparent so the `.ts-app::before` page texture shows through on the
+   projects/settings surfaces (content cards carry their own background). */
+.ts-main { flex: 1; overflow: auto; background: transparent; }
 .ts-page { max-width: 960px; margin: 0 auto; padding: 40px 32px; }
 .ts-page--narrow { max-width: 680px; }
 .ts-spacer { flex: 1; }

@@ -91,7 +91,10 @@
 /* ── Page Texture ──────────────────────────────────────────────────────── */
 
 @layer effects {
-  .mk-body::before {
+  /* Same page texture on the landing body and the authenticated app shell
+     (`.ts-app`), so every page shares the grain/diagonal gradient. */
+  .mk-body::before,
+  .ts-app::before {
     content: "";
     position: absolute;
     z-index: -1;
