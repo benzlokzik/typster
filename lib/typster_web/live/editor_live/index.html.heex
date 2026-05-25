@@ -142,13 +142,16 @@
                       spellcheck="false"
                       phx-mounted={JS.focus()}
                     />
-                    <span
-                      :if={draft_hint(@new_file_name, @new_file_suggestions)}
+                    <button
+                      :if={length(@new_file_suggestions) == 1}
+                      type="button"
                       class="ts-exthint"
+                      phx-click="create_file_from_dialog"
+                      phx-value-path={hd(@new_file_suggestions)}
                       title={gettext("editor.newfile.append_hint")}
                     >
                       + {draft_hint(@new_file_name, @new_file_suggestions)}
-                    </span>
+                    </button>
                   </div>
                   <div :if={length(@new_file_suggestions) > 1} class="ts-suggest">
                     <button

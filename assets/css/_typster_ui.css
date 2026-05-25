@@ -235,12 +235,14 @@
 }
 .ts-draft__input::placeholder { color: var(--fg4); }
 .ts-exthint {
-  flex-shrink: 0; user-select: none;
+  flex-shrink: 0; user-select: none; cursor: pointer;
   padding: 2px 7px; border-radius: 6px;
   background: var(--bg2); border: 1px dashed var(--bd2);
   color: var(--fg3);
   font: 500 11px 'JetBrains Mono', ui-monospace, monospace;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease), background 200ms var(--ease);
 }
+.ts-exthint:hover { border-color: var(--pri); border-style: solid; color: var(--fg); background: var(--bd2); }
 .ts-suggest { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 2px 2px; }
 .ts-suggest__chip {
   display: inline-flex; align-items: center; gap: 6px;

@@ -57,8 +57,54 @@ defmodule TypsterWeb.EditorLiveTest do
     view |> element("#create-main-file-button") |> render_click()
     view |> form("#new-file-form", %{path: "appendix"}) |> render_submit()
 
+    assert path_exists?(user, project, "appendix.typ")
+  end
+
+  test "the default extension suggestion is a clickable button that creates the file",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    view |> element("#create-main-file-button") |> render_click()
+    view |> form("#new-file-form", %{path: "conclusion"}) |> render_change()
+
+    # The hint pill is a real button wired to create the resolved file.
+    assert view |> element("button.ts-exthint[phx-value-path='conclusion.typ']") |> has_element?()
+    view |> element("button.ts-exthint") |> render_click()
+
+    assert path_exists?(user, project, "conclusion.typ")
+  end
+
+  test "clicking a bib suggestion chip creates that file",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    view |> element("#create-main-file-button") |> render_click()
+    view |> form("#new-file-form", %{path: "refs"}) |> render_change()
+    view |> element(".ts-suggest__chip[phx-value-path='refs.bib']") |> render_click()
+
+    assert path_exists?(user, project, "refs.bib")
+  end
+
+  test "creating a duplicate path is rejected and keeps the draft open",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    view |> element("#create-main-file-button") |> render_click()
+    html = view |> form("#new-file-form", %{path: "main.typ"}) |> render_submit()
+
+    assert html =~ "already exists"
+    assert has_element?(view, "#new-file-draft")
+    # No duplicate row was inserted.
     scope = Typster.Accounts.Scope.for_user(user)
     tree = Typster.Files.get_file_tree(scope, project.id)
-    assert Enum.any?(tree, &(&1.path == "appendix.typ"))
+    assert Enum.count(tree, &(&1.path == "main.typ")) == 1
+  end
+
+  defp path_exists?(user, project, path) do
+    scope = Typster.Accounts.Scope.for_user(user)
+    Enum.any?(Typster.Files.get_file_tree(scope, project.id), &(&1.path == path))
   end
 end

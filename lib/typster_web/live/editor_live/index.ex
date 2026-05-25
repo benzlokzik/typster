@@ -201,11 +201,23 @@ defmodule TypsterWeb.EditorLive.Index do
   def handle_event("create_file_from_dialog", %{"path" => typed}, socket) do
     path = Files.resolve_new_file_path(socket.assigns.file_tree, typed)
 
-    if Files.editable_file?(path) do
-      socket = assign(socket, creating?: false, new_file_name: "", new_file_suggestions: [])
-      create_text_file(socket, path, default_file_content(path))
-    else
-      {:noreply, put_flash(socket, :error, gettext("editor.flash.unsupported_file"))}
+    cond do
+      not Files.editable_file?(path) ->
+        {:noreply, put_flash(socket, :error, gettext("editor.flash.unsupported_file"))}
+
+      path_taken?(socket.assigns.file_tree, path) ->
+        # Keep the draft open with what was typed so the name can be fixed.
+        {:noreply,
+         socket
+         |> assign(:new_file_name, typed)
+         |> assign(
+           :new_file_suggestions,
+           Files.new_file_suggestions(socket.assigns.file_tree, typed)
+         )
+         |> put_flash(:error, gettext("editor.flash.file_exists"))}
+
+      true ->
+        create_text_file(socket, path, default_file_content(path))
     end
   end
 
@@ -261,6 +273,7 @@ defmodule TypsterWeb.EditorLive.Index do
 
         {:noreply,
          socket
+         |> assign(creating?: false, new_file_name: "", new_file_suggestions: [])
          |> assign(:file_tree, file_tree)
          |> assign(:project_sources, project_sources(file_tree))
          |> assign(:current_file, file)
@@ -273,9 +286,20 @@ defmodule TypsterWeb.EditorLive.Index do
          })
          |> push_event("content_updated", %{content: content})}
 
-      {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, gettext("editor.flash.create_failed"))}
+      {:error, changeset} ->
+        message =
+          if path_taken_error?(changeset),
+            do: gettext("editor.flash.file_exists"),
+            else: gettext("editor.flash.create_failed")
+
+        {:noreply, put_flash(socket, :error, message)}
     end
+  end
+
+  defp path_taken?(file_tree, path), do: Enum.any?(file_tree, &(&1.path == path))
+
+  defp path_taken_error?(changeset) do
+    Enum.any?(changeset.errors, fn {field, _} -> field == :path end)
   end
 
   defp default_file_content(path) do
