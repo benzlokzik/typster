@@ -2,12 +2,15 @@
    Custom panel supplied via search({ createPanel }) in cm_search_panel.js.
    Token-driven so light/dark/[data-accent] all work with no JS color logic. */
 
-.cm-panels {
+/* Scoped under .cm-editor to outrank CodeMirror's runtime-injected base theme
+   (it ships a light .cm-panels background that otherwise wins the cascade,
+   since our editor theme isn't flagged dark). */
+.cm-editor .cm-panels {
   background: var(--bg2);
   color: var(--fg);
   border: 0;
 }
-.cm-panels.cm-panels-top {
+.cm-editor .cm-panels.cm-panels-top {
   border-bottom: 1px solid var(--bd);
 }
 
