@@ -910,12 +910,12 @@ msgstr "Создать бесплатный аккаунт"
 #: lib/typster_web/controllers/page_html/home.html.heex:304
 #, elixir-autogen, elixir-format
 msgid "landing.cta.h"
-msgstr "Хватит воевать с редактором. Станьте <em>Typster</em>."
+msgstr "Хватит воевать с редактором. Станьте <em>Typster</em>'ом."
 
 #: lib/typster_web/controllers/page_html/home.html.heex:305
 #, elixir-autogen, elixir-format
 msgid "landing.cta.sub"
-msgstr "2 400 авторов уже в деле. Бесплатно навсегда, без карты."
+msgstr "2 400 авторов уже залипли. Бесплатно навсегда, без карты."
 
 #: lib/typster_web/controllers/page_html/demo.html.heex:138
 #, elixir-autogen, elixir-format
@@ -1210,7 +1210,7 @@ msgstr "Квартальный отчёт"
 #: lib/typster_web/controllers/page_html/home.html.heex:263
 #, elixir-autogen, elixir-format
 msgid "landing.faq.a1"
-msgstr "Нет. Typster работает в браузере; компилятор Typst встроен в наш edge-рантайм. Откройте вкладку и пишите."
+msgstr "Не-а. Typster работает в браузере; компилятор Typst встроен в наш edge-рантайм. Откройте вкладку и пишите."
 
 #: lib/typster_web/controllers/page_html/home.html.heex:269
 #, elixir-autogen, elixir-format
@@ -1450,7 +1450,7 @@ msgstr "v1.0 · Публичная бета"
 #: lib/typster_web/controllers/page_html/hero.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "landing.hero.cta_github"
-msgstr "Звезда на GitHub"
+msgstr "Звезду на GitHub"
 
 #: lib/typster_web/controllers/page_html/hero.html.heex:11
 #, elixir-autogen, elixir-format
@@ -1565,7 +1565,7 @@ msgstr "обработали 18 тыс. задач компиляции."
 #: lib/typster_web/controllers/page_html/hero.html.heex:7
 #, elixir-autogen, elixir-format
 msgid "landing.hero.sub"
-msgstr "Три панели, живой предпросмотр, каждая команда на сочетании клавиш. Сосредоточьтесь, пишите на Typst и собирайте PDF за миллисекунды."
+msgstr "Три панели, живой предпросмотр, каждая команда на сочетании клавиш. Залипайте в текст, пишите на Typst и собирайте PDF за миллисекунды."
 
 #: lib/typster_web/controllers/page_html/hero.html.heex:5
 #, elixir-autogen, elixir-format
@@ -1605,7 +1605,7 @@ msgstr "Делитесь"
 #: lib/typster_web/controllers/page_html/home.html.heex:35
 #, elixir-autogen, elixir-format
 msgid "landing.hiw.write.desc"
-msgstr "Откройте Typster. Печатайте на Typst. Ничего не нужно устанавливать, настраивать или контролировать — только чистый файл и ваши идеи."
+msgstr "Откройте Typster. Печатайте на Typst. Ничего не нужно устанавливать, настраивать или нянчить — только чистый файл и ваши идеи."
 
 #: lib/typster_web/controllers/page_html/home.html.heex:33
 #, elixir-autogen, elixir-format
@@ -1625,7 +1625,7 @@ msgstr "Сначала клавиатура"
 #: lib/typster_web/controllers/page_html/home.html.heex:108
 #, elixir-autogen, elixir-format
 msgid "landing.kb.h"
-msgstr "Меньше тянитесь к мыши."
+msgstr "Реже трогайте мышь."
 
 #: lib/typster_web/controllers/page_html/home.html.heex:136
 #, elixir-autogen, elixir-format
@@ -1945,7 +1945,7 @@ msgstr "От сохранения до PDF"
 #: lib/typster_web/controllers/page_html/home.html.heex:8
 #, elixir-autogen, elixir-format
 msgid "landing.stats.weekly"
-msgstr "Авторов пишут каждую неделю"
+msgstr "Typster'ов пишут каждую неделю"
 
 #: lib/typster_web/controllers/page_html/home.html.heex:163
 #, elixir-autogen, elixir-format
