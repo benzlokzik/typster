@@ -370,6 +370,8 @@ html:not(.is-mac) .ts-mac { display: none; }
 html:not(.is-mac) .ts-other { display: inline-flex; }
 .ts-cmdk { gap: 6px; }
 .ts-cmdk__icon svg { width: 14px; height: 14px; }
+.ts-kbd svg { width: 11px; height: 11px; }
+.ts-kbd--combo { gap: 3px; }
 
 /* ── Your templates ───────────────────────────────────────────────────────── */
 .ts-tpl { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 6px; }

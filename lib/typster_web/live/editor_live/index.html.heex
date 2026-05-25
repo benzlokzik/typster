@@ -663,7 +663,11 @@
         >
           <.icon name="hero-play" class="size-4" />
           <span>{gettext("editor.palette.compile")}</span>
-          <span class="ts-kbd">⌘↵</span>
+          <span class="ts-kbd ts-kbd--combo">
+            <span class="ts-mac" aria-hidden="true"><i data-lucide="command"></i></span>
+            <span class="ts-other">Ctrl</span>
+            <i data-lucide="corner-down-left" aria-hidden="true"></i>
+          </span>
         </button>
         <button
           :if={palette_match?(@palette_query, gettext("editor.palette.settings"))}
