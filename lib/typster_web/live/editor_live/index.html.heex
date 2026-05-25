@@ -57,51 +57,15 @@
           <div class="ts-side__head">
             <span>{gettext("editor.files")}</span>
             <div class="ts-side__actions">
-              <div class="ts-viewmenu">
-                <button
-                  type="button"
-                  class="ts-btn ts-btn--ghost ts-btn--sm ts-viewmenu__btn"
-                  phx-click={JS.toggle(to: "#file-viewmenu")}
-                  aria-label={gettext("editor.view.label")}
-                >
-                  <.icon name="hero-arrows-right-left" class="size-3" />
-                  {TypsterWeb.FileTree.view_label(@file_view_mode)}
-                </button>
-                <div
-                  id="file-viewmenu"
-                  class="ts-viewmenu__pop hidden"
-                  phx-click-away={JS.hide(to: "#file-viewmenu")}
-                >
-                  <div class="ts-viewmenu__h">{gettext("editor.view.menu_title")}</div>
-                  <button
-                    :for={
-                      {m, label, desc} <- [
-                        {"tree", gettext("editor.view.tree"), gettext("editor.view.tree_desc")},
-                        {"smart", gettext("editor.view.smart_label"),
-                         gettext("editor.view.smart_desc")},
-                        {"flat", gettext("editor.view.flat_label"),
-                         gettext("editor.view.flat_desc")}
-                      ]
-                    }
-                    type="button"
-                    class={["ts-viewmenu__opt", to_string(@file_view_mode) == m && "is-on"]}
-                    phx-click={
-                      JS.hide(to: "#file-viewmenu") |> JS.push("set_file_view", value: %{mode: m})
-                    }
-                  >
-                    <.icon
-                      :if={to_string(@file_view_mode) == m}
-                      name="hero-check"
-                      class="size-3 ts-viewmenu__check"
-                    />
-                    <span :if={to_string(@file_view_mode) != m} class="ts-viewmenu__dot"></span>
-                    <span>
-                      <strong>{label}</strong>
-                      <em>{desc}</em>
-                    </span>
-                  </button>
-                </div>
-              </div>
+              <button
+                type="button"
+                class="ts-btn ts-btn--ghost ts-btn--sm ts-viewmenu__btn"
+                phx-click={JS.toggle(to: "#file-viewmenu")}
+                aria-label={gettext("editor.view.label")}
+              >
+                <.icon name="hero-arrows-right-left" class="size-3" />
+                {TypsterWeb.FileTree.view_label(@file_view_mode)}
+              </button>
               <button
                 id="create-main-file-button"
                 phx-click="new_file"
@@ -111,6 +75,39 @@
                 <.icon name="hero-plus" class="size-3" />
               </button>
             </div>
+          </div>
+
+          <div
+            id="file-viewmenu"
+            class="ts-viewmenu__pop hidden"
+            phx-click-away={JS.hide(to: "#file-viewmenu")}
+          >
+            <button
+              :for={
+                {m, label, desc} <- [
+                  {"tree", gettext("editor.view.tree"), gettext("editor.view.tree_desc")},
+                  {"smart", gettext("editor.view.smart_label"),
+                   gettext("editor.view.smart_desc")},
+                  {"flat", gettext("editor.view.flat_label"), gettext("editor.view.flat_desc")}
+                ]
+              }
+              type="button"
+              class={["ts-viewmenu__opt", to_string(@file_view_mode) == m && "is-on"]}
+              phx-click={
+                JS.hide(to: "#file-viewmenu") |> JS.push("set_file_view", value: %{mode: m})
+              }
+            >
+              <.icon
+                :if={to_string(@file_view_mode) == m}
+                name="hero-check"
+                class="size-3 ts-viewmenu__check"
+              />
+              <span :if={to_string(@file_view_mode) != m} class="ts-viewmenu__dot"></span>
+              <span>
+                <strong>{label}</strong>
+                <em>{desc}</em>
+              </span>
+            </button>
           </div>
 
           <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) do %>

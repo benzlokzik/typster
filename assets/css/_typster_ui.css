@@ -202,13 +202,14 @@
 .ts-tree__smart { margin-left: 4px; color: var(--fg4); font: 11px 'JetBrains Mono', ui-monospace, monospace; flex-shrink: 0; }
 
 /* ── File-tree view-mode switcher ─────────────────────────────────────────── */
-.ts-viewmenu { position: relative; }
+/* The sidebar is a narrow `overflow:auto` scroller, so the menu renders in-flow
+   (full width, pushing the tree down) rather than as an absolute overlay that
+   the scroll container would clip. */
 .ts-viewmenu__btn { gap: 5px; text-transform: none; letter-spacing: 0; font-weight: 500; }
 .ts-viewmenu__pop {
-  position: absolute; top: 100%; right: 0; margin-top: 4px; width: 240px; padding: 6px; z-index: 20;
-  background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); box-shadow: var(--sh-lg);
+  margin: 0 8px 8px; padding: 6px;
+  background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); box-shadow: var(--sh-md);
 }
-.ts-viewmenu__h { padding: 6px 8px; font: 600 11px 'Inter', system-ui, sans-serif; color: var(--fg4); text-transform: uppercase; letter-spacing: .06em; }
 .ts-viewmenu__opt { display: flex; align-items: flex-start; gap: 8px; width: 100%; padding: 8px; border: 0; background: none; cursor: pointer; border-radius: var(--r-sm); text-align: left; color: var(--fg2); transition: background 200ms var(--ease); }
 .ts-viewmenu__opt:hover { background: var(--bd2); }
 .ts-viewmenu__opt.is-on { color: var(--fg); }
