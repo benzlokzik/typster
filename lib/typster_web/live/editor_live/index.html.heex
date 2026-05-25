@@ -29,7 +29,9 @@
         <span class="ts-cmdk__icon ts-other" aria-hidden="true">
           <i data-lucide="square-terminal"></i>
         </span>
-        <span class="ts-kbd ts-mac">⌘K</span>
+        <%!-- The ⌘ icon already conveys the modifier, so the Mac key is just "K"
+             (avoids a duplicated ⌘). Non-mac spells out "Ctrl" beside the icon. --%>
+        <span class="ts-kbd ts-mac">K</span>
         <span class="ts-kbd ts-other">Ctrl K</span>
       </button>
       <button
