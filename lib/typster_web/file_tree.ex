@@ -196,7 +196,6 @@ defmodule TypsterWeb.FileTree do
               class={["ts-tree__act", Map.get(node, :pinned, false) && "is-on"]}
               phx-click="toggle_pin"
               phx-value-id={node.id}
-              onclick="event.stopPropagation()"
               aria-label={
                 if(Map.get(node, :pinned, false),
                   do: gettext("editor.tree.unpin"),
@@ -216,7 +215,6 @@ defmodule TypsterWeb.FileTree do
               phx-click={if node.asset?, do: "delete_asset", else: "delete_file"}
               phx-value-id={node.id}
               phx-confirm={gettext("editor.tree.delete_confirm")}
-              onclick="event.stopPropagation()"
               aria-label={gettext("editor.tree.delete")}
             >
               <.icon name="hero-trash" class="size-3" />
