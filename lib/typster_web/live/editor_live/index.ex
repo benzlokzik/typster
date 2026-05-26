@@ -22,6 +22,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:assets, assets)
      |> assign(:current_file, main_file)
      |> assign(:active_dir, file_dir(main_file))
+     |> assign(:create_dir, "")
      |> assign(:open_file_ids, if(main_file, do: [main_file.id], else: []))
      |> assign(:content, if(main_file, do: main_file.content || "", else: ""))
      |> assign(:editor_language, editor_language(main_file))
@@ -276,6 +277,7 @@ defmodule TypsterWeb.EditorLive.Index do
      socket
      |> assign(:creating?, true)
      |> assign(:new_kind, :file)
+     |> assign(:create_dir, socket.assigns.active_dir)
      |> assign(:new_file_name, stem)
      |> assign(
        :new_file_suggestions,
@@ -294,10 +296,11 @@ defmodule TypsterWeb.EditorLive.Index do
 
   @impl true
   def handle_event("create_folder_from_dialog", %{"path" => typed}, socket) do
-    folder = typed |> String.trim() |> String.trim("/")
+    name = typed |> String.trim() |> String.trim("/")
+    folder = socket.assigns.create_dir |> join_dir(name) |> String.trim("/")
 
     cond do
-      folder == "" ->
+      name == "" ->
         {:noreply, socket}
 
       folder_taken?(socket.assigns.file_tree, folder) ->
@@ -330,20 +333,25 @@ defmodule TypsterWeb.EditorLive.Index do
 
   @impl true
   def handle_event("create_file_from_dialog", %{"path" => typed}, socket) do
-    path = Files.resolve_new_file_path(socket.assigns.file_tree, typed)
+    name = String.trim(typed)
+    full = join_dir(socket.assigns.create_dir, name)
+    path = Files.resolve_new_file_path(socket.assigns.file_tree, full)
 
     cond do
+      name == "" ->
+        {:noreply, socket}
+
       not Files.editable_file?(path) ->
         {:noreply, put_flash(socket, :error, gettext("editor.flash.unsupported_file"))}
 
       path_taken?(socket.assigns.file_tree, path) ->
-        # Keep the draft open with what was typed so the name can be fixed.
+        # Keep the draft open with the typed name (folder prefix shown separately).
         {:noreply,
          socket
-         |> assign(:new_file_name, typed)
+         |> assign(:new_file_name, name)
          |> assign(
            :new_file_suggestions,
-           Files.new_file_suggestions(socket.assigns.file_tree, typed)
+           Files.new_file_suggestions(socket.assigns.file_tree, name)
          )
          |> put_flash(:error, gettext("editor.flash.file_exists"))}
 
@@ -652,22 +660,23 @@ defmodule TypsterWeb.EditorLive.Index do
     end
   end
 
-  defp dir_prefix(""), do: ""
-  defp dir_prefix(dir), do: dir <> "/"
-
-  # Open the inline draft, seeded with the active folder so the new file/folder
-  # lands there, and expand that folder so the result is visible.
+  # Open the inline draft targeting the active folder (shown as a static prefix,
+  # not editable text) and expand that folder so the result is visible.
   defp start_create(socket, kind) do
     active_dir = socket.assigns.active_dir
 
     socket
     |> assign(:creating?, true)
     |> assign(:new_kind, kind)
-    |> assign(:new_file_name, dir_prefix(active_dir))
+    |> assign(:create_dir, active_dir)
+    |> assign(:new_file_name, "")
     |> assign(:new_file_suggestions, [])
     |> assign(:template_content, nil)
     |> assign(:collapsed_dirs, MapSet.delete(socket.assigns.collapsed_dirs, active_dir))
   end
+
+  defp join_dir("", name), do: name
+  defp join_dir(dir, name), do: "#{dir}/#{name}"
 
   # Breadcrumb segments from the active file's path; the filename is `last`.
   defp path_segments(nil), do: []
@@ -709,7 +718,6 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   defp pinned_files(file_tree), do: Enum.filter(file_tree, & &1.pinned)
-  defp unpinned_files(file_tree), do: Enum.reject(file_tree, & &1.pinned)
 
   # Hierarchical section numbers, with the level-1 title left unnumbered and
   # numbering starting at level 2 (1, 2, 2.1, …) per the OutlineV2 design.

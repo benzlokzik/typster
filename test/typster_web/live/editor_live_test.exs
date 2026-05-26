@@ -168,10 +168,9 @@ defmodule TypsterWeb.EditorLiveTest do
     # sections/intro.typ is the initial file, so its folder is active.
     view |> element("#create-main-file-button") |> render_click()
 
-    assert view |> element("#new-file-form input[name='path']") |> render() =~
-             ~s(value="sections/")
-
-    view |> form("#new-file-form", %{path: "sections/results"}) |> render_submit()
+    # The folder is shown as a static prefix; you type only the filename.
+    assert has_element?(view, ".ts-draft__dir", "sections/")
+    view |> form("#new-file-form", %{path: "results"}) |> render_submit()
     assert path_exists?(user, project, "sections/results.typ")
   end
 

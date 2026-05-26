@@ -98,8 +98,8 @@ defmodule TypsterWeb.FileTree do
 
   defp expanded?(collapsed, path), do: not MapSet.member?(collapsed, path)
 
-  defp leaf_dom_id(%{asset?: true, id: id}), do: "asset-entry-#{id}"
-  defp leaf_dom_id(%{id: id}), do: "select-file-#{id}"
+  defp leaf_dom_id(%{asset?: true, id: id}, prefix), do: "#{prefix}asset-entry-#{id}"
+  defp leaf_dom_id(%{id: id}, prefix), do: "#{prefix}select-file-#{id}"
 
   @doc "Color/glyph bucket for a file's typed chip, from its extension."
   def file_chip_kind(name) do
@@ -129,6 +129,7 @@ defmodule TypsterWeb.FileTree do
   attr :depth, :integer, default: 0
   attr :collapsed, :any, required: true
   attr :current_id, :any, default: nil
+  attr :id_prefix, :string, default: ""
 
   @doc "Recursively render tree rows (siblings share one `<ul>`, indented by depth)."
   def tree_rows(assigns) do
@@ -162,10 +163,11 @@ defmodule TypsterWeb.FileTree do
           depth={@depth + 1}
           collapsed={@collapsed}
           current_id={@current_id}
+          id_prefix={@id_prefix}
         />
       <% else %>
         <li
-          id={leaf_dom_id(node)}
+          id={leaf_dom_id(node, @id_prefix)}
           phx-click={if not node.asset? and node.editable, do: "select_file"}
           phx-value-file-id={node.id}
           class={[

@@ -261,6 +261,7 @@
   font: 500 13px 'JetBrains Mono', ui-monospace, monospace;
 }
 .ts-draft__input::placeholder { color: var(--fg4); }
+.ts-draft__dir { flex-shrink: 0; color: var(--fg3); user-select: none; font: 500 13px 'JetBrains Mono', ui-monospace, monospace; }
 .ts-exthint {
   flex-shrink: 0; user-select: none; cursor: pointer;
   padding: 2px 7px; border-radius: 6px;
