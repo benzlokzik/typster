@@ -92,3 +92,60 @@
 .ts-cm-search--invalid .ts-cm-search__count {
   color: var(--mk-error);
 }
+
+/* ── Lint diagnostics (compile errors/warnings) ───────────────────────────── */
+/* @codemirror/lint draws the underline via an inline-SVG background-image and
+   the gutter marker via the `content` property; null both, then theme to the
+   design tokens (which are already light/dark aware). */
+.cm-lintRange {
+  background-image: none;
+  padding-bottom: 0;
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-skip-ink: none;
+}
+.cm-lintRange-error { text-decoration-color: var(--mk-error); }
+.cm-lintRange-warning { text-decoration-color: var(--mk-warning); }
+.cm-lintRange-info { text-decoration-color: var(--mk-fg3); }
+.cm-lintRange-active { background-color: var(--mk-warning-50); }
+
+.cm-lint-marker {
+  content: none;
+  width: 8px;
+  height: 8px;
+  margin: 5px auto;
+  border-radius: 9999px;
+  background-image: none;
+}
+.cm-lint-marker-error { background-color: var(--mk-error); }
+.cm-lint-marker-warning { background-color: var(--mk-warning); border-radius: 2px; }
+.cm-lint-marker-info { background-color: var(--mk-fg3); }
+
+.cm-tooltip.cm-tooltip-lint {
+  background: var(--mk-bg);
+  color: var(--mk-fg);
+  border: 1px solid var(--mk-bd);
+  border-radius: var(--mk-r);
+  box-shadow: var(--mk-sh-lg);
+  padding: 4px;
+  max-width: 30rem;
+  overflow: hidden;
+}
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic {
+  border-left: 3px solid transparent;
+  border-radius: var(--mk-r-sm);
+  padding: 6px 10px;
+  margin: 0;
+}
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic-error { border-left-color: var(--mk-error); }
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic-warning { border-left-color: var(--mk-warning); }
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic-info { border-left-color: var(--mk-fg3); }
+.cm-diagnosticText { font: 13px/1.4 'Inter', system-ui, sans-serif; }
+.cm-diagnosticSource { font-size: 11px; opacity: 0.65; margin-top: 2px; }
+.cm-tooltip.cm-tooltip-lint .cm-tooltip-arrow::after { border-top-color: var(--mk-bg); }
+
+/* Bottom lint panel (opened via the lint keymap) reuses .cm-diagnostic* rows. */
+.cm-panel.cm-panel-lint { background: var(--mk-bg2); border-top: 1px solid var(--mk-bd); }
+.cm-panel.cm-panel-lint ul [aria-selected] { background: var(--mk-bd2); }
