@@ -45,30 +45,25 @@ function formatError(error) {
   return "Typst preview failed"
 }
 
-// `diagnostics: 'full'` yields the same text Typst's CLI prints (one string per
-// diagnostic, with `error: …` and a `file:line:col` location). Join them so the
-// preview can parse and present a readable list.
-function formatDiagnostics(diagnostics) {
-  if (!diagnostics) return null
-  const list = Array.isArray(diagnostics) ? diagnostics : [diagnostics]
+// `diagnostics: 'full'` returns DiagnosticMessage objects:
+//   { package, path: "/main.typ", severity, range: "2:9-3:15", message }
+// Turn them into structured items the preview can render directly (clean path,
+// numeric line/col), rather than re-parsing formatted text.
+function structureDiagnostics(diagnostics) {
+  if (!Array.isArray(diagnostics) || diagnostics.length === 0) return null
 
-  const parts = list
-    .map((d) => {
-      if (typeof d === "string") return d
-      if (d && typeof d === "object") {
-        const sev = d.severity || "error"
-        const msg = d.message || formatError(d)
-        const path = d.path || (d.span && d.span.path)
-        const range = d.range || (d.span && d.span.range)
-        const line = range && (range.start?.line ?? range.startLine ?? range.start)
-        const loc = path && line != null ? ` (${path}:${Number(line) + 1})` : path ? ` (${path})` : ""
-        return `${sev}: ${msg}${loc}`
-      }
-      return String(d)
-    })
-    .filter(Boolean)
+  return diagnostics.map((d) => {
+    const file = String((d && d.path) || "").replace(/^\/+/, "") || null
+    const severity = String((d && d.severity) || "error").toLowerCase().includes("warn")
+      ? "warning"
+      : "error"
+    const m = String((d && d.range) || "").match(/(\d+):(\d+)/)
+    const location = file
+      ? { file, line: m ? Number(m[1]) : null, col: m ? Number(m[2]) : null }
+      : null
 
-  return parts.length ? parts.join("\n\n") : null
+    return { severity, location, message: (d && d.message) || "Compilation error" }
+  })
 }
 
 async function ensureInitialized() {
@@ -113,7 +108,7 @@ self.onmessage = async function (event) {
       // The high-level svg() suppresses diagnostics, so the caught error is
       // opaque. Recompile once with full diagnostics to recover the real
       // error text (sources are re-mapped first in case state was reset).
-      let message = formatError(error)
+      let structured = null
       try {
         await loadSources(content, project)
         const compiler = await $typst.getCompiler()
@@ -121,13 +116,13 @@ self.onmessage = async function (event) {
           mainFilePath: "/main.typ",
           diagnostics: "full"
         })
-        const formatted = formatDiagnostics(diagnostics)
-        if (formatted) message = formatted
+        structured = structureDiagnostics(diagnostics)
       } catch (diagError) {
         console.error("typst diagnostics recompile failed:", diagError)
       }
 
-      self.postMessage({ type: "error", data: { message } })
+      const message = (structured && structured[0] && structured[0].message) || formatError(error)
+      self.postMessage({ type: "error", data: { message, diagnostics: structured } })
     }
   } else if (type === "pdf") {
     // Export bypasses latestCompileId: a download is an explicit one-off and must

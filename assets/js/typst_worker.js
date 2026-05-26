@@ -81,10 +81,14 @@ function renderDiagnostics(errEl, diags) {
     const body = document.createElement("div")
     body.className = "ts-diag__body"
 
-    if (d.location) {
+    if (d.location && d.location.file) {
+      const file = String(d.location.file).replace(/^\/+/, "")
       const loc = document.createElement("div")
       loc.className = "ts-diag__loc"
-      loc.textContent = `${d.location.file} : ${d.location.line} : ${d.location.col}`
+      loc.textContent =
+        d.location.line != null
+          ? `${file} : ${d.location.line} : ${d.location.col}`
+          : file
       body.appendChild(loc)
     }
 
@@ -178,7 +182,10 @@ export function initTypstWorker(hook) {
               errEl.className = "ts-diag"
               previewContainer.appendChild(errEl)
             }
-            const diags = parseTypstDiagnostics(data.message)
+            const diags =
+              Array.isArray(data.diagnostics) && data.diagnostics.length
+                ? data.diagnostics
+                : parseTypstDiagnostics(data.message)
             renderDiagnostics(errEl, diags)
             errEl.style.display = ""
 
