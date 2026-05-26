@@ -126,19 +126,26 @@
 .cm-lint-marker-warning { background-color: var(--mk-warning); border-radius: 2px; }
 .cm-lint-marker-info { background-color: var(--mk-fg3); }
 
-.cm-tooltip.cm-tooltip-lint {
+/* `.cm-tooltip-lint` is the <ul> INSIDE the generic `.cm-tooltip` wrapper, not
+   the wrapper itself — so style the wrapper (card chrome) via :has, and the
+   <ul> as the card body. */
+.cm-tooltip:has(.cm-tooltip-lint) {
   background: var(--mk-bg);
-  color: var(--mk-fg);
   border: 1px solid var(--mk-bd);
   border-radius: var(--mk-r);
   box-shadow: var(--mk-sh-lg);
-  padding: 0;
-  max-width: 30rem;
   overflow: hidden;
 }
-/* A leading severity dot (flex item) instead of a left border — readable and
-   it stays aligned with the first line of multi-line messages. */
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic {
+.cm-tooltip-lint {
+  background: var(--mk-bg);
+  color: var(--mk-fg);
+  padding: 0;
+  margin: 0;
+  max-width: 30rem;
+}
+/* A leading severity dot (flex item) instead of the default left border —
+   readable, and it stays aligned with the first line of multi-line messages. */
+.cm-tooltip-lint .cm-diagnostic {
   display: flex;
   gap: 8px;
   align-items: flex-start;
@@ -147,8 +154,8 @@
   padding: 8px 12px;
   margin: 0;
 }
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic + .cm-diagnostic { border-top: 1px solid var(--mk-bd); }
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic::before {
+.cm-tooltip-lint .cm-diagnostic + .cm-diagnostic { border-top: 1px solid var(--mk-bd); }
+.cm-tooltip-lint .cm-diagnostic::before {
   content: "";
   flex: 0 0 auto;
   width: 7px;
@@ -157,16 +164,17 @@
   border-radius: 50%;
   background: var(--mk-fg3);
 }
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic-error::before { background: var(--mk-error); }
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic-warning::before { background: var(--mk-warning); border-radius: 2px; }
-.cm-tooltip.cm-tooltip-lint .cm-diagnosticText {
+.cm-tooltip-lint .cm-diagnostic-error::before { background: var(--mk-error); }
+.cm-tooltip-lint .cm-diagnostic-warning::before { background: var(--mk-warning); border-radius: 2px; }
+.cm-tooltip-lint .cm-diagnosticText {
   flex: 1;
   min-width: 0;
   color: var(--mk-fg);
   font: 13px/1.45 'Inter', system-ui, sans-serif;
 }
-.cm-tooltip.cm-tooltip-lint .cm-diagnosticSource { font-size: 11px; opacity: 0.65; margin-top: 2px; }
-.cm-tooltip.cm-tooltip-lint .cm-tooltip-arrow::after { border-top-color: var(--mk-bg); }
+.cm-tooltip-lint .cm-diagnosticSource { font-size: 11px; opacity: 0.65; margin-top: 2px; }
+.cm-tooltip:has(.cm-tooltip-lint) .cm-tooltip-arrow::after { border-top-color: var(--mk-bg); }
+.cm-tooltip:has(.cm-tooltip-lint) .cm-tooltip-arrow::before { border-top-color: var(--mk-bd); }
 
 /* Bottom lint panel (opened via the lint keymap) reuses .cm-diagnostic* rows. */
 .cm-panel.cm-panel-lint { background: var(--mk-bg2); border-top: 1px solid var(--mk-bd); }
