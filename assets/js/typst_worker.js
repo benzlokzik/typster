@@ -208,7 +208,8 @@ export function initTypstWorker(hook) {
               pushEvent("preview_error", {
                 message: data.message || "Typst preview failed",
                 errors: errors,
-                warnings: warnings
+                warnings: warnings,
+                diagnostics: diags
               })
             }
           } else if (pushEvent) {

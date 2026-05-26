@@ -188,6 +188,47 @@ defmodule TypsterWeb.EditorLiveTest do
     assert has_element?(view, ".ts-pill--error", "2 errors")
   end
 
+  test "the compile drawer lists diagnostics and toggles from the status bar",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    refute has_element?(view, ".ts-drawer")
+
+    render_hook(view, "preview_error", %{
+      "message" => "expected comma",
+      "errors" => 1,
+      "warnings" => 0,
+      "diagnostics" => [
+        %{
+          "severity" => "error",
+          "message" => "expected comma",
+          "location" => %{"file" => "main.typ", "line" => 15, "col" => 23}
+        }
+      ]
+    })
+
+    assert has_element?(view, ".ts-statusbar__btn.is-error", "1 error")
+
+    view |> element(".ts-statusbar__btn") |> render_click()
+    assert has_element?(view, ".ts-drawer")
+
+    view |> element(".ts-drawer__tab", "Problems") |> render_click()
+    assert has_element?(view, ".ts-problem__loc", "15 : 23")
+    assert has_element?(view, ".ts-problem__msg", "expected comma")
+  end
+
+  test "a successful compile records a log entry in the drawer",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "update_preview", %{"ms" => 47, "pages" => 3})
+    view |> element(".ts-statusbar__btn") |> render_click()
+
+    assert has_element?(view, ".ts-log__row--ok", "compiled")
+  end
+
   test "the header breadcrumb shows the active file's path segments",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "sections/intro.typ"})

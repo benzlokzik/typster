@@ -593,6 +593,97 @@
           </div>
         </section>
 
+        <%!-- Compile log + problems drawer — spans all panes --%>
+        <div :if={@drawer_open} class="ts-drawer">
+          <div class="ts-drawer__tabs">
+            <button
+              type="button"
+              class={["ts-drawer__tab", @drawer_tab == "log" && "is-active"]}
+              phx-click="set_drawer_tab"
+              phx-value-tab="log"
+            >
+              <.icon name="hero-play" class="size-3" /> {gettext("editor.drawer.log")}
+            </button>
+            <button
+              type="button"
+              class={["ts-drawer__tab", @drawer_tab == "problems" && "is-active"]}
+              phx-click="set_drawer_tab"
+              phx-value-tab="problems"
+            >
+              <.icon name="hero-exclamation-triangle" class="size-3" />
+              {gettext("editor.drawer.problems")}
+              <span :if={@preview_error_count > 0} class="ts-drawer__count">
+                {@preview_error_count}
+              </span>
+            </button>
+            <div class="ts-spacer" />
+            <button
+              :if={@drawer_tab == "problems" and first_error_line(@diagnostics)}
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--sm"
+              phx-click={
+                JS.dispatch("phx:editor-command",
+                  detail: %{cmd: "goto", line: first_error_line(@diagnostics)}
+                )
+              }
+            >
+              {gettext("editor.drawer.jump_first")}
+            </button>
+            <button
+              :if={@drawer_tab == "log"}
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--sm"
+              phx-click="clear_log"
+            >
+              {gettext("editor.drawer.clear")}
+            </button>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click="toggle_drawer"
+              aria-label={gettext("editor.drawer.close")}
+            >
+              <.icon name="hero-chevron-down" class="size-3" />
+            </button>
+          </div>
+
+          <div :if={@drawer_tab == "log"} class="ts-drawer__body ts-log">
+            <div :if={@compile_log == []} class="ts-drawer__empty">
+              {gettext("editor.drawer.log_empty")}
+            </div>
+            <div
+              :for={entry <- @compile_log}
+              class={["ts-log__row", "ts-log__row--#{entry.kind}"]}
+            >
+              <span class="ts-log__time">{entry.at}</span>
+              <span class="ts-log__text">{entry.text}</span>
+            </div>
+          </div>
+
+          <div :if={@drawer_tab == "problems"} class="ts-drawer__body ts-problems">
+            <div :if={@diagnostics == []} class="ts-drawer__empty">
+              {gettext("editor.drawer.no_problems")}
+            </div>
+            <button
+              :for={d <- @diagnostics}
+              type="button"
+              class="ts-problem"
+              phx-click={
+                d.line &&
+                  JS.dispatch("phx:editor-command", detail: %{cmd: "goto", line: d.line})
+              }
+            >
+              <span class={["ts-problem__dot", "ts-problem__dot--#{d.severity}"]}></span>
+              <span class="ts-problem__body">
+                <span :if={d.file} class="ts-problem__loc">
+                  {String.trim_leading(d.file, "/")}<span :if={d.line}>{" : #{d.line} : #{d.col}"}</span>
+                </span>
+                <span class="ts-problem__msg">{d.message}</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
         <%!-- Status bar — spans all panes --%>
         <div class="ts-statusbar">
           <span class="ts-statusbar__item">
@@ -607,7 +698,22 @@
           <span class="ts-statusbar__sep"></span>
           <span class="ts-statusbar__item">LF</span>
           <div class="ts-spacer" />
-          <span class="ts-statusbar__item">{gettext("editor.command_hint")}</span>
+          <button
+            type="button"
+            class={["ts-statusbar__btn", @preview_error_count > 0 && "is-error"]}
+            phx-click="toggle_drawer"
+            aria-label={gettext("editor.drawer.toggle")}
+          >
+            <.icon
+              name={if @preview_error_count > 0, do: "hero-x-circle", else: "hero-check-circle"}
+              class="size-3.5"
+            />
+            <%= if @preview_error_count > 0 do %>
+              {ngettext("%{count} error", "%{count} errors", @preview_error_count)}
+            <% else %>
+              {gettext("editor.drawer.log")}
+            <% end %>
+          </button>
         </div>
       </div>
     </div>

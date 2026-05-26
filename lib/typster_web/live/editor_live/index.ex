@@ -33,6 +33,10 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:preview_error, nil)
      |> assign(:preview_error_count, 0)
      |> assign(:preview_compiling, false)
+     |> assign(:diagnostics, [])
+     |> assign(:compile_log, [])
+     |> assign(:drawer_open, false)
+     |> assign(:drawer_tab, "log")
      |> assign(:creating?, false)
      |> assign(:new_kind, :file)
      |> assign(:new_file_name, "")
@@ -111,21 +115,51 @@ defmodule TypsterWeb.EditorLive.Index do
 
   @impl true
   def handle_event("update_preview", params, socket) do
+    pages = params["pages"] || 1
+    sources = length(socket.assigns.project_sources)
+
+    log =
+      log_entry(:ok, "compiled · #{params["ms"]}ms · #{pages} page(s) · #{sources} sources")
+
     {:noreply,
-     assign(socket,
-       preview_stats: %{ms: params["ms"], pages: params["pages"]},
-       preview_compiling: false,
-       preview_error: nil
-     )}
+     socket
+     |> assign(:preview_stats, %{ms: params["ms"], pages: pages})
+     |> assign(:preview_compiling, false)
+     |> assign(:preview_error, nil)
+     |> assign(:preview_error_count, 0)
+     |> assign(:diagnostics, [])
+     |> push_log(log)}
   end
 
   @impl true
   def handle_event("preview_error", %{"message" => message} = params, socket) do
+    diagnostics = normalize_diagnostics(params["diagnostics"])
+    errors = params["errors"] || length(diagnostics)
+    warnings = params["warnings"] || 0
+
     {:noreply,
      socket
      |> assign(:preview_error, message)
-     |> assign(:preview_error_count, params["errors"] || 0)
-     |> assign(:preview_compiling, false)}
+     |> assign(:preview_error_count, errors)
+     |> assign(:preview_compiling, false)
+     |> assign(:diagnostics, diagnostics)
+     |> push_log(log_entry(:error, error_log_text(errors, warnings)))}
+  end
+
+  @impl true
+  def handle_event("toggle_drawer", _params, socket) do
+    {:noreply, assign(socket, :drawer_open, not socket.assigns.drawer_open)}
+  end
+
+  @impl true
+  def handle_event("set_drawer_tab", %{"tab" => tab}, socket) do
+    tab = if tab == "problems", do: "problems", else: "log"
+    {:noreply, assign(socket, drawer_open: true, drawer_tab: tab)}
+  end
+
+  @impl true
+  def handle_event("clear_log", _params, socket) do
+    {:noreply, assign(socket, :compile_log, [])}
   end
 
   @impl true
@@ -720,6 +754,49 @@ defmodule TypsterWeb.EditorLive.Index do
       "." -> {nil, path}
       dir -> {dir, Path.basename(path)}
     end
+  end
+
+  # ── Compile log + diagnostics ─────────────────────────────────────────────
+  defp normalize_diagnostics(nil), do: []
+
+  defp normalize_diagnostics(list) when is_list(list) do
+    Enum.map(list, fn d ->
+      loc = d["location"] || %{}
+
+      %{
+        severity: if(d["severity"] == "warning", do: "warning", else: "error"),
+        file: loc["file"],
+        line: loc["line"],
+        col: loc["col"],
+        message: d["message"] || ""
+      }
+    end)
+  end
+
+  defp normalize_diagnostics(_), do: []
+
+  defp log_entry(kind, text) do
+    %{kind: kind, text: text, at: Calendar.strftime(Time.utc_now(), "%H:%M:%S")}
+  end
+
+  # Keep the most recent 40 entries so the log can't grow unbounded.
+  defp push_log(socket, entry) do
+    assign(socket, :compile_log, Enum.take(socket.assigns.compile_log ++ [entry], -40))
+  end
+
+  defp error_log_text(errors, warnings) do
+    parts =
+      [errors > 0 && ngettext("%{count} error", "%{count} errors", errors)]
+      |> Enum.concat([
+        warnings > 0 && ngettext("%{count} warning", "%{count} warnings", warnings)
+      ])
+      |> Enum.filter(& &1)
+
+    if parts == [], do: gettext("editor.compile_failed"), else: Enum.join(parts, " · ")
+  end
+
+  defp first_error_line(diagnostics) do
+    Enum.find_value(diagnostics, fn d -> d.line end)
   end
 
   defp pinned_files(file_tree), do: Enum.filter(file_tree, & &1.pinned)
