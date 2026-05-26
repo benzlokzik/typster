@@ -811,7 +811,7 @@ defmodule TypsterWeb.EditorLive.Index do
       |> Map.update(level, 1, &(&1 + 1))
       |> Map.reject(fn {l, _} -> l > level end)
 
-    num = 2..level |> Enum.map(&Map.get(counters, &1, 1)) |> Enum.join(".")
+    num = Enum.map_join(2..level, ".", &Map.get(counters, &1, 1))
     {num, counters}
   end
 
