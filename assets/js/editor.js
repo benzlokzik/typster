@@ -71,6 +71,22 @@ const basicSetup = [
   ])
 ]
 
+// Auto-recompile debounce (ms from the last keystroke). Configurable via
+// localStorage so a single keystroke doesn't thrash the WASM compiler; a
+// negative value disables auto-compile (manual ⌘↵ / Compile only).
+export const DEFAULT_COMPILE_DELAY = 700
+
+export function compileDelay() {
+  try {
+    const raw = localStorage.getItem("typster:compile_delay")
+    if (raw === null) return DEFAULT_COMPILE_DELAY
+    const v = parseInt(raw, 10)
+    return Number.isFinite(v) ? v : DEFAULT_COMPILE_DELAY
+  } catch (_e) {
+    return DEFAULT_COMPILE_DELAY
+  }
+}
+
 function getCurrentTheme() {
   const html = document.documentElement
   const theme = html.getAttribute("data-theme")
@@ -348,10 +364,13 @@ export function initEditor(container, initialContent, socket, fileId, options = 
 
       if (language === "typst") {
         clearTimeout(compileTimer)
-        compileTimer = setTimeout(() => {
-          if (socket) socket.pushEvent("compile_started", {})
-          compileTypst(content, options.project || {})
-        }, 300)
+        const delay = compileDelay()
+        if (delay >= 0) {
+          compileTimer = setTimeout(() => {
+            if (socket) socket.pushEvent("compile_started", {})
+            compileTypst(content, options.project || {})
+          }, delay)
+        }
       }
 
       clearTimeout(outlineTimer)
