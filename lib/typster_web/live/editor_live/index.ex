@@ -622,14 +622,13 @@ defmodule TypsterWeb.EditorLive.Index do
   defp save_status_label(status), do: status
 
   # Auto-save a dropped/selected template file once its bytes finish uploading.
-  # File.read! reads a LiveView-managed upload temp path, not user input.
-  # sobelow_skip ["Traversal.FileModule"]
   defp handle_template_progress(:template, entry, socket) do
     if entry.done? do
       scope = socket.assigns.current_scope
 
       consume_uploaded_entries(socket, :template, fn %{path: path}, e ->
-        {:ok, Templates.create_template(scope, %{name: e.client_name, content: File.read!(path)})}
+        {:ok,
+         Templates.create_template(scope, %{name: e.client_name, content: read_upload!(path)})}
       end)
 
       {:noreply,
@@ -647,8 +646,6 @@ defmodule TypsterWeb.EditorLive.Index do
     if entry.done?, do: {:noreply, consume_dropped(socket)}, else: {:noreply, socket}
   end
 
-  # File.read! reads a LiveView-managed upload temp path, not user input.
-  # sobelow_skip ["Traversal.FileModule"]
   defp consume_dropped(socket) do
     scope = socket.assigns.current_scope
     project_id = socket.assigns.project.id
@@ -668,7 +665,7 @@ defmodule TypsterWeb.EditorLive.Index do
             {:ok, :asset}
 
           Files.editable_file?(name) ->
-            Files.create_file(scope, project_id, %{path: name, content: File.read!(tmp)})
+            Files.create_file(scope, project_id, %{path: name, content: read_upload!(tmp)})
             {:ok, :file}
 
           true ->
@@ -690,6 +687,23 @@ defmodule TypsterWeb.EditorLive.Index do
         do: put_flash(s, :error, gettext("editor.flash.unsupported_file")),
         else: put_flash(s, :info, gettext("editor.flash.dropped_added"))
     end)
+  end
+
+  # Read an upload's temp file, confined to the system temp dir where LiveView
+  # writes uploads — defense in depth against path traversal. Reads the
+  # validated, expanded path.
+  defp read_upload!(path) do
+    tmp = Path.expand(System.tmp_dir!())
+    expanded = Path.expand(path)
+
+    unless String.starts_with?(expanded, tmp <> "/") do
+      raise ArgumentError, "upload path is outside the temp directory"
+    end
+
+    case :file.read_file(expanded) do
+      {:ok, content} -> content
+      {:error, reason} -> raise "could not read upload (#{:file.format_error(reason)})"
+    end
   end
 
   # The directory a file lives in ("" for project root), used as the target
