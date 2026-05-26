@@ -174,6 +174,20 @@ defmodule TypsterWeb.EditorLiveTest do
     assert path_exists?(user, project, "sections/results.typ")
   end
 
+  test "a failed compile shows the error count in the preview status pill",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "preview_error", %{
+      "message" => "error: unknown variable: x",
+      "errors" => 2,
+      "warnings" => 1
+    })
+
+    assert has_element?(view, ".ts-pill--error", "2 errors")
+  end
+
   test "the header breadcrumb shows the active file's path segments",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "sections/intro.typ"})

@@ -381,6 +381,20 @@ html:not(.is-mac) .ts-other { display: inline-flex; }
 .ts-tpl__drop { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1.5px dashed var(--bd2); border-radius: var(--r-sm); color: var(--fg3); font: 12px 'Inter', system-ui, sans-serif; cursor: pointer; transition: border-color 150ms var(--ease), color 150ms var(--ease); }
 .ts-tpl__drop:hover { border-color: var(--pri); color: var(--fg); }
 
+/* ── Compile diagnostics panel (preview errors/warnings) ──────────────────── */
+.ts-diag { width: 100%; max-width: 560px; border: 1px solid var(--mk-error-bd); border-radius: var(--r); background: var(--bg); overflow: hidden; box-shadow: var(--sh-sm); }
+.ts-diag__head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--bd); font: 600 13px 'Inter', system-ui, sans-serif; color: var(--mk-error); }
+.ts-diag__list { display: flex; flex-direction: column; }
+.ts-diag__item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 16px; border-bottom: 1px solid var(--bd); }
+.ts-diag__item:last-child { border-bottom: 0; }
+.ts-diag__dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.ts-diag__dot--error { background: var(--mk-error); }
+.ts-diag__dot--warn { background: var(--mk-warning); }
+.ts-diag__body { flex: 1; min-width: 0; }
+.ts-diag__loc { font: 500 11.5px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); margin-bottom: 2px; }
+.ts-diag__msg { font: 13px/1.5 'Inter', system-ui, sans-serif; color: var(--fg); overflow-wrap: anywhere; white-space: pre-wrap; }
+.ts-diag__hint { font: 12px 'Inter', system-ui, sans-serif; color: var(--fg3); margin-top: 3px; }
+
 /* ── Sidebar upload zone ──────────────────────────────────────────────────── */
 .ts-side__upload { padding: 8px 14px; border-top: 1px solid var(--bd); flex-shrink: 0; }
 

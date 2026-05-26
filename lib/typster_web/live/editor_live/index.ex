@@ -31,6 +31,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:save_status, "saved")
      |> assign(:preview_stats, nil)
      |> assign(:preview_error, nil)
+     |> assign(:preview_error_count, 0)
      |> assign(:preview_compiling, false)
      |> assign(:creating?, false)
      |> assign(:new_kind, :file)
@@ -119,8 +120,12 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   @impl true
-  def handle_event("preview_error", %{"message" => message}, socket) do
-    {:noreply, assign(socket, preview_error: message, preview_compiling: false)}
+  def handle_event("preview_error", %{"message" => message} = params, socket) do
+    {:noreply,
+     socket
+     |> assign(:preview_error, message)
+     |> assign(:preview_error_count, params["errors"] || 0)
+     |> assign(:preview_compiling, false)}
   end
 
   @impl true

@@ -529,7 +529,12 @@
             <%= cond do %>
               <% @preview_error -> %>
                 <span class="ts-pill ts-pill--error">
-                  <span class="ts-pill__dot"></span>{gettext("editor.preview_failed")}
+                  <span class="ts-pill__dot"></span>
+                  <%= if @preview_error_count > 0 do %>
+                    {ngettext("%{count} error", "%{count} errors", @preview_error_count)}
+                  <% else %>
+                    {gettext("editor.preview_failed")}
+                  <% end %>
                 </span>
               <% @preview_compiling -> %>
                 <span class="ts-pill ts-pill--accent">
