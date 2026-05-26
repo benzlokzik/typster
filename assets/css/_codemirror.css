@@ -126,12 +126,14 @@
 .cm-lint-marker-warning { background-color: var(--mk-warning); border-radius: 2px; }
 .cm-lint-marker-info { background-color: var(--mk-fg3); }
 
-/* Lint diagnostics show in a *hover* tooltip — the only hover tooltip in this
-   editor. CodeMirror puts the card chrome on the `.cm-tooltip-hover` element
-   (which may also be the `.cm-tooltip-lint` <ul> itself), so style that as the
-   rounded card. Triple class + !important to beat CM's themed `.cm-tooltip`
-   defaults regardless of stylesheet injection order. */
-.cm-tooltip-hover.cm-tooltip-hover.cm-tooltip-hover {
+/* The lint card lives on two different elements depending on how it's shown:
+   - gutter-marker hover (showTooltip): `.cm-tooltip` is added to the
+     `.cm-tooltip-lint` <ul> itself → `.cm-tooltip.cm-tooltip-lint`.
+   - underline hover (hoverTooltip): a separate `.cm-tooltip-hover` wrapper.
+   Style both as the rounded card. Extra classes + !important beat CM's themed
+   `.cm-tooltip` defaults regardless of stylesheet injection order. */
+.cm-tooltip-hover.cm-tooltip-hover.cm-tooltip-hover,
+.cm-tooltip.cm-tooltip-lint.cm-tooltip-lint {
   background: var(--mk-bg) !important;
   color: var(--mk-fg) !important;
   border: 1px solid var(--mk-bd) !important;
@@ -140,6 +142,8 @@
   overflow: hidden;
   padding: 0;
 }
+/* The inner <ul> in the hover-wrapper case is transparent (wrapper paints the
+   card); the !important above wins for the gutter case where it IS the card. */
 .cm-tooltip-lint {
   background: transparent;
   color: var(--mk-fg);
@@ -177,11 +181,13 @@
   font: 13px/1.45 'Inter', system-ui, sans-serif;
 }
 .cm-tooltip-lint .cm-diagnosticSource { font-size: 11px; opacity: 0.65; margin-top: 2px; }
-.cm-tooltip-hover .cm-tooltip-arrow::after {
+.cm-tooltip-hover .cm-tooltip-arrow::after,
+.cm-tooltip.cm-tooltip-lint .cm-tooltip-arrow::after {
   border-top-color: var(--mk-bg);
   border-bottom-color: var(--mk-bg);
 }
-.cm-tooltip-hover .cm-tooltip-arrow::before {
+.cm-tooltip-hover .cm-tooltip-arrow::before,
+.cm-tooltip.cm-tooltip-lint .cm-tooltip-arrow::before {
   border-top-color: var(--mk-bd);
   border-bottom-color: var(--mk-bd);
 }
