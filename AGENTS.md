@@ -382,6 +382,10 @@ And **never** do this:
 - Be careful with scraping limits and TOS.
 - Make regular commits to the repository using for commit messages template: `feat/core/bug/chore/etc: short description (#<issue number>)`
 - commit description must be detailed enough to understand the change without looking at the code, and must be short enough to be easily readable in the git log
+- Use Conventional Commits: `type(scope): summary` — allowed types `feat`, `fix`, `chore`, `docs`, `refactor`, `style`, `test`. The scope is optional but encouraged (e.g. `feat(editor): ...`).
+- The summary is a **single short sentence**, imperative mood, **69 characters maximum** (so it stays readable in `git log`).
+- **No commit body and no bullet lists.** Keep detailed scope, rationale, and design notes in the linked **GitHub issue**, not in the commit message.
+
 
 <!-- development-guidelines-end -->
 
