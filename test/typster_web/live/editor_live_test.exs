@@ -215,6 +215,26 @@ defmodule TypsterWeb.EditorLiveTest do
     assert path_exists?(user, project, "chapters/untitled.typ")
   end
 
+  test "dropping a source file onto the editor creates it from the dropped content",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    input =
+      file_input(view, "#dropped-upload-form", :dropped, [
+        %{name: "dropped.typ", content: "= Dropped in", type: "text/plain"}
+      ])
+
+    render_upload(input, "dropped.typ")
+
+    scope = Typster.Accounts.Scope.for_user(user)
+
+    created =
+      Enum.find(Typster.Files.get_file_tree(scope, project.id), &(&1.path == "dropped.typ"))
+
+    assert created.content == "= Dropped in"
+  end
+
   test "using a template stages its content into the file you create",
        %{conn: conn, user: user, project: project} do
     scope = Typster.Accounts.Scope.for_user(user)

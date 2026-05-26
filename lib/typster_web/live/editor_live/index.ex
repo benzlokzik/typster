@@ -52,7 +52,16 @@ defmodule TypsterWeb.EditorLive.Index do
      |> allow_upload(:template,
        accept: :any,
        max_entries: 1,
-       max_file_size: 2_000_000
+       max_file_size: 2_000_000,
+       auto_upload: true,
+       progress: &handle_template_progress/3
+     )
+     |> allow_upload(:dropped,
+       accept: :any,
+       max_entries: 10,
+       max_file_size: 20_000_000,
+       auto_upload: true,
+       progress: &handle_dropped_progress/3
      )}
   end
 
@@ -256,26 +265,7 @@ defmodule TypsterWeb.EditorLive.Index do
   def handle_event("validate_template", _params, socket), do: {:noreply, socket}
 
   @impl true
-  def handle_event("save_template", _params, socket) do
-    scope = socket.assigns.current_scope
-
-    results =
-      consume_uploaded_entries(socket, :template, fn %{path: path}, entry ->
-        Templates.create_template(scope, %{
-          name: entry.client_name,
-          content: File.read!(path)
-        })
-      end)
-
-    if Enum.any?(results, &match?({:error, _}, &1)) do
-      {:noreply, put_flash(socket, :error, gettext("editor.flash.template_failed"))}
-    else
-      {:noreply,
-       socket
-       |> assign(:templates, Templates.list_templates(scope))
-       |> put_flash(:info, gettext("editor.flash.template_saved"))}
-    end
-  end
+  def handle_event("validate_dropped", _params, socket), do: {:noreply, socket}
 
   @impl true
   def handle_event("use_template", %{"id" => id}, socket) do
@@ -583,6 +573,73 @@ defmodule TypsterWeb.EditorLive.Index do
   defp save_status_label("saving"), do: gettext("editor.status.saving")
   defp save_status_label("error"), do: gettext("editor.status.error")
   defp save_status_label(status), do: status
+
+  # Auto-save a dropped/selected template file once its bytes finish uploading.
+  defp handle_template_progress(:template, entry, socket) do
+    if entry.done? do
+      scope = socket.assigns.current_scope
+
+      consume_uploaded_entries(socket, :template, fn %{path: path}, e ->
+        {:ok, Templates.create_template(scope, %{name: e.client_name, content: File.read!(path)})}
+      end)
+
+      {:noreply,
+       socket
+       |> assign(:templates, Templates.list_templates(scope))
+       |> put_flash(:info, gettext("editor.flash.template_saved"))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  # Route a file dropped onto the editor/assets: asset types upload as assets,
+  # editable types become new files, anything else is rejected.
+  defp handle_dropped_progress(:dropped, entry, socket) do
+    if entry.done?, do: {:noreply, consume_dropped(socket)}, else: {:noreply, socket}
+  end
+
+  defp consume_dropped(socket) do
+    scope = socket.assigns.current_scope
+    project_id = socket.assigns.project.id
+
+    results =
+      consume_uploaded_entries(socket, :dropped, fn %{path: tmp}, entry ->
+        name = entry.client_name
+
+        cond do
+          Files.asset_file?(name) ->
+            Assets.upload_entry(scope, project_id, %{
+              path: tmp,
+              client_name: name,
+              client_type: entry.client_type
+            })
+
+            {:ok, :asset}
+
+          Files.editable_file?(name) ->
+            Files.create_file(scope, project_id, %{path: name, content: File.read!(tmp)})
+            {:ok, :file}
+
+          true ->
+            {:ok, {:unsupported, name}}
+        end
+      end)
+
+    file_tree = Files.get_file_tree(scope, project_id)
+    assets = Assets.list_assets(scope, project_id)
+    unsupported = Enum.any?(results, &match?({:unsupported, _}, &1))
+
+    socket
+    |> assign(:file_tree, file_tree)
+    |> assign(:project_sources, project_sources(file_tree))
+    |> assign(:assets, assets)
+    |> assign(:project_assets, project_assets(assets))
+    |> then(fn s ->
+      if unsupported,
+        do: put_flash(s, :error, gettext("editor.flash.unsupported_file")),
+        else: put_flash(s, :info, gettext("editor.flash.dropped_added"))
+    end)
+  end
 
   # The directory a file lives in ("" for project root), used as the target
   # folder when creating new files/folders.

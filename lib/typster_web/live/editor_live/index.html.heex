@@ -277,14 +277,14 @@
             </div>
           </div>
 
-          <ul class="ts-tree">
+          <ul class="ts-tree" phx-drop-target={@uploads.dropped.ref}>
             <TypsterWeb.FileTree.tree_rows
               nodes={TypsterWeb.FileTree.asset_nodes(@assets, @file_view_mode)}
               collapsed={@collapsed_dirs}
             />
           </ul>
 
-          <div class="ts-side__upload">
+          <div class="ts-side__upload" phx-drop-target={@uploads.dropped.ref}>
             <.form
               id="asset-upload-form"
               for={%{}}
@@ -338,36 +338,29 @@
               </button>
             </div>
 
-            <.form
-              id="template-upload-form"
-              for={%{}}
-              phx-change="validate_template"
-              phx-submit="save_template"
-            >
+            <.form id="template-upload-form" for={%{}} phx-change="validate_template">
               <.live_file_input
                 upload={@uploads.template}
                 id="template-file-input"
                 class="hidden"
               />
-              <label for="template-file-input" class="ts-tpl__drop">
+              <label
+                for="template-file-input"
+                class="ts-tpl__drop"
+                phx-drop-target={@uploads.template.ref}
+              >
                 <.icon name="hero-arrow-up-tray" class="size-3.5" />
                 <span>{gettext("editor.tpl.upload")}</span>
               </label>
-              <button
-                :if={@uploads.template.entries != []}
-                id="save-template-button"
-                type="submit"
-                class="ts-btn ts-btn--primary ts-btn--sm"
-                style="width: 100%; margin-top: 6px;"
-              >
-                {gettext("editor.tpl.save")}
-              </button>
             </.form>
           </div>
         </aside>
 
         <%!-- Source pane: tab bar + formatting toolbar + CodeMirror --%>
-        <section class="ts-source">
+        <section class="ts-source" phx-drop-target={@uploads.dropped.ref}>
+          <.form id="dropped-upload-form" for={%{}} phx-change="validate_dropped" class="hidden">
+            <.live_file_input upload={@uploads.dropped} id="dropped-file-input" />
+          </.form>
           <div class="ts-source__tabs" id="editor-tabs" phx-hook="LucideIcons">
             <%= for file <- open_tabs(@file_tree, @open_file_ids) do %>
               <% {folder, name} = split_path(file.path) %>
