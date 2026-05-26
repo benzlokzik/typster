@@ -622,6 +622,8 @@ defmodule TypsterWeb.EditorLive.Index do
   defp save_status_label(status), do: status
 
   # Auto-save a dropped/selected template file once its bytes finish uploading.
+  # File.read! reads a LiveView-managed upload temp path, not user input.
+  # sobelow_skip ["Traversal.FileModule"]
   defp handle_template_progress(:template, entry, socket) do
     if entry.done? do
       scope = socket.assigns.current_scope
@@ -645,6 +647,8 @@ defmodule TypsterWeb.EditorLive.Index do
     if entry.done?, do: {:noreply, consume_dropped(socket)}, else: {:noreply, socket}
   end
 
+  # File.read! reads a LiveView-managed upload temp path, not user input.
+  # sobelow_skip ["Traversal.FileModule"]
   defp consume_dropped(socket) do
     scope = socket.assigns.current_scope
     project_id = socket.assigns.project.id
