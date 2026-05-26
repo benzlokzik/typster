@@ -33,7 +33,7 @@ import {
   closeBrackets,
   closeBracketsKeymap
 } from "@codemirror/autocomplete"
-import { lintKeymap } from "@codemirror/lint"
+import { lintKeymap, lintGutter, setDiagnostics } from "@codemirror/lint"
 import { typst, setTypstTheme, registerTypstView } from "./typst_highlight"
 import { markdown } from "@codemirror/lang-markdown"
 import { yaml } from "@codemirror/lang-yaml"
@@ -271,6 +271,36 @@ function getLanguageExtension(lang) {
   }
 }
 
+// Convert Typst diagnostics (1-based line/col, optional end) into CodeMirror
+// lint diagnostics with absolute from/to offsets, clamped to the document.
+function toCmDiagnostics(view, diags) {
+  const doc = view.state.doc
+
+  const offset = (line, col) => {
+    const n = Math.min(Math.max(line || 1, 1), doc.lines)
+    const l = doc.line(n)
+    return Math.min(l.from + Math.max((col || 1) - 1, 0), l.to)
+  }
+
+  return (diags || [])
+    .filter((d) => d.location && d.location.line != null)
+    .map((d) => {
+      const loc = d.location
+      const from = offset(loc.line, loc.col)
+      let to = loc.endLine != null ? offset(loc.endLine, loc.endCol) : from
+      if (to <= from) {
+        const l = doc.line(Math.min(Math.max(loc.line, 1), doc.lines))
+        to = Math.min(l.to, from + 1)
+      }
+      return {
+        from,
+        to,
+        severity: d.severity === "warning" ? "warning" : "error",
+        message: d.message || "Compilation error"
+      }
+    })
+}
+
 export function initEditor(container, initialContent, socket, fileId, options = {}) {
   let autosaveTimer = null
   let compileTimer = null
@@ -333,6 +363,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     doc: initialContent || "",
     extensions: [
       basicSetup,
+      lintGutter(),
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
       ...(language === "typst" ? typst() : []),
@@ -380,6 +411,8 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     updateLanguage,
     runCommand: (cmd, arg) => runEditorCommand(editor, language, cmd, arg),
     openSearch: () => openSearchPanel(editor),
+    setDiagnostics: (diags) =>
+      editor.dispatch(setDiagnostics(editor.state, toCmDiagnostics(editor, diags))),
     compile: () => {
       // Only Typst files compile; the worker treats the active buffer as main.typ.
       if (language === "typst") compileTypst(editor.state.doc.toString(), options.project || {})

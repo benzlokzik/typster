@@ -47,6 +47,11 @@ export function parseTypstDiagnostics(message) {
   return diags
 }
 
+// Let the editor highlight (or clear) the error locations in the gutter/text.
+function dispatchEditorDiagnostics(diags) {
+  window.dispatchEvent(new CustomEvent("typst:diagnostics", { detail: { diagnostics: diags } }))
+}
+
 function diagnosticSummary(diags) {
   const errors = diags.filter((d) => d.severity === "error").length
   const warnings = diags.filter((d) => d.severity === "warning").length
@@ -168,6 +173,8 @@ export function initTypstWorker(hook) {
 
             svgContainer.innerHTML = data.svg
 
+            dispatchEditorDiagnostics([])
+
             if (pushEvent) {
               const ms = compileStartedAt ? Math.round(performance.now() - compileStartedAt) : null
               pushEvent("update_preview", { ms, pages: countPages(data.svg) })
@@ -187,6 +194,7 @@ export function initTypstWorker(hook) {
                 ? data.diagnostics
                 : parseTypstDiagnostics(data.message)
             renderDiagnostics(errEl, diags)
+            dispatchEditorDiagnostics(diags)
             errEl.style.display = ""
 
             const svgContainer = previewContainer.querySelector("#typst-svg-output")

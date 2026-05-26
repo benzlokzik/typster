@@ -57,9 +57,16 @@ function structureDiagnostics(diagnostics) {
     const severity = String((d && d.severity) || "error").toLowerCase().includes("warn")
       ? "warning"
       : "error"
-    const m = String((d && d.range) || "").match(/(\d+):(\d+)/)
+    // range is "line:col" or "line:col-endline:endcol" (1-based).
+    const m = String((d && d.range) || "").match(/(\d+):(\d+)(?:-(\d+):(\d+))?/)
     const location = file
-      ? { file, line: m ? Number(m[1]) : null, col: m ? Number(m[2]) : null }
+      ? {
+          file,
+          line: m ? Number(m[1]) : null,
+          col: m ? Number(m[2]) : null,
+          endLine: m && m[3] ? Number(m[3]) : null,
+          endCol: m && m[4] ? Number(m[4]) : null
+        }
       : null
 
     return { severity, location, message: (d && d.message) || "Compilation error" }

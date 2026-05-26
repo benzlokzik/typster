@@ -52,6 +52,19 @@ export const CodeMirror = {
       }
     }
     window.addEventListener("phx:editor-command", this.commandHandler)
+
+    // The Typst worker emits diagnostics for the compiled buffer (reported as
+    // "main.typ"); highlight those in the active editor and clear on success.
+    this.diagnosticsHandler = (event) => {
+      if (!this.editorInstance) return
+      const all = (event.detail && event.detail.diagnostics) || []
+      const own = all.filter((d) => {
+        const file = d.location && d.location.file
+        return !file || file === "main.typ"
+      })
+      this.editorInstance.setDiagnostics(own)
+    }
+    window.addEventListener("typst:diagnostics", this.diagnosticsHandler)
   },
 
   mounted() {
@@ -186,6 +199,10 @@ export const CodeMirror = {
     if (this.commandHandler) {
       window.removeEventListener("phx:editor-command", this.commandHandler)
       this.commandHandler = null
+    }
+    if (this.diagnosticsHandler) {
+      window.removeEventListener("typst:diagnostics", this.diagnosticsHandler)
+      this.diagnosticsHandler = null
     }
     if (this.editorInstance) {
       destroyEditor(this.editorInstance)
