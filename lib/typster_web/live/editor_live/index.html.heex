@@ -629,6 +629,16 @@
             >
               {gettext("editor.drawer.jump_first")}
             </button>
+            <label :if={@drawer_tab == "log"} class="ts-drawer__delay">
+              {gettext("editor.drawer.recompile")}
+              <select id="compile-delay" phx-hook="CompileDelay" phx-update="ignore">
+                <option value="-1">{gettext("editor.drawer.delay_off")}</option>
+                <option value="300">0.3s</option>
+                <option value="700" selected>0.7s</option>
+                <option value="1500">1.5s</option>
+                <option value="3000">3s</option>
+              </select>
+            </label>
             <button
               :if={@drawer_tab == "log"}
               type="button"

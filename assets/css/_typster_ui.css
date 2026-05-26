@@ -348,6 +348,8 @@
 .ts-problem__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .ts-problem__loc { font: 500 11.5px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
 .ts-problem__msg { font: 13px 'Inter', system-ui, sans-serif; color: var(--fg); }
+.ts-drawer__delay { display: inline-flex; align-items: center; gap: 6px; font: 500 11px 'Inter', system-ui, sans-serif; color: var(--fg3); }
+.ts-drawer__delay select { font: 500 11px 'Inter', system-ui, sans-serif; color: var(--fg); background: var(--bg2); border: 1px solid var(--bd); border-radius: var(--r-sm); padding: 2px 6px; cursor: pointer; }
 .ts-statusbar__item { display: inline-flex; align-items: center; gap: 6px; }
 .ts-statusbar__sep { width: 1px; height: 12px; background: var(--bd); flex-shrink: 0; }
 .ts-statusbar__dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--mk-success); flex-shrink: 0; }

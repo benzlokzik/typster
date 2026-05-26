@@ -378,3 +378,14 @@ export const LucideIcons = {
   mounted() { window.mkIcons?.(this.el) },
   updated() { window.mkIcons?.(this.el) }
 }
+
+// Persist the auto-recompile debounce (read by editor.js' compileDelay()).
+export const CompileDelay = {
+  mounted() {
+    const stored = localStorage.getItem("typster:compile_delay")
+    if (stored !== null) this.el.value = stored
+    this.el.addEventListener("change", () => {
+      localStorage.setItem("typster:compile_delay", this.el.value)
+    })
+  }
+}
