@@ -278,7 +278,10 @@ export function initEditor(container, initialContent, socket, fileId, options = 
   let lastOutline = ""
   const themeCompartment = new Compartment()
   const languageCompartment = new Compartment()
-  const language = options.language || "typst"
+  // Mutable: switching files reconfigures the editor in place, so the current
+  // language must follow — otherwise the compile/outline gates go stale and a
+  // non-Typst file (e.g. .csv) would be compiled as Typst.
+  let language = options.language || "typst"
   const onCursor = typeof options.onCursor === "function" ? options.onCursor : null
   const onOutline = typeof options.onOutline === "function" ? options.onOutline : null
 
@@ -364,10 +367,11 @@ export function initEditor(container, initialContent, socket, fileId, options = 
   }
 
   const updateLanguage = (newLang) => {
+    language = newLang || "plain"
     editor.dispatch({
-      effects: languageCompartment.reconfigure(getLanguageExtension(newLang))
+      effects: languageCompartment.reconfigure(getLanguageExtension(language))
     })
-    if (newLang === "typst") registerTypstView(editor)
+    if (language === "typst") registerTypstView(editor)
   }
 
   return {
@@ -376,13 +380,15 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     updateLanguage,
     runCommand: (cmd, arg) => runEditorCommand(editor, language, cmd, arg),
     openSearch: () => openSearchPanel(editor),
-    compile: () => compileTypst(editor.state.doc.toString(), options.project || {}),
-    download: () =>
-      downloadTypstPdf(
-        editor.state.doc.toString(),
-        options.project || {},
-        container.dataset.fileName
-      ),
+    compile: () => {
+      // Only Typst files compile; the worker treats the active buffer as main.typ.
+      if (language === "typst") compileTypst(editor.state.doc.toString(), options.project || {})
+    },
+    download: () => {
+      if (language === "typst") {
+        downloadTypstPdf(editor.state.doc.toString(), options.project || {}, container.dataset.fileName)
+      }
+    },
     destroy: () => {
       if (autosaveTimer) clearTimeout(autosaveTimer)
       if (compileTimer) clearTimeout(compileTimer)
