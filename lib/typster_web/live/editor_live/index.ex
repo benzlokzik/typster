@@ -21,6 +21,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:file_tree, file_tree)
      |> assign(:assets, assets)
      |> assign(:current_file, main_file)
+     |> assign(:active_dir, file_dir(main_file))
      |> assign(:open_file_ids, if(main_file, do: [main_file.id], else: []))
      |> assign(:content, if(main_file, do: main_file.content || "", else: ""))
      |> assign(:editor_language, editor_language(main_file))
@@ -163,6 +164,7 @@ defmodule TypsterWeb.EditorLive.Index do
        socket
        |> open_tab(file_id)
        |> assign(:current_file, file)
+       |> assign(:active_dir, file_dir(file))
        |> assign(:content, file.content || "")
        |> assign(:editor_language, editor_language(file))
        |> assign(:save_status, "saved")
@@ -227,29 +229,18 @@ defmodule TypsterWeb.EditorLive.Index do
         do: MapSet.delete(collapsed, path),
         else: MapSet.put(collapsed, path)
 
-    {:noreply, assign(socket, :collapsed_dirs, collapsed)}
+    # Clicking a folder makes it the active directory for new files/folders.
+    {:noreply, socket |> assign(:collapsed_dirs, collapsed) |> assign(:active_dir, path)}
   end
 
   @impl true
   def handle_event("new_file", _params, socket) do
-    {:noreply,
-     socket
-     |> assign(:creating?, true)
-     |> assign(:new_kind, :file)
-     |> assign(:new_file_name, "")
-     |> assign(:new_file_suggestions, [])
-     |> assign(:template_content, nil)}
+    {:noreply, start_create(socket, :file)}
   end
 
   @impl true
   def handle_event("new_folder", _params, socket) do
-    {:noreply,
-     socket
-     |> assign(:creating?, true)
-     |> assign(:new_kind, :folder)
-     |> assign(:new_file_name, "")
-     |> assign(:new_file_suggestions, [])
-     |> assign(:template_content, nil)}
+    {:noreply, start_create(socket, :folder)}
   end
 
   @impl true
@@ -592,6 +583,34 @@ defmodule TypsterWeb.EditorLive.Index do
   defp save_status_label("saving"), do: gettext("editor.status.saving")
   defp save_status_label("error"), do: gettext("editor.status.error")
   defp save_status_label(status), do: status
+
+  # The directory a file lives in ("" for project root), used as the target
+  # folder when creating new files/folders.
+  defp file_dir(nil), do: ""
+
+  defp file_dir(%{path: path}) do
+    case Path.dirname(path) do
+      "." -> ""
+      dir -> dir
+    end
+  end
+
+  defp dir_prefix(""), do: ""
+  defp dir_prefix(dir), do: dir <> "/"
+
+  # Open the inline draft, seeded with the active folder so the new file/folder
+  # lands there, and expand that folder so the result is visible.
+  defp start_create(socket, kind) do
+    active_dir = socket.assigns.active_dir
+
+    socket
+    |> assign(:creating?, true)
+    |> assign(:new_kind, kind)
+    |> assign(:new_file_name, dir_prefix(active_dir))
+    |> assign(:new_file_suggestions, [])
+    |> assign(:template_content, nil)
+    |> assign(:collapsed_dirs, MapSet.delete(socket.assigns.collapsed_dirs, active_dir))
+  end
 
   # Breadcrumb segments from the active file's path; the filename is `last`.
   defp path_segments(nil), do: []

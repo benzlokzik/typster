@@ -160,6 +160,21 @@ defmodule TypsterWeb.EditorLiveTest do
     assert view |> element(".ts-tab.is-active .ts-tab__label") |> render() =~ "main.typ"
   end
 
+  test "new file is seeded into the folder of the active file",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "sections/intro.typ"})
+    view = open_editor(conn, project)
+
+    # sections/intro.typ is the initial file, so its folder is active.
+    view |> element("#create-main-file-button") |> render_click()
+
+    assert view |> element("#new-file-form input[name='path']") |> render() =~
+             ~s(value="sections/")
+
+    view |> form("#new-file-form", %{path: "sections/results"}) |> render_submit()
+    assert path_exists?(user, project, "sections/results.typ")
+  end
+
   test "the header breadcrumb shows the active file's path segments",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "sections/intro.typ"})
