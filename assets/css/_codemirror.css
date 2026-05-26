@@ -111,13 +111,16 @@
 .cm-lintRange-info { text-decoration-color: var(--mk-fg3); }
 .cm-lintRange-active { background-color: var(--mk-warning-50); }
 
+/* Flex-center the marker in the gutter row so the dot sits on the line's
+   vertical center (a fixed margin drifts below center on tall line-heights). */
+.cm-gutter-lint .cm-gutterElement { padding: 0; display: flex; align-items: center; justify-content: center; }
 .cm-lint-marker {
   content: none;
+  background-image: none;
   width: 8px;
   height: 8px;
-  margin: 5px auto;
+  margin: 0;
   border-radius: 9999px;
-  background-image: none;
 }
 .cm-lint-marker-error { background-color: var(--mk-error); }
 .cm-lint-marker-warning { background-color: var(--mk-warning); border-radius: 2px; }
@@ -129,21 +132,40 @@
   border: 1px solid var(--mk-bd);
   border-radius: var(--mk-r);
   box-shadow: var(--mk-sh-lg);
-  padding: 4px;
+  padding: 0;
   max-width: 30rem;
   overflow: hidden;
 }
+/* A leading severity dot (flex item) instead of a left border — readable and
+   it stays aligned with the first line of multi-line messages. */
 .cm-tooltip.cm-tooltip-lint .cm-diagnostic {
-  border-left: 3px solid transparent;
-  border-radius: var(--mk-r-sm);
-  padding: 6px 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 12px;
   margin: 0;
 }
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic-error { border-left-color: var(--mk-error); }
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic-warning { border-left-color: var(--mk-warning); }
-.cm-tooltip.cm-tooltip-lint .cm-diagnostic-info { border-left-color: var(--mk-fg3); }
-.cm-diagnosticText { font: 13px/1.4 'Inter', system-ui, sans-serif; }
-.cm-diagnosticSource { font-size: 11px; opacity: 0.65; margin-top: 2px; }
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic + .cm-diagnostic { border-top: 1px solid var(--mk-bd); }
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--mk-fg3);
+}
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic-error::before { background: var(--mk-error); }
+.cm-tooltip.cm-tooltip-lint .cm-diagnostic-warning::before { background: var(--mk-warning); border-radius: 2px; }
+.cm-tooltip.cm-tooltip-lint .cm-diagnosticText {
+  flex: 1;
+  min-width: 0;
+  color: var(--mk-fg);
+  font: 13px/1.45 'Inter', system-ui, sans-serif;
+}
+.cm-tooltip.cm-tooltip-lint .cm-diagnosticSource { font-size: 11px; opacity: 0.65; margin-top: 2px; }
 .cm-tooltip.cm-tooltip-lint .cm-tooltip-arrow::after { border-top-color: var(--mk-bg); }
 
 /* Bottom lint panel (opened via the lint keymap) reuses .cm-diagnostic* rows. */
