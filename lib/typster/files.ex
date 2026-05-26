@@ -8,7 +8,7 @@ defmodule Typster.Files do
   alias Typster.Repo
   alias Typster.Projects.File
 
-  @editable_extensions ~w(.typ .bib .md .yaml .yml .tex .latex .sty .cls)
+  @editable_extensions ~w(.typ .bib .md .yaml .yml .tex .latex .sty .cls .csv .tsv)
   @asset_extensions ~w(.pdf .png .jpg .jpeg .svg .webp .ttf .otf .woff .woff2)
 
   def get_file!(%Scope{user: user}, id) do
