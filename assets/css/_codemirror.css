@@ -126,18 +126,22 @@
 .cm-lint-marker-warning { background-color: var(--mk-warning); border-radius: 2px; }
 .cm-lint-marker-info { background-color: var(--mk-fg3); }
 
-/* `.cm-tooltip-lint` is the <ul> INSIDE the generic `.cm-tooltip` wrapper, not
-   the wrapper itself — so style the wrapper (card chrome) via :has, and the
-   <ul> as the card body. */
-.cm-tooltip:has(.cm-tooltip-lint) {
-  background: var(--mk-bg);
-  border: 1px solid var(--mk-bd);
-  border-radius: var(--mk-r);
-  box-shadow: var(--mk-sh-lg);
+/* Lint diagnostics show in a *hover* tooltip — the only hover tooltip in this
+   editor. CodeMirror puts the card chrome on the `.cm-tooltip-hover` element
+   (which may also be the `.cm-tooltip-lint` <ul> itself), so style that as the
+   rounded card. Triple class + !important to beat CM's themed `.cm-tooltip`
+   defaults regardless of stylesheet injection order. */
+.cm-tooltip-hover.cm-tooltip-hover.cm-tooltip-hover {
+  background: var(--mk-bg) !important;
+  color: var(--mk-fg) !important;
+  border: 1px solid var(--mk-bd) !important;
+  border-radius: var(--mk-r) !important;
+  box-shadow: var(--mk-sh-lg) !important;
   overflow: hidden;
+  padding: 0;
 }
 .cm-tooltip-lint {
-  background: var(--mk-bg);
+  background: transparent;
   color: var(--mk-fg);
   padding: 0;
   margin: 0;
@@ -173,8 +177,14 @@
   font: 13px/1.45 'Inter', system-ui, sans-serif;
 }
 .cm-tooltip-lint .cm-diagnosticSource { font-size: 11px; opacity: 0.65; margin-top: 2px; }
-.cm-tooltip:has(.cm-tooltip-lint) .cm-tooltip-arrow::after { border-top-color: var(--mk-bg); }
-.cm-tooltip:has(.cm-tooltip-lint) .cm-tooltip-arrow::before { border-top-color: var(--mk-bd); }
+.cm-tooltip-hover .cm-tooltip-arrow::after {
+  border-top-color: var(--mk-bg);
+  border-bottom-color: var(--mk-bg);
+}
+.cm-tooltip-hover .cm-tooltip-arrow::before {
+  border-top-color: var(--mk-bd);
+  border-bottom-color: var(--mk-bd);
+}
 
 /* Bottom lint panel (opened via the lint keymap) reuses .cm-diagnostic* rows. */
 .cm-panel.cm-panel-lint { background: var(--mk-bg2); border-top: 1px solid var(--mk-bd); }
