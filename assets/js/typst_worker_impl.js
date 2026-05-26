@@ -57,15 +57,16 @@ function structureDiagnostics(diagnostics) {
     const severity = String((d && d.severity) || "error").toLowerCase().includes("warn")
       ? "warning"
       : "error"
-    // range is "line:col" or "line:col-endline:endcol" (1-based).
+    // range is "line:col" or "line:col-endline:endcol", 0-based - shift to
+    // the 1-based line/col humans and the editor goto expect.
     const m = String((d && d.range) || "").match(/(\d+):(\d+)(?:-(\d+):(\d+))?/)
     const location = file
       ? {
           file,
-          line: m ? Number(m[1]) : null,
-          col: m ? Number(m[2]) : null,
-          endLine: m && m[3] ? Number(m[3]) : null,
-          endCol: m && m[4] ? Number(m[4]) : null
+          line: m ? Number(m[1]) + 1 : null,
+          col: m ? Number(m[2]) + 1 : null,
+          endLine: m && m[3] ? Number(m[3]) + 1 : null,
+          endCol: m && m[4] ? Number(m[4]) + 1 : null
         }
       : null
 
