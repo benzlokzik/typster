@@ -8,11 +8,11 @@ import {
   lineNumbers,
   highlightActiveLineGutter,
   highlightSpecialChars,
-  drawSelection,
   dropCursor,
-  rectangularSelection,
-  crosshairCursor,
-  highlightActiveLine
+  highlightActiveLine,
+  Decoration,
+  ViewPlugin,
+  WidgetType
 } from "@codemirror/view"
 import { EditorState, Compartment } from "@codemirror/state"
 import {
@@ -40,14 +40,81 @@ import { yaml } from "@codemirror/lang-yaml"
 import { stex } from "@codemirror/legacy-modes/mode/stex"
 import { compileTypst, downloadTypstPdf } from "./typst_worker"
 
+// Native selection paints nothing visible for a selected trailing newline (an
+// empty line shows nothing, a text line ends right at the glyphs). VS Code draws
+// a small block at the line's end to show the break is selected. We do the same
+// on every line whose newline is in the selection — including blank lines.
+//
+// The marker is an inline span holding a transparent non-breaking space: its
+// *background* therefore paints the exact same inline content box the browser
+// uses for ::selection on that line, so it matches the selection band's height
+// and per-line rounding pixel-for-pixel (a fixed-size box never could).
+class EolMarkWidget extends WidgetType {
+  eq() {
+    return true
+  }
+  toDOM() {
+    const span = document.createElement("span")
+    span.className = "cm-eol-mark"
+    span.textContent = " "
+    span.setAttribute("aria-hidden", "true")
+    return span
+  }
+  ignoreEvent() {
+    return true
+  }
+}
+const eolSelectionMark = Decoration.widget({ widget: new EolMarkWidget(), side: 1 })
+
+const eolSelection = ViewPlugin.fromClass(
+  class {
+    constructor(view) {
+      this.decorations = this.build(view)
+    }
+    update(u) {
+      // Deliberately not on geometryChanged: the marker must not feed back into
+      // layout (it's out of flow), and reacting to geometry would flicker.
+      if (u.selectionSet || u.docChanged || u.viewportChanged)
+        this.decorations = this.build(u.view)
+    }
+    build(view) {
+      const seen = new Set()
+      const deco = []
+      for (const range of view.state.selection.ranges) {
+        if (range.empty) continue
+        for (const vr of view.visibleRanges) {
+          let pos = Math.max(vr.from, range.from)
+          const end = Math.min(vr.to, range.to)
+          while (pos <= end) {
+            const line = view.state.doc.lineAt(pos)
+            // line.to < range.to ⇒ this line's newline is inside the selection.
+            if (line.to < range.to && !seen.has(line.to)) {
+              seen.add(line.to)
+              deco.push(eolSelectionMark.range(line.to))
+            }
+            pos = line.to + 1
+          }
+        }
+      }
+      deco.sort((a, b) => a.from - b.from)
+      return Decoration.set(deco)
+    }
+  },
+  { decorations: (v) => v.decorations }
+)
+
 // Equivalent of `codemirror`'s `basicSetup`, assembled from granular packages.
 const basicSetup = [
+  eolSelection,
   lineNumbers(),
   highlightActiveLineGutter(),
   highlightSpecialChars(),
   history(),
   foldGutter(),
-  drawSelection(),
+  // No drawSelection(): its custom selection layer extends a selected newline
+  // to the full editor width (a giant bar) and mis-measures single glyphs.
+  // Native browser selection hugs the text and shows the newline as a small
+  // trailing mark — styled via `::selection` in _codemirror.css.
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
@@ -55,8 +122,6 @@ const basicSetup = [
   bracketMatching(),
   closeBrackets(),
   autocompletion(),
-  rectangularSelection(),
-  crosshairCursor(),
   highlightActiveLine(),
   // Don't spray match boxes for 1-char selections (every `i`/`2` lit up).
   highlightSelectionMatches({ minSelectionLength: 2 }),
@@ -108,8 +173,8 @@ const lightTheme = EditorView.theme({
     padding: "16px",
     minHeight: "100%",
     lineHeight: "1.6",
-    // Ligatures (=>, !=, ->) skew CM's per-char coordinate measurement and make
-    // selection rects/cursor drift; disable them in the editor.
+    caretColor: "#09090b",
+    // Ligatures (=>, !=, ->) skew per-char coordinate measurement; disable them.
     fontVariantLigatures: "none"
   },
   ".cm-focused": { outline: "none" },
@@ -118,23 +183,22 @@ const lightTheme = EditorView.theme({
     fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
   },
   ".cm-gutters": { backgroundColor: "#f4f4f5", color: "#a1a1aa", border: "none" },
-  ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
-  // Translucent so the selection layer (rendered behind the content) shows
-  // through on the cursor's line — an opaque fill hid the selection there.
+  // Reserve room for 5 digits (≤ 99999), right-aligned; CM auto-grows past that.
+  // box-sizing is border-box, so add the horizontal padding into the floor.
+  ".cm-lineNumbers .cm-gutterElement": {
+    minWidth: "calc(5ch + 24px)",
+    padding: "0 8px 0 16px",
+    textAlign: "right"
+  },
   ".cm-activeLine": { backgroundColor: "rgba(9, 9, 11, 0.045)" },
   ".cm-activeLineGutter": { backgroundColor: "#ececee", color: "#09090b" },
-  // Match highlights must NOT share the selection's indigo hue or the two read
-  // as one — a neutral bordered box reads clearly as "other occurrences".
+  // Match highlights use a neutral bordered box so they read as "other
+  // occurrences", distinct from the (indigo) native ::selection.
   ".cm-selectionMatch": {
     backgroundColor: "rgba(9, 9, 11, 0.06)",
     outline: "1px solid rgba(9, 9, 11, 0.28)",
     borderRadius: "2px"
-  },
-  ".cm-cursor": { borderLeftColor: "#09090b" },
-  // Saturated enough to clearly read as "selected" against the activeLine gray.
-  // !important to outrank CM's base `&light.cm-focused > … .cm-selectionBackground`.
-  ".cm-selectionLayer .cm-selectionBackground, &.cm-focused .cm-selectionLayer .cm-selectionBackground":
-    { backgroundColor: "rgba(79, 70, 229, 0.42) !important" }
+  }
 })
 
 const darkTheme = EditorView.theme({
@@ -148,6 +212,7 @@ const darkTheme = EditorView.theme({
     padding: "16px",
     minHeight: "100%",
     lineHeight: "1.6",
+    caretColor: "#fafafa",
     fontVariantLigatures: "none"
   },
   ".cm-focused": { outline: "none" },
@@ -156,17 +221,18 @@ const darkTheme = EditorView.theme({
     fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
   },
   ".cm-gutters": { backgroundColor: "#18181b", color: "#71717a", border: "none" },
-  ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
+  ".cm-lineNumbers .cm-gutterElement": {
+    minWidth: "calc(5ch + 24px)",
+    padding: "0 8px 0 16px",
+    textAlign: "right"
+  },
   ".cm-activeLine": { backgroundColor: "rgba(250, 250, 250, 0.06)" },
   ".cm-activeLineGutter": { backgroundColor: "#27272a", color: "#fafafa" },
   ".cm-selectionMatch": {
     backgroundColor: "rgba(250, 250, 250, 0.10)",
     outline: "1px solid rgba(250, 250, 250, 0.35)",
     borderRadius: "2px"
-  },
-  ".cm-cursor": { borderLeftColor: "#fafafa" },
-  ".cm-selectionLayer .cm-selectionBackground, &.cm-focused .cm-selectionLayer .cm-selectionBackground":
-    { backgroundColor: "rgba(99, 102, 241, 0.46) !important" }
+  }
 })
 
 function getThemeExtension() {

@@ -93,6 +93,23 @@
   color: var(--mk-error);
 }
 
+/* ── Native text selection ────────────────────────────────────────────────
+   We dropped CodeMirror's drawSelection() so the browser paints selection.
+   Token-driven via --pri, so it tracks light/dark automatically. */
+.cm-editor .cm-content ::selection { background: color-mix(in srgb, var(--pri) 30%, transparent); }
+/* End-of-line marker for a selected trailing newline (so an otherwise-invisible
+   blank-line selection shows something). The widget span is a zero-size inline
+   anchor — it sits after the line's text but contributes nothing to the line
+   box, so it can't grow the line (no reflow, even on empty lines). Its
+   ::before, taken out of flow, paints the actual block at that spot. */
+/* The marker is just a transparent nbsp widget at the line end; the browser
+   paints ::selection over it exactly like selected text (same colour, height,
+   per-line rounding) since it sits inside the selection range. No own
+   background — that double-painted over the ::selection and looked darker. */
+.cm-editor .cm-eol-mark {
+  color: transparent;
+}
+
 /* ── Lint diagnostics (compile errors/warnings) ───────────────────────────── */
 /* @codemirror/lint draws the underline via an inline-SVG background-image and
    the gutter marker via the `content` property; null both, then theme to the
