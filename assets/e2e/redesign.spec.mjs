@@ -17,10 +17,10 @@ async function createProjectAndOpenEditor(page, name) {
 
 async function addMainFile(page) {
   await page.locator('#create-main-file-button').click()
-  await expect(page.locator('.ts-dialog')).toBeVisible()
-  await page.locator('.ts-dialog input[name="path"]').fill('main.typ')
-  await page.locator('.ts-dialog button[type="submit"]').click()
-  await expect(page.locator('.ts-dialog')).not.toBeVisible()
+  const draftInput = page.locator('#new-file-form input[name="path"]')
+  await expect(draftInput).toBeVisible()
+  await draftInput.fill('main.typ')
+  await draftInput.press('Enter')
   await expect(page.locator('#editor-container .cm-content')).toBeVisible({ timeout: 10_000 })
 }
 
@@ -47,7 +47,7 @@ test.describe('Product UI redesign', () => {
     await createProjectAndOpenEditor(page, 'Palette E2E')
     await addMainFile(page)
 
-    await page.getByRole('button', { name: '⌘K' }).click()
+    await page.getByRole('button', { name: 'Open command palette' }).click()
     await expect(page.locator('#command-palette')).toBeVisible()
     await expect(page.locator('#palette-input')).toBeFocused()
 
@@ -56,6 +56,30 @@ test.describe('Product UI redesign', () => {
 
     await page.keyboard.press('Escape')
     await expect(page.locator('#command-palette')).not.toBeVisible()
+  })
+
+  test('command shortcut hint adapts to the OS (⌘ on Mac, Ctrl elsewhere)', async ({ page }) => {
+    // Force a Windows-class platform before any script runs.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'userAgentData', {
+        value: { platform: 'Windows' },
+        configurable: true
+      })
+    })
+
+    await createProjectAndOpenEditor(page, 'Shortcut OS E2E')
+    await addMainFile(page)
+
+    await expect(page.locator('html')).not.toHaveClass(/is-mac/)
+    // Non-mac: terminal icon + "Ctrl K" shown, ⌘ variant hidden.
+    await expect(page.locator('.ts-cmdk .ts-kbd.ts-other')).toBeVisible()
+    await expect(page.locator('.ts-cmdk .ts-kbd.ts-other')).toHaveText('Ctrl K')
+    await expect(page.locator('.ts-cmdk .ts-kbd.ts-mac')).toBeHidden()
+    await expect(page.locator('.ts-cmdk__icon.ts-mac')).toBeHidden()
+
+    // The button still opens the palette regardless of platform labelling.
+    await page.getByRole('button', { name: 'Open command palette' }).click()
+    await expect(page.locator('#command-palette')).toBeVisible()
   })
 
   test('applies Shiki Typst syntax highlighting', async ({ page }) => {

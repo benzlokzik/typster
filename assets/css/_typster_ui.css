@@ -172,6 +172,11 @@
 .ts-editor__bar { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-bottom: 1px solid var(--bd); background: var(--bg); flex-shrink: 0; }
 .ts-crumb-sep { color: var(--fg4); }
 .ts-crumb-current { font: 500 13px 'Inter', system-ui, sans-serif; color: var(--fg); margin-right: 10px; }
+.ts-crumb { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
+.ts-crumb > span { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.ts-crumb__seg { font: 500 13px 'Inter', system-ui, sans-serif; color: var(--fg3); padding: 2px 5px; border-radius: var(--r-sm); white-space: nowrap; }
+.ts-crumb__seg.is-active { color: var(--fg); font: 600 12.5px 'JetBrains Mono', ui-monospace, monospace; }
+.ts-crumb__sep { color: var(--fg4); padding: 0 1px; }
 .ts-savestat { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 9999px; background: var(--bd2); font: 500 11px 'Inter', system-ui, sans-serif; color: var(--fg2); }
 .ts-savestat__dot { width: 6px; height: 6px; border-radius: 9999px; flex-shrink: 0; }
 .ts-savestat--saved .ts-savestat__dot { background: var(--mk-success); }
@@ -201,6 +206,95 @@
 .ts-tree__count { margin-left: auto; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); background: var(--bd2); padding: 1px 6px; border-radius: 9999px; }
 .ts-tree__smart { margin-left: 4px; color: var(--fg4); font: 11px 'JetBrains Mono', ui-monospace, monospace; flex-shrink: 0; }
 
+/* ── Drag & drop: move a file onto a folder (or empty tree = root) ─────────── */
+/* Rows are selectable-looking but must not text-select while dragging. */
+.ts-tree__item { user-select: none; }
+.ts-tree__item[draggable="true"] { cursor: grab; }
+.ts-tree__item[draggable="true"]:active { cursor: grabbing; }
+.ts-tree__item.is-dnd-dragging { opacity: .45; }
+.ts-tree__dir.is-dnd-over {
+  background: var(--pri-50);
+  box-shadow: inset 0 0 0 1.5px var(--pri);
+  border-radius: var(--r-sm);
+  color: var(--pri-h);
+}
+
+/* ── Pin indicator + hover row actions (pin / delete) ─────────────────────── */
+.ts-side__head--sub { padding-top: 4px; }
+.ts-tree__pin-ind { display: inline-flex; align-items: center; flex-shrink: 0; color: var(--pri); margin-left: 4px; }
+.ts-tree__item.is-active .ts-tree__pin-ind { color: var(--pri-h); }
+.ts-tree__item:hover .ts-tree__pin-ind { display: none; }
+.ts-tree__actions { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; margin-left: 4px; opacity: 0; transition: opacity 150ms var(--ease); }
+.ts-tree__item:hover .ts-tree__actions { opacity: 1; }
+.ts-tree__act { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 0; background: none; border-radius: 5px; color: var(--fg3); cursor: pointer; }
+.ts-tree__act:hover { background: var(--bd2); color: var(--fg); }
+.ts-tree__act.is-on { color: var(--pri); }
+.ts-tree__act--danger:hover { background: var(--mk-error-50); color: var(--mk-error); }
+.ts-tree__ficon { display: inline-flex; align-items: center; flex-shrink: 0; color: var(--fg2); }
+.ts-tree__ficon svg { width: 14px; height: 14px; }
+.ts-tree__pin-ind svg { width: 13px; height: 13px; }
+.ts-tree__act svg { width: 14px; height: 14px; }
+.ts-tab__pin svg { width: 13px; height: 13px; }
+
+/* ── Typed file-type chip (square glyph, colored by extension) ────────────── */
+.ts-filechip {
+  width: 18px; height: 18px; flex-shrink: 0;
+  display: inline-grid; place-items: center;
+  border-radius: 5px;
+  font: 600 10px 'JetBrains Mono', ui-monospace, monospace;
+  background: var(--bd2); color: var(--fg3);
+}
+.ts-filechip--typ { background: var(--pri-50); color: var(--pri-h); }
+.ts-filechip--bib { background: color-mix(in oklab, var(--mk-warning) 16%, transparent); color: var(--mk-warning-h); }
+.ts-filechip--tex,
+.ts-filechip--latex,
+.ts-filechip--sty,
+.ts-filechip--cls { background: color-mix(in oklab, var(--mk-info) 16%, transparent); color: var(--mk-info-h); }
+.ts-filechip--md { background: color-mix(in oklab, var(--fg) 8%, transparent); color: var(--fg3); }
+.ts-filechip--csv { background: color-mix(in oklab, var(--mk-info) 16%, transparent); color: var(--mk-info-h); }
+.ts-filechip--img { background: color-mix(in oklab, var(--mk-success) 16%, transparent); color: var(--mk-success-h); }
+.ts-filechip--data { background: color-mix(in oklab, var(--mk-warning) 12%, transparent); color: var(--mk-warning-h); }
+.ts-filechip--file { background: var(--bd2); color: var(--fg3); }
+.ts-filechip--folder { background: color-mix(in oklab, var(--fg) 8%, transparent); color: var(--fg3); }
+
+/* ── Inline new-file draft row + smart extension hints ────────────────────── */
+.ts-tree__draft { list-style: none; padding: 2px 0; }
+.ts-tree__draft .ts-draft__row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; margin: 2px 0;
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  border: 1px solid var(--pri);
+  box-shadow: 0 0 0 3px var(--pri-50);
+}
+.ts-draft__input {
+  flex: 1; min-width: 0;
+  border: 0; outline: 0; background: transparent;
+  color: var(--fg);
+  font: 500 13px 'JetBrains Mono', ui-monospace, monospace;
+}
+.ts-draft__input::placeholder { color: var(--fg4); }
+.ts-draft__dir { flex-shrink: 0; color: var(--fg3); user-select: none; font: 500 13px 'JetBrains Mono', ui-monospace, monospace; }
+.ts-exthint {
+  flex-shrink: 0; user-select: none; cursor: pointer;
+  padding: 2px 7px; border-radius: 6px;
+  background: var(--bg2); border: 1px dashed var(--bd2);
+  color: var(--fg3);
+  font: 500 11px 'JetBrains Mono', ui-monospace, monospace;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease), background 200ms var(--ease);
+}
+.ts-exthint:hover { border-color: var(--pri); border-style: solid; color: var(--fg); background: var(--bd2); }
+.ts-suggest { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 2px 2px; }
+.ts-suggest__chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 9px 4px 6px; border-radius: 9999px;
+  background: var(--bg2); border: 1px solid var(--bd);
+  color: var(--fg2); cursor: pointer;
+  font: 500 12px 'JetBrains Mono', ui-monospace, monospace;
+  transition: background 200ms var(--ease), border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.ts-suggest__chip:hover { background: var(--bd2); border-color: var(--pri); color: var(--fg); }
+
 /* ── File-tree view-mode switcher ─────────────────────────────────────────── */
 /* The sidebar is a narrow `overflow:auto` scroller, so the menu renders in-flow
    (full width, pushing the tree down) rather than as an absolute overlay that
@@ -220,9 +314,20 @@
 
 /* ── Source pane ──────────────────────────────────────────────────────────── */
 .ts-source { display: flex; flex-direction: column; border-right: 1px solid var(--bd); min-height: 0; overflow: hidden; background: var(--bg); }
-.ts-source__tabs { display: flex; border-bottom: 1px solid var(--bd); background: var(--bg2); padding: 0 8px; flex-shrink: 0; }
-.ts-tab { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font: 13px 'Inter', system-ui, sans-serif; color: var(--fg2); border-radius: var(--r-sm) var(--r-sm) 0 0; border-bottom: 2px solid transparent; }
+.ts-source__tabs { display: flex; border-bottom: 1px solid var(--bd); background: var(--bg2); padding: 0 8px; flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
+.ts-source__tabs::-webkit-scrollbar { display: none; }
+.ts-tab { display: flex; align-items: center; gap: 6px; padding: 8px 10px; font: 13px 'Inter', system-ui, sans-serif; color: var(--fg2); border-radius: var(--r-sm) var(--r-sm) 0 0; border-bottom: 2px solid transparent; cursor: pointer; flex-shrink: 0; max-width: 220px; }
+.ts-tab:hover { background: var(--bd2); color: var(--fg); }
 .ts-tab.is-active { background: var(--bg); color: var(--fg); border-bottom-color: var(--pri); }
+.ts-tab--empty { color: var(--fg4); cursor: default; }
+.ts-tab--empty:hover { background: none; color: var(--fg4); }
+.ts-tab__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ts-tab__folder { color: var(--fg4); }
+.ts-tab.is-active .ts-tab__label { font-weight: 600; }
+.ts-tab__pin { display: inline-flex; align-items: center; color: var(--pri); flex-shrink: 0; }
+.ts-tab__close { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 4px; color: var(--fg4); flex-shrink: 0; opacity: 0; transition: opacity 120ms var(--ease); }
+.ts-tab:hover .ts-tab__close, .ts-tab.is-active .ts-tab__close { opacity: 1; }
+.ts-tab__close:hover { background: var(--bd2); color: var(--fg); }
 .ts-source__editor { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
 .ts-source__editor .cm-editor { height: 100%; width: 100%; display: flex; flex-direction: column; }
 .ts-source__editor .cm-scroller { overflow: auto; flex: 1; }
@@ -231,6 +336,33 @@
 
 /* ── Status bar (spans all editor panes) ───────────────────────────────────── */
 .ts-statusbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; height: 28px; padding: 0 14px; border-top: 1px solid var(--bd); background: var(--bg2); font: 500 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg3); }
+.ts-statusbar__btn { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none; color: var(--fg3); font: inherit; cursor: pointer; padding: 0 4px; }
+.ts-statusbar__btn:hover { color: var(--fg); }
+.ts-statusbar__btn.is-error { color: var(--mk-error); }
+
+/* ── Compile log + problems drawer ────────────────────────────────────────── */
+.ts-drawer { grid-column: 1 / -1; display: flex; flex-direction: column; min-height: 150px; max-height: 260px; border-top: 1px solid var(--bd); background: var(--bg); }
+.ts-drawer__tabs { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-bottom: 1px solid var(--bd); flex-shrink: 0; }
+.ts-drawer__tab { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 0; background: none; border-radius: var(--r-sm); color: var(--fg3); font: 500 12px 'Inter', system-ui, sans-serif; cursor: pointer; }
+.ts-drawer__tab:hover { color: var(--fg); background: var(--bd2); }
+.ts-drawer__tab.is-active { color: var(--fg); background: var(--bd2); }
+.ts-drawer__count { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--mk-error); color: #fff; font: 600 10px 'JetBrains Mono', ui-monospace, monospace; display: inline-grid; place-items: center; }
+.ts-drawer__body { flex: 1; overflow: auto; padding: 8px 0; }
+.ts-drawer__empty { padding: 12px 16px; color: var(--fg4); font: 12px 'Inter', system-ui, sans-serif; }
+.ts-log__row { display: flex; gap: 10px; padding: 2px 16px; font: 12px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg2); }
+.ts-log__time { color: var(--fg4); flex-shrink: 0; }
+.ts-log__row--ok .ts-log__text { color: var(--mk-success-h); }
+.ts-log__row--error .ts-log__text { color: var(--mk-error-h); }
+.ts-problem { display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 8px 16px; border: 0; border-bottom: 1px solid var(--bd); background: none; text-align: left; cursor: pointer; }
+.ts-problem:hover { background: var(--bd2); }
+.ts-problem__dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.ts-problem__dot--error { background: var(--mk-error); }
+.ts-problem__dot--warning { background: var(--mk-warning); }
+.ts-problem__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ts-problem__loc { font: 500 11.5px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
+.ts-problem__msg { font: 13px 'Inter', system-ui, sans-serif; color: var(--fg); }
+.ts-drawer__delay { display: inline-flex; align-items: center; gap: 6px; font: 500 11px 'Inter', system-ui, sans-serif; color: var(--fg3); }
+.ts-drawer__delay select { font: 500 11px 'Inter', system-ui, sans-serif; color: var(--fg); background: var(--bg2); border: 1px solid var(--bd); border-radius: var(--r-sm); padding: 2px 6px; cursor: pointer; }
 .ts-statusbar__item { display: inline-flex; align-items: center; gap: 6px; }
 .ts-statusbar__sep { width: 1px; height: 12px; background: var(--bd); flex-shrink: 0; }
 .ts-statusbar__dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--mk-success); flex-shrink: 0; }
@@ -270,6 +402,39 @@
 /* ── Keyboard hints ───────────────────────────────────────────────────────── */
 .ts-kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 4px; background: var(--bd2); border: 1px solid var(--bd); border-bottom-width: 2px; color: var(--fg2); font: 500 10px 'JetBrains Mono', ui-monospace, monospace; }
 
+/* ── OS-aware shortcut hints ──────────────────────────────────────────────── */
+/* `<html>` gets `.is-mac` from app.js. Show ⌘/command on Apple, Ctrl/terminal
+   elsewhere. Default (pre-JS / SSR) assumes Apple, then JS corrects. */
+.ts-mac, .ts-other { display: inline-flex; align-items: center; }
+.ts-other { display: none; }
+html:not(.is-mac) .ts-mac { display: none; }
+html:not(.is-mac) .ts-other { display: inline-flex; }
+.ts-cmdk { gap: 6px; }
+.ts-cmdk__icon svg { width: 14px; height: 14px; }
+.ts-kbd svg { width: 11px; height: 11px; }
+.ts-kbd--combo { gap: 3px; }
+
+/* ── Your templates ───────────────────────────────────────────────────────── */
+.ts-tpl { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+.ts-tpl__row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--r-sm); background: var(--bg2); border: 1px solid var(--bd); }
+.ts-tpl__name { flex: 1; min-width: 0; font: 500 12.5px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg); }
+.ts-tpl__drop { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1.5px dashed var(--bd2); border-radius: var(--r-sm); color: var(--fg3); font: 12px 'Inter', system-ui, sans-serif; cursor: pointer; transition: border-color 150ms var(--ease), color 150ms var(--ease); }
+.ts-tpl__drop:hover { border-color: var(--pri); color: var(--fg); }
+
+/* ── Compile diagnostics panel (preview errors/warnings) ──────────────────── */
+.ts-diag { width: 100%; max-width: 560px; border: 1px solid var(--mk-error-bd); border-radius: var(--r); background: var(--bg); overflow: hidden; box-shadow: var(--sh-sm); }
+.ts-diag__head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--bd); font: 600 13px 'Inter', system-ui, sans-serif; color: var(--mk-error); }
+.ts-diag__list { display: flex; flex-direction: column; }
+.ts-diag__item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 16px; border-bottom: 1px solid var(--bd); }
+.ts-diag__item:last-child { border-bottom: 0; }
+.ts-diag__dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.ts-diag__dot--error { background: var(--mk-error); }
+.ts-diag__dot--warn { background: var(--mk-warning); }
+.ts-diag__body { flex: 1; min-width: 0; }
+.ts-diag__loc { font: 500 11.5px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); margin-bottom: 2px; }
+.ts-diag__msg { font: 13px/1.5 'Inter', system-ui, sans-serif; color: var(--fg); overflow-wrap: anywhere; white-space: pre-wrap; }
+.ts-diag__hint { font: 12px 'Inter', system-ui, sans-serif; color: var(--fg3); margin-top: 3px; }
+
 /* ── Sidebar upload zone ──────────────────────────────────────────────────── */
 .ts-side__upload { padding: 8px 14px; border-top: 1px solid var(--bd); flex-shrink: 0; }
 
@@ -304,6 +469,9 @@
 .ts-outline__item.is-active { color: var(--pri); border-left-color: var(--pri); background: var(--pri-50); }
 .ts-outline__item.level-2 { padding-left: 22px; font-size: 12px; }
 .ts-outline__item.level-3 { padding-left: 34px; font-size: 12px; color: var(--fg4); }
+.ts-outline__num { flex-shrink: 0; min-width: 20px; color: var(--fg4); font: 500 10px 'JetBrains Mono', ui-monospace, monospace; }
+.ts-outline__item.is-active .ts-outline__num { color: var(--pri); }
+.ts-side__count { font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); text-transform: none; letter-spacing: 0; }
 
 /* ── Project initial tile (serif, accent-tinted; --ts-icon overrides hue) ──── */
 .ts-project-icon { width: 40px; height: 40px; border-radius: var(--r-sm); display: grid; place-items: center; flex-shrink: 0; font-family: 'Instrument Serif', 'Times New Roman', serif; font-style: italic; font-weight: 400; font-size: 19px; background: color-mix(in srgb, var(--ts-icon, var(--pri)) 14%, transparent); color: var(--ts-icon, var(--pri)); }

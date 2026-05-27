@@ -23,10 +23,10 @@ async function createProjectAndOpenEditor(page, name) {
 // New files seed a default template, so clear the doc before typing our own.
 async function addMainFileWith(page, text) {
   await page.locator('#create-main-file-button').click()
-  await expect(page.locator('.ts-dialog')).toBeVisible()
-  await page.locator('.ts-dialog input[name="path"]').fill('main.typ')
-  await page.locator('.ts-dialog button[type="submit"]').click()
-  await expect(page.locator('.ts-dialog')).not.toBeVisible()
+  const draftInput = page.locator('#new-file-form input[name="path"]')
+  await expect(draftInput).toBeVisible()
+  await draftInput.fill('main.typ')
+  await draftInput.press('Enter')
 
   const cm = page.locator('#editor-container .cm-content')
   await expect(cm).toBeVisible({ timeout: 10_000 })

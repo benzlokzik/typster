@@ -5,6 +5,117 @@ let compileStartedAt = null
 let pdfRequestSeq = 0
 const pendingPdfRequests = new Map()
 
+// Typst diagnostics arrive as one multi-line string (the same text the CLI
+// prints). Parse it into structured items so the preview can show a readable
+// list (severity, file:line:col, message, hint) instead of a raw dump.
+const DIAG_LOC = /([\w./-]+\.(?:typ|bib|md|tex|latex|sty|cls|csv|tsv|ya?ml)):(\d+):(\d+)/i
+
+export function parseTypstDiagnostics(message) {
+  const text = String(message || "").trim()
+  if (!text) return [{ severity: "error", message: "Typst preview failed", location: null }]
+
+  const diags = []
+  let current = null
+
+  for (const line of text.split("\n")) {
+    const head = line.match(/^\s*(error|warning):\s*(.*)$/i)
+    if (head) {
+      if (current) diags.push(current)
+      current = { severity: head[1].toLowerCase(), message: head[2].trim(), location: null, hint: null }
+      continue
+    }
+    if (!current) continue
+    const loc = line.match(DIAG_LOC)
+    if (loc && !current.location) {
+      current.location = { file: loc[1], line: Number(loc[2]), col: Number(loc[3]) }
+    }
+    const hint = line.match(/^\s*hint:\s*(.*)$/i)
+    if (hint && !current.hint) current.hint = hint[1].trim()
+  }
+  if (current) diags.push(current)
+
+  if (diags.length === 0) {
+    const loc = text.match(DIAG_LOC)
+    diags.push({
+      severity: "error",
+      message: text.split("\n")[0],
+      location: loc && { file: loc[1], line: Number(loc[2]), col: Number(loc[3]) },
+      hint: null
+    })
+  }
+
+  return diags
+}
+
+// Let the editor highlight (or clear) the error locations in the gutter/text.
+function dispatchEditorDiagnostics(diags) {
+  window.dispatchEvent(new CustomEvent("typst:diagnostics", { detail: { diagnostics: diags } }))
+}
+
+function diagnosticSummary(diags) {
+  const errors = diags.filter((d) => d.severity === "error").length
+  const warnings = diags.filter((d) => d.severity === "warning").length
+  const parts = []
+  if (errors) parts.push(`${errors} error${errors === 1 ? "" : "s"}`)
+  if (warnings) parts.push(`${warnings} warning${warnings === 1 ? "" : "s"}`)
+  return { errors, warnings, label: parts.join(" · ") || "Compile failed" }
+}
+
+// Build the diagnostics panel with the DOM API (textContent everywhere, so
+// compiler output can never inject markup).
+function renderDiagnostics(errEl, diags) {
+  errEl.textContent = ""
+  const { label } = diagnosticSummary(diags)
+
+  const head = document.createElement("div")
+  head.className = "ts-diag__head"
+  head.textContent = label
+  errEl.appendChild(head)
+
+  const list = document.createElement("div")
+  list.className = "ts-diag__list"
+
+  for (const d of diags) {
+    const item = document.createElement("div")
+    item.className = "ts-diag__item"
+
+    const dot = document.createElement("span")
+    dot.className = `ts-diag__dot ts-diag__dot--${d.severity === "warning" ? "warn" : "error"}`
+    item.appendChild(dot)
+
+    const body = document.createElement("div")
+    body.className = "ts-diag__body"
+
+    if (d.location && d.location.file) {
+      const file = String(d.location.file).replace(/^\/+/, "")
+      const loc = document.createElement("div")
+      loc.className = "ts-diag__loc"
+      loc.textContent =
+        d.location.line != null
+          ? `${file} : ${d.location.line} : ${d.location.col}`
+          : file
+      body.appendChild(loc)
+    }
+
+    const msg = document.createElement("div")
+    msg.className = "ts-diag__msg"
+    msg.textContent = d.message
+    body.appendChild(msg)
+
+    if (d.hint) {
+      const hint = document.createElement("div")
+      hint.className = "ts-diag__hint"
+      hint.textContent = `hint: ${d.hint}`
+      body.appendChild(hint)
+    }
+
+    item.appendChild(body)
+    list.appendChild(item)
+  }
+
+  errEl.appendChild(list)
+}
+
 function triggerBrowserDownload(bytes, filename) {
   const blob = new Blob([bytes], { type: "application/pdf" })
   const url = URL.createObjectURL(blob)
@@ -62,6 +173,8 @@ export function initTypstWorker(hook) {
 
             svgContainer.innerHTML = data.svg
 
+            dispatchEditorDiagnostics([])
+
             if (pushEvent) {
               const ms = compileStartedAt ? Math.round(performance.now() - compileStartedAt) : null
               pushEvent("update_preview", { ms, pages: countPages(data.svg) })
@@ -73,11 +186,15 @@ export function initTypstWorker(hook) {
             if (!errEl) {
               errEl = document.createElement("div")
               errEl.id = "preview-error"
-              errEl.className = "ts-card"
-              errEl.style.cssText = "border-color:var(--mk-error-bd);background:var(--mk-error-50);color:var(--mk-error);padding:16px;font-size:13px;font-family:'JetBrains Mono',monospace;width:100%;max-width:520px;"
+              errEl.className = "ts-diag"
               previewContainer.appendChild(errEl)
             }
-            errEl.textContent = data.message || "Typst preview failed"
+            const diags =
+              Array.isArray(data.diagnostics) && data.diagnostics.length
+                ? data.diagnostics
+                : parseTypstDiagnostics(data.message)
+            renderDiagnostics(errEl, diags)
+            dispatchEditorDiagnostics(diags)
             errEl.style.display = ""
 
             const svgContainer = previewContainer.querySelector("#typst-svg-output")
@@ -85,8 +202,19 @@ export function initTypstWorker(hook) {
 
             const placeholder = previewContainer.querySelector("#preview-placeholder")
             if (placeholder) placeholder.style.display = "none"
+
+            if (pushEvent) {
+              const { errors, warnings } = diagnosticSummary(diags)
+              pushEvent("preview_error", {
+                message: data.message || "Typst preview failed",
+                errors: errors,
+                warnings: warnings,
+                diagnostics: diags
+              })
+            }
+          } else if (pushEvent) {
+            pushEvent("preview_error", { message: data.message || "Typst preview failed" })
           }
-          if (pushEvent) pushEvent("preview_error", { message: data.message || "Typst preview failed" })
           console.error("Typst compilation error:", data)
         } else if (type === "pdf") {
           const pending = pendingPdfRequests.get(data.requestId)

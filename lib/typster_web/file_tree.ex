@@ -21,7 +21,13 @@ defmodule TypsterWeb.FileTree do
   def file_nodes(files, mode) do
     files
     |> Enum.map(fn f ->
-      %{path: f.path, id: f.id, editable: Typster.Files.editable_file?(f), asset?: false}
+      %{
+        path: f.path,
+        id: f.id,
+        editable: Typster.Files.editable_file?(f),
+        asset?: false,
+        pinned: Map.get(f, :pinned, false)
+      }
     end)
     |> by_mode(mode)
   end
@@ -92,13 +98,39 @@ defmodule TypsterWeb.FileTree do
 
   defp expanded?(collapsed, path), do: not MapSet.member?(collapsed, path)
 
-  defp leaf_dom_id(%{asset?: true, id: id}), do: "asset-entry-#{id}"
-  defp leaf_dom_id(%{id: id}), do: "select-file-#{id}"
+  defp leaf_dom_id(%{asset?: true, id: id}, prefix), do: "#{prefix}asset-entry-#{id}"
+  defp leaf_dom_id(%{id: id}, prefix), do: "#{prefix}select-file-#{id}"
+
+  @doc "Color/glyph bucket for a file's typed chip, from its extension."
+  def file_chip_kind(name) do
+    case name |> Path.extname() |> String.downcase() do
+      ".typ" -> "typ"
+      ".bib" -> "bib"
+      ext when ext in ~w(.tex .latex .sty .cls) -> "tex"
+      ".md" -> "md"
+      ext when ext in ~w(.csv .tsv) -> "csv"
+      ext when ext in ~w(.png .jpg .jpeg .gif .svg .webp) -> "img"
+      ext when ext in ~w(.yaml .yml .toml .json) -> "data"
+      _ -> "file"
+    end
+  end
+
+  @doc "Single-character glyph shown inside a file's typed chip."
+  def chip_glyph("typ"), do: "T"
+  def chip_glyph("bib"), do: "B"
+  def chip_glyph("tex"), do: "L"
+  def chip_glyph("md"), do: "M"
+  def chip_glyph("csv"), do: "≡"
+  def chip_glyph("img"), do: "▢"
+  def chip_glyph("data"), do: "{}"
+  def chip_glyph(_), do: "·"
 
   attr :nodes, :list, required: true
   attr :depth, :integer, default: 0
   attr :collapsed, :any, required: true
   attr :current_id, :any, default: nil
+  attr :id_prefix, :string, default: ""
+  attr :dnd, :boolean, default: false
 
   @doc "Recursively render tree rows (siblings share one `<ul>`, indented by depth)."
   def tree_rows(assigns) do
@@ -110,6 +142,7 @@ defmodule TypsterWeb.FileTree do
           style={"padding-left: #{6 + @depth * 14}px"}
           phx-click="toggle_dir"
           phx-value-path={node.path}
+          data-dnd-dir={if @dnd, do: node.path}
         >
           <.icon
             name={
@@ -117,10 +150,12 @@ defmodule TypsterWeb.FileTree do
             }
             class="size-3"
           />
-          <.icon
-            name={if expanded?(@collapsed, node.path), do: "hero-folder-open", else: "hero-folder"}
-            class="size-3.5"
-          />
+          <span class="ts-tree__ficon" aria-hidden="true">
+            <i data-lucide={
+              if expanded?(@collapsed, node.path), do: "folder-open", else: "folder-closed"
+            }>
+            </i>
+          </span>
           <span class="truncate flex-1">{node.name}</span>
           <span class="ts-tree__count">{length(node.children)}</span>
         </li>
@@ -130,12 +165,17 @@ defmodule TypsterWeb.FileTree do
           depth={@depth + 1}
           collapsed={@collapsed}
           current_id={@current_id}
+          id_prefix={@id_prefix}
+          dnd={@dnd}
         />
       <% else %>
+        <% can_drag = @dnd and not node.asset? and node.editable %>
         <li
-          id={leaf_dom_id(node)}
+          id={leaf_dom_id(node, @id_prefix)}
           phx-click={if not node.asset? and node.editable, do: "select_file"}
           phx-value-file-id={node.id}
+          draggable={can_drag && "true"}
+          data-dnd-file={if can_drag, do: node.id}
           class={[
             "ts-tree__item",
             (node.asset? or not node.editable) && "is-disabled",
@@ -143,10 +183,49 @@ defmodule TypsterWeb.FileTree do
           ]}
           style={"padding-left: #{6 + @depth * 14 + 14}px"}
         >
-          <.icon name={if node.asset?, do: "hero-photo", else: "hero-document-text"} class="size-3.5" />
+          <% kind = if node.asset?, do: "img", else: file_chip_kind(node.name) %>
+          <span class={["ts-filechip", "ts-filechip--#{kind}"]}>{chip_glyph(kind)}</span>
           <span class="truncate flex-1">{node.name}</span>
           <span :if={Map.get(node, :smart)} class="ts-tree__smart">↳</span>
           <span :if={Map.get(node, :meta, "") != ""} class="ts-tree__pill">{node.meta}</span>
+          <span
+            :if={Map.get(node, :pinned, false)}
+            class="ts-tree__pin-ind"
+            title={gettext("editor.tree.pinned")}
+          >
+            <i data-lucide="pin" aria-hidden="true"></i>
+          </span>
+          <span class="ts-tree__actions">
+            <button
+              :if={not node.asset?}
+              type="button"
+              class={["ts-tree__act", Map.get(node, :pinned, false) && "is-on"]}
+              phx-click="toggle_pin"
+              phx-value-id={node.id}
+              aria-label={
+                if(Map.get(node, :pinned, false),
+                  do: gettext("editor.tree.unpin"),
+                  else: gettext("editor.tree.pin")
+                )
+              }
+            >
+              <i
+                data-lucide={if Map.get(node, :pinned, false), do: "pin-off", else: "pin"}
+                aria-hidden="true"
+              >
+              </i>
+            </button>
+            <button
+              type="button"
+              class="ts-tree__act ts-tree__act--danger"
+              phx-click={if node.asset?, do: "delete_asset", else: "delete_file"}
+              phx-value-id={node.id}
+              phx-confirm={gettext("editor.tree.delete_confirm")}
+              aria-label={gettext("editor.tree.delete")}
+            >
+              <.icon name="hero-trash" class="size-3" />
+            </button>
+          </span>
         </li>
       <% end %>
     <% end %>

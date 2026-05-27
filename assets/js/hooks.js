@@ -52,6 +52,19 @@ export const CodeMirror = {
       }
     }
     window.addEventListener("phx:editor-command", this.commandHandler)
+
+    // The Typst worker emits diagnostics for the compiled buffer (reported as
+    // "main.typ"); highlight those in the active editor and clear on success.
+    this.diagnosticsHandler = (event) => {
+      if (!this.editorInstance) return
+      const all = (event.detail && event.detail.diagnostics) || []
+      const own = all.filter((d) => {
+        const file = d.location && d.location.file
+        return !file || file === "main.typ"
+      })
+      this.editorInstance.setDiagnostics(own)
+    }
+    window.addEventListener("typst:diagnostics", this.diagnosticsHandler)
   },
 
   mounted() {
@@ -186,6 +199,10 @@ export const CodeMirror = {
     if (this.commandHandler) {
       window.removeEventListener("phx:editor-command", this.commandHandler)
       this.commandHandler = null
+    }
+    if (this.diagnosticsHandler) {
+      window.removeEventListener("typst:diagnostics", this.diagnosticsHandler)
+      this.diagnosticsHandler = null
     }
     if (this.editorInstance) {
       destroyEditor(this.editorInstance)
@@ -351,5 +368,72 @@ export const PreviewZoom = {
 
   destroyed() {
     if (this.clickHandler) this.el.removeEventListener("click", this.clickHandler)
+  }
+}
+
+// Re-render lucide `<i data-lucide>` icons inside a container that LiveView
+// patches (the file tree and tab bar). The global mkIcons() only runs on full
+// page loads, so without this, icons inside diffed regions would not paint.
+export const LucideIcons = {
+  mounted() { window.mkIcons?.(this.el) },
+  updated() { window.mkIcons?.(this.el) }
+}
+
+// Persist the auto-recompile debounce (read by editor.js' compileDelay()).
+export const CompileDelay = {
+  mounted() {
+    const stored = localStorage.getItem("typster:compile_delay")
+    if (stored !== null) this.el.value = stored
+    this.el.addEventListener("change", () => {
+      localStorage.setItem("typster:compile_delay", this.el.value)
+    })
+  }
+}
+
+// Drag a file row onto a folder row (or the empty tree area = project root) to
+// move it. Listeners are delegated on the <ul>, so they survive LiveView
+// re-renders without managing any child DOM (no phx-update="ignore" needed).
+// Internal moves are tracked via this.dragId; external file drags (which have
+// no dragId) are ignored so the asset-upload drop target keeps working.
+export const FileTreeDnD = {
+  mounted() {
+    this.dragId = null
+    const root = this.el
+
+    const clearOver = () =>
+      root.querySelectorAll(".is-dnd-over").forEach((n) => n.classList.remove("is-dnd-over"))
+
+    root.addEventListener("dragstart", (e) => {
+      const li = e.target.closest("[data-dnd-file]")
+      if (!li) return
+      this.dragId = li.dataset.dndFile
+      e.dataTransfer.effectAllowed = "move"
+      e.dataTransfer.setData("text/plain", this.dragId)
+      li.classList.add("is-dnd-dragging")
+    })
+
+    root.addEventListener("dragend", () => {
+      root.querySelectorAll(".is-dnd-dragging").forEach((n) => n.classList.remove("is-dnd-dragging"))
+      clearOver()
+      this.dragId = null
+    })
+
+    root.addEventListener("dragover", (e) => {
+      if (!this.dragId) return // not our drag (e.g. a file from the OS)
+      e.preventDefault()
+      e.dataTransfer.dropEffect = "move"
+      clearOver()
+      const dir = e.target.closest("[data-dnd-dir]")
+      if (dir) dir.classList.add("is-dnd-over")
+    })
+
+    root.addEventListener("drop", (e) => {
+      if (!this.dragId) return
+      e.preventDefault()
+      const dir = e.target.closest("[data-dnd-dir]")
+      this.pushEvent("move_file", { id: this.dragId, dir: dir ? dir.dataset.dndDir : "" })
+      clearOver()
+      this.dragId = null
+    })
   }
 }

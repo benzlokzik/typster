@@ -115,7 +115,20 @@ defmodule Typster.Assets do
   defp put_object(object_key, body, content_type) do
     bucket = Application.get_env(:typster, :s3_bucket, "typster-assets")
 
-    ExAws.S3.put_object(bucket, object_key, body, content_type: content_type)
-    |> ExAws.request()
+    put = fn ->
+      ExAws.S3.put_object(bucket, object_key, body, content_type: content_type)
+      |> ExAws.request()
+    end
+
+    case put.() do
+      # Bucket missing (e.g. a fresh MinIO): create it once, then retry.
+      {:error, {:http_error, 404, _}} ->
+        region = Application.get_env(:ex_aws, :region, "us-east-1")
+        _ = ExAws.S3.put_bucket(bucket, region) |> ExAws.request()
+        put.()
+
+      result ->
+        result
+    end
   end
 end

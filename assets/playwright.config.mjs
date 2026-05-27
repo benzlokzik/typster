@@ -38,7 +38,8 @@ export default defineConfig({
         /wasm\.spec\.mjs/,
         /preview\.spec\.mjs/,
         /redesign\.spec\.mjs/,
-        /search_panel\.spec\.mjs/
+        /search_panel\.spec\.mjs/,
+        /editor_gutter\.spec\.mjs/
       ]
     },
     {
@@ -47,7 +48,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         storageState: authFile
       },
-      testMatch: [/editor_load\.spec\.mjs/, /wasm\.spec\.mjs/, /preview\.spec\.mjs/, /redesign\.spec\.mjs/, /search_panel\.spec\.mjs/],
+      testMatch: [/editor_load\.spec\.mjs/, /wasm\.spec\.mjs/, /preview\.spec\.mjs/, /redesign\.spec\.mjs/, /search_panel\.spec\.mjs/, /editor_gutter\.spec\.mjs/],
       dependencies: ["setup"]
     }
   ]

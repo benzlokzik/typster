@@ -8,11 +8,11 @@ import {
   lineNumbers,
   highlightActiveLineGutter,
   highlightSpecialChars,
-  drawSelection,
   dropCursor,
-  rectangularSelection,
-  crosshairCursor,
-  highlightActiveLine
+  highlightActiveLine,
+  Decoration,
+  ViewPlugin,
+  WidgetType
 } from "@codemirror/view"
 import { EditorState, Compartment } from "@codemirror/state"
 import {
@@ -33,21 +33,88 @@ import {
   closeBrackets,
   closeBracketsKeymap
 } from "@codemirror/autocomplete"
-import { lintKeymap } from "@codemirror/lint"
+import { lintKeymap, lintGutter, setDiagnostics } from "@codemirror/lint"
 import { typst, setTypstTheme, registerTypstView } from "./typst_highlight"
 import { markdown } from "@codemirror/lang-markdown"
 import { yaml } from "@codemirror/lang-yaml"
 import { stex } from "@codemirror/legacy-modes/mode/stex"
 import { compileTypst, downloadTypstPdf } from "./typst_worker"
 
+// Native selection paints nothing visible for a selected trailing newline (an
+// empty line shows nothing, a text line ends right at the glyphs). VS Code draws
+// a small block at the line's end to show the break is selected. We do the same
+// on every line whose newline is in the selection — including blank lines.
+//
+// The marker is an inline span holding a transparent non-breaking space: its
+// *background* therefore paints the exact same inline content box the browser
+// uses for ::selection on that line, so it matches the selection band's height
+// and per-line rounding pixel-for-pixel (a fixed-size box never could).
+class EolMarkWidget extends WidgetType {
+  eq() {
+    return true
+  }
+  toDOM() {
+    const span = document.createElement("span")
+    span.className = "cm-eol-mark"
+    span.textContent = " "
+    span.setAttribute("aria-hidden", "true")
+    return span
+  }
+  ignoreEvent() {
+    return true
+  }
+}
+const eolSelectionMark = Decoration.widget({ widget: new EolMarkWidget(), side: 1 })
+
+const eolSelection = ViewPlugin.fromClass(
+  class {
+    constructor(view) {
+      this.decorations = this.build(view)
+    }
+    update(u) {
+      // Deliberately not on geometryChanged: the marker must not feed back into
+      // layout (it's out of flow), and reacting to geometry would flicker.
+      if (u.selectionSet || u.docChanged || u.viewportChanged)
+        this.decorations = this.build(u.view)
+    }
+    build(view) {
+      const seen = new Set()
+      const deco = []
+      for (const range of view.state.selection.ranges) {
+        if (range.empty) continue
+        for (const vr of view.visibleRanges) {
+          let pos = Math.max(vr.from, range.from)
+          const end = Math.min(vr.to, range.to)
+          while (pos <= end) {
+            const line = view.state.doc.lineAt(pos)
+            // line.to < range.to ⇒ this line's newline is inside the selection.
+            if (line.to < range.to && !seen.has(line.to)) {
+              seen.add(line.to)
+              deco.push(eolSelectionMark.range(line.to))
+            }
+            pos = line.to + 1
+          }
+        }
+      }
+      deco.sort((a, b) => a.from - b.from)
+      return Decoration.set(deco)
+    }
+  },
+  { decorations: (v) => v.decorations }
+)
+
 // Equivalent of `codemirror`'s `basicSetup`, assembled from granular packages.
 const basicSetup = [
+  eolSelection,
   lineNumbers(),
   highlightActiveLineGutter(),
   highlightSpecialChars(),
   history(),
   foldGutter(),
-  drawSelection(),
+  // No drawSelection(): its custom selection layer extends a selected newline
+  // to the full editor width (a giant bar) and mis-measures single glyphs.
+  // Native browser selection hugs the text and shows the newline as a small
+  // trailing mark — styled via `::selection` in _codemirror.css.
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
@@ -55,10 +122,9 @@ const basicSetup = [
   bracketMatching(),
   closeBrackets(),
   autocompletion(),
-  rectangularSelection(),
-  crosshairCursor(),
   highlightActiveLine(),
-  highlightSelectionMatches(),
+  // Don't spray match boxes for 1-char selections (every `i`/`2` lit up).
+  highlightSelectionMatches({ minSelectionLength: 2 }),
   ...searchPanelExtensions,
   keymap.of([
     ...closeBracketsKeymap,
@@ -70,6 +136,22 @@ const basicSetup = [
     ...lintKeymap
   ])
 ]
+
+// Auto-recompile debounce (ms from the last keystroke). Configurable via
+// localStorage so a single keystroke doesn't thrash the WASM compiler; a
+// negative value disables auto-compile (manual ⌘↵ / Compile only).
+export const DEFAULT_COMPILE_DELAY = 700
+
+export function compileDelay() {
+  try {
+    const raw = localStorage.getItem("typster:compile_delay")
+    if (raw === null) return DEFAULT_COMPILE_DELAY
+    const v = parseInt(raw, 10)
+    return Number.isFinite(v) ? v : DEFAULT_COMPILE_DELAY
+  } catch (_e) {
+    return DEFAULT_COMPILE_DELAY
+  }
+}
 
 function getCurrentTheme() {
   const html = document.documentElement
@@ -90,7 +172,10 @@ const lightTheme = EditorView.theme({
   ".cm-content": {
     padding: "16px",
     minHeight: "100%",
-    lineHeight: "1.6"
+    lineHeight: "1.6",
+    caretColor: "#09090b",
+    // Ligatures (=>, !=, ->) skew per-char coordinate measurement; disable them.
+    fontVariantLigatures: "none"
   },
   ".cm-focused": { outline: "none" },
   ".cm-editor": { height: "100%" },
@@ -98,13 +183,22 @@ const lightTheme = EditorView.theme({
     fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
   },
   ".cm-gutters": { backgroundColor: "#f4f4f5", color: "#a1a1aa", border: "none" },
-  ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
-  ".cm-activeLine": { backgroundColor: "#fafafa" },
-  ".cm-activeLineGutter": { backgroundColor: "#fafafa", color: "#09090b" },
-  ".cm-selectionMatch": { backgroundColor: "rgba(79, 70, 229, 0.2)" },
-  "&.cm-focused .cm-selectionBackground": { backgroundColor: "rgba(79, 70, 229, 0.2)" },
-  ".cm-cursor": { borderLeftColor: "#09090b" },
-  ".cm-selectionBackground": { backgroundColor: "rgba(79, 70, 229, 0.2)" }
+  // Reserve room for 5 digits (≤ 99999), right-aligned; CM auto-grows past that.
+  // box-sizing is border-box, so add the horizontal padding into the floor.
+  ".cm-lineNumbers .cm-gutterElement": {
+    minWidth: "calc(5ch + 24px)",
+    padding: "0 8px 0 16px",
+    textAlign: "right"
+  },
+  ".cm-activeLine": { backgroundColor: "rgba(9, 9, 11, 0.045)" },
+  ".cm-activeLineGutter": { backgroundColor: "#ececee", color: "#09090b" },
+  // Match highlights use a neutral bordered box so they read as "other
+  // occurrences", distinct from the (indigo) native ::selection.
+  ".cm-selectionMatch": {
+    backgroundColor: "rgba(9, 9, 11, 0.06)",
+    outline: "1px solid rgba(9, 9, 11, 0.28)",
+    borderRadius: "2px"
+  }
 })
 
 const darkTheme = EditorView.theme({
@@ -117,7 +211,9 @@ const darkTheme = EditorView.theme({
   ".cm-content": {
     padding: "16px",
     minHeight: "100%",
-    lineHeight: "1.6"
+    lineHeight: "1.6",
+    caretColor: "#fafafa",
+    fontVariantLigatures: "none"
   },
   ".cm-focused": { outline: "none" },
   ".cm-editor": { height: "100%" },
@@ -125,13 +221,18 @@ const darkTheme = EditorView.theme({
     fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
   },
   ".cm-gutters": { backgroundColor: "#18181b", color: "#71717a", border: "none" },
-  ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
-  ".cm-activeLine": { backgroundColor: "#27272a" },
+  ".cm-lineNumbers .cm-gutterElement": {
+    minWidth: "calc(5ch + 24px)",
+    padding: "0 8px 0 16px",
+    textAlign: "right"
+  },
+  ".cm-activeLine": { backgroundColor: "rgba(250, 250, 250, 0.06)" },
   ".cm-activeLineGutter": { backgroundColor: "#27272a", color: "#fafafa" },
-  ".cm-selectionMatch": { backgroundColor: "rgba(99, 102, 241, 0.2)" },
-  "&.cm-focused .cm-selectionBackground": { backgroundColor: "rgba(99, 102, 241, 0.2)" },
-  ".cm-cursor": { borderLeftColor: "#fafafa" },
-  ".cm-selectionBackground": { backgroundColor: "rgba(99, 102, 241, 0.2)" }
+  ".cm-selectionMatch": {
+    backgroundColor: "rgba(250, 250, 250, 0.10)",
+    outline: "1px solid rgba(250, 250, 250, 0.35)",
+    borderRadius: "2px"
+  }
 })
 
 function getThemeExtension() {
@@ -271,6 +372,36 @@ function getLanguageExtension(lang) {
   }
 }
 
+// Convert Typst diagnostics (1-based line/col, optional end) into CodeMirror
+// lint diagnostics with absolute from/to offsets, clamped to the document.
+function toCmDiagnostics(view, diags) {
+  const doc = view.state.doc
+
+  const offset = (line, col) => {
+    const n = Math.min(Math.max(line || 1, 1), doc.lines)
+    const l = doc.line(n)
+    return Math.min(l.from + Math.max((col || 1) - 1, 0), l.to)
+  }
+
+  return (diags || [])
+    .filter((d) => d.location && d.location.line != null)
+    .map((d) => {
+      const loc = d.location
+      const from = offset(loc.line, loc.col)
+      let to = loc.endLine != null ? offset(loc.endLine, loc.endCol) : from
+      if (to <= from) {
+        const l = doc.line(Math.min(Math.max(loc.line, 1), doc.lines))
+        to = Math.min(l.to, from + 1)
+      }
+      return {
+        from,
+        to,
+        severity: d.severity === "warning" ? "warning" : "error",
+        message: d.message || "Compilation error"
+      }
+    })
+}
+
 export function initEditor(container, initialContent, socket, fileId, options = {}) {
   let autosaveTimer = null
   let compileTimer = null
@@ -278,7 +409,10 @@ export function initEditor(container, initialContent, socket, fileId, options = 
   let lastOutline = ""
   const themeCompartment = new Compartment()
   const languageCompartment = new Compartment()
-  const language = options.language || "typst"
+  // Mutable: switching files reconfigures the editor in place, so the current
+  // language must follow — otherwise the compile/outline gates go stale and a
+  // non-Typst file (e.g. .csv) would be compiled as Typst.
+  let language = options.language || "typst"
   const onCursor = typeof options.onCursor === "function" ? options.onCursor : null
   const onOutline = typeof options.onOutline === "function" ? options.onOutline : null
 
@@ -315,10 +449,13 @@ export function initEditor(container, initialContent, socket, fileId, options = 
 
       if (language === "typst") {
         clearTimeout(compileTimer)
-        compileTimer = setTimeout(() => {
-          if (socket) socket.pushEvent("compile_started", {})
-          compileTypst(content, options.project || {})
-        }, 300)
+        const delay = compileDelay()
+        if (delay >= 0) {
+          compileTimer = setTimeout(() => {
+            if (socket) socket.pushEvent("compile_started", {})
+            compileTypst(content, options.project || {})
+          }, delay)
+        }
       }
 
       clearTimeout(outlineTimer)
@@ -330,6 +467,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     doc: initialContent || "",
     extensions: [
       basicSetup,
+      lintGutter(),
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
       ...(language === "typst" ? typst() : []),
@@ -364,10 +502,11 @@ export function initEditor(container, initialContent, socket, fileId, options = 
   }
 
   const updateLanguage = (newLang) => {
+    language = newLang || "plain"
     editor.dispatch({
-      effects: languageCompartment.reconfigure(getLanguageExtension(newLang))
+      effects: languageCompartment.reconfigure(getLanguageExtension(language))
     })
-    if (newLang === "typst") registerTypstView(editor)
+    if (language === "typst") registerTypstView(editor)
   }
 
   return {
@@ -376,13 +515,17 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     updateLanguage,
     runCommand: (cmd, arg) => runEditorCommand(editor, language, cmd, arg),
     openSearch: () => openSearchPanel(editor),
-    compile: () => compileTypst(editor.state.doc.toString(), options.project || {}),
-    download: () =>
-      downloadTypstPdf(
-        editor.state.doc.toString(),
-        options.project || {},
-        container.dataset.fileName
-      ),
+    setDiagnostics: (diags) =>
+      editor.dispatch(setDiagnostics(editor.state, toCmDiagnostics(editor, diags))),
+    compile: () => {
+      // Only Typst files compile; the worker treats the active buffer as main.typ.
+      if (language === "typst") compileTypst(editor.state.doc.toString(), options.project || {})
+    },
+    download: () => {
+      if (language === "typst") {
+        downloadTypstPdf(editor.state.doc.toString(), options.project || {}, container.dataset.fileName)
+      }
+    },
     destroy: () => {
       if (autosaveTimer) clearTimeout(autosaveTimer)
       if (compileTimer) clearTimeout(compileTimer)

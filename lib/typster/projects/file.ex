@@ -9,6 +9,7 @@ defmodule Typster.Projects.File do
   schema "files" do
     field :path, :string
     field :content, :string
+    field :pinned, :boolean, default: false
     belongs_to :project, Typster.Projects.Project
     belongs_to :parent, Typster.Projects.File
     has_many :children, Typster.Projects.File, foreign_key: :parent_id
@@ -22,5 +23,9 @@ defmodule Typster.Projects.File do
     |> cast(attrs, [:path, :content, :parent_id])
     |> validate_required([:path, :project_id])
     |> assoc_constraint(:project)
+    |> unique_constraint(:path,
+      name: :files_project_id_path_index,
+      message: "already exists in this project"
+    )
   end
 end

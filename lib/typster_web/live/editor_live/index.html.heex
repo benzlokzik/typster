@@ -2,11 +2,21 @@
   <div class="ts-editor" id="editor-shell" phx-hook="CommandPalette">
     <%!-- Editor top bar: breadcrumb, save status, actions --%>
     <div class="ts-editor__bar">
-      <.link navigate={~p"/projects"} class="ts-btn ts-btn--ghost ts-btn--sm">
-        <.icon name="hero-chevron-left" class="size-3" /> {gettext("nav.projects")}
+      <.link
+        navigate={~p"/projects"}
+        class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+        aria-label={gettext("nav.projects")}
+        title={gettext("nav.projects")}
+      >
+        <.icon name="hero-chevron-left" class="size-3" />
       </.link>
-      <span class="ts-crumb-sep">/</span>
-      <span class="ts-crumb-current">{@project.name}</span>
+      <nav class="ts-crumb" aria-label={gettext("editor.breadcrumb")}>
+        <span class="ts-crumb__seg">{@project.name}</span>
+        <span :for={seg <- path_segments(@current_file)}>
+          <span class="ts-crumb__sep">/</span>
+          <span class={["ts-crumb__seg", seg.last && "is-active"]}>{seg.name}</span>
+        </span>
+      </nav>
 
       <div
         id="save-status"
@@ -19,8 +29,20 @@
 
       <div class="ts-spacer" />
 
-      <button type="button" class="ts-btn ts-btn--ghost ts-btn--sm" phx-click="open_palette">
-        <.icon name="hero-command-line" class="size-3" /> {gettext("editor.command")}
+      <button
+        type="button"
+        class="ts-btn ts-btn--ghost ts-btn--sm ts-cmdk"
+        phx-click="open_palette"
+        aria-label={gettext("editor.command_open")}
+      >
+        <span class="ts-cmdk__icon ts-mac" aria-hidden="true"><i data-lucide="command"></i></span>
+        <span class="ts-cmdk__icon ts-other" aria-hidden="true">
+          <i data-lucide="square-terminal"></i>
+        </span>
+        <%!-- The ⌘ icon already conveys the modifier, so the Mac key is just "K"
+             (avoids a duplicated ⌘). Non-mac spells out "Ctrl" beside the icon. --%>
+        <span class="ts-kbd ts-mac">K</span>
+        <span class="ts-kbd ts-other">Ctrl K</span>
       </button>
       <button
         type="button"
@@ -43,7 +65,7 @@
     <div class="ts-editor__body">
       <div class="ts-window ts-editor__panes">
         <%!-- Sidebar: file tree + outline + assets --%>
-        <aside class="ts-side">
+        <aside class="ts-side" id="editor-sidebar" phx-hook="LucideIcons">
           <div class="ts-side__search">
             <div class="ts-search ts-search--sm">
               <.icon name="hero-magnifying-glass" class="size-3.5" />
@@ -65,6 +87,14 @@
               >
                 <.icon name="hero-arrows-right-left" class="size-3" />
                 {TypsterWeb.FileTree.view_label(@file_view_mode)}
+              </button>
+              <button
+                id="create-folder-button"
+                phx-click="new_folder"
+                class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+                aria-label={gettext("editor.new_folder")}
+              >
+                <.icon name="hero-folder-plus" class="size-3" />
               </button>
               <button
                 id="create-main-file-button"
@@ -110,21 +140,113 @@
             </button>
           </div>
 
-          <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) do %>
+          <div :if={pinned_files(@file_tree) != []}>
+            <div class="ts-side__head ts-side__head--sub">{gettext("editor.pinned")}</div>
+            <ul class="ts-tree">
+              <TypsterWeb.FileTree.tree_rows
+                nodes={TypsterWeb.FileTree.file_nodes(pinned_files(@file_tree), :flat)}
+                collapsed={@collapsed_dirs}
+                current_id={@current_file && @current_file.id}
+                id_prefix="pinned-"
+              />
+            </ul>
+            <div class="ts-side__head ts-side__head--sub">{gettext("editor.files")}</div>
+          </div>
+
+          <%= if Enum.empty?(@file_tree) and Enum.empty?(@assets) and not @creating? do %>
             <div class="ts-empty" style="margin: 8px 14px; padding: 20px 12px;">
               {gettext("editor.no_files")}
             </div>
           <% else %>
-            <ul class="ts-tree">
+            <ul class="ts-tree" id="file-tree-main" phx-hook="FileTreeDnD">
+              <li :if={@creating?} class="ts-tree__draft" id="new-file-draft">
+                <.form
+                  for={%{}}
+                  id="new-file-form"
+                  phx-change={@new_kind == :file && "suggest_new_file"}
+                  phx-submit={
+                    if(@new_kind == :folder,
+                      do: "create_folder_from_dialog",
+                      else: "create_file_from_dialog"
+                    )
+                  }
+                  phx-window-keydown="cancel_new_file"
+                  phx-key="Escape"
+                  phx-click-away="cancel_new_file"
+                >
+                  <div class="ts-draft__row">
+                    <span :if={@new_kind == :folder} class="ts-tree__ficon" aria-hidden="true">
+                      <i data-lucide="folder"></i>
+                    </span>
+                    <span
+                      :if={@new_kind == :file}
+                      class={[
+                        "ts-filechip",
+                        "ts-filechip--#{draft_chip_ext(@new_file_name, @new_file_suggestions)}"
+                      ]}
+                    >
+                      {chip_glyph(draft_chip_ext(@new_file_name, @new_file_suggestions))}
+                    </span>
+                    <span :if={@create_dir != ""} class="ts-draft__dir">{@create_dir}/</span>
+                    <input
+                      class="ts-draft__input"
+                      name="path"
+                      value={@new_file_name}
+                      placeholder={
+                        if(@new_kind == :folder,
+                          do: gettext("editor.newfolder.placeholder"),
+                          else: gettext("editor.newfile.placeholder")
+                        )
+                      }
+                      autocomplete="off"
+                      spellcheck="false"
+                      phx-mounted={JS.focus()}
+                    />
+                    <button
+                      :if={@new_kind == :file and length(@new_file_suggestions) == 1}
+                      type="button"
+                      class="ts-exthint"
+                      phx-click="create_file_from_dialog"
+                      phx-value-path={hd(@new_file_suggestions)}
+                      title={gettext("editor.newfile.append_hint")}
+                    >
+                      + {draft_hint(@new_file_name, @new_file_suggestions)}
+                    </button>
+                  </div>
+                  <div
+                    :if={@new_kind == :file and length(@new_file_suggestions) > 1}
+                    class="ts-suggest"
+                  >
+                    <button
+                      :for={suggestion <- @new_file_suggestions}
+                      type="button"
+                      class="ts-suggest__chip"
+                      phx-click="create_file_from_dialog"
+                      phx-value-path={suggestion}
+                    >
+                      <span class={["ts-filechip", "ts-filechip--#{ext_label(suggestion)}"]}>
+                        {chip_glyph(ext_label(suggestion))}
+                      </span>
+                      {Path.basename(suggestion)}
+                    </button>
+                  </div>
+                </.form>
+              </li>
               <TypsterWeb.FileTree.tree_rows
                 nodes={TypsterWeb.FileTree.file_nodes(@file_tree, @file_view_mode)}
                 collapsed={@collapsed_dirs}
                 current_id={@current_file && @current_file.id}
+                dnd={true}
               />
             </ul>
           <% end %>
 
-          <div class="ts-side__head">{gettext("editor.outline")}</div>
+          <div class="ts-side__head">
+            <span>{gettext("editor.outline")}</span>
+            <span :if={@outline_count > 0} class="ts-side__count">
+              {ngettext("%{count} section", "%{count} sections", @outline_count)}
+            </span>
+          </div>
           <ul id="outline" phx-update="stream" class="ts-outline">
             <li class="ts-outline__empty only:block hidden" id="outline-empty">
               {gettext("editor.outline_empty")}
@@ -137,6 +259,7 @@
                 JS.dispatch("phx:editor-command", detail: %{cmd: "goto", line: heading.line})
               }
             >
+              <span :if={heading.num != ""} class="ts-outline__num">{heading.num}</span>
               <span class="truncate">{heading.text}</span>
             </li>
           </ul>
@@ -155,14 +278,14 @@
             </div>
           </div>
 
-          <ul class="ts-tree">
+          <ul class="ts-tree" phx-drop-target={@uploads.dropped.ref}>
             <TypsterWeb.FileTree.tree_rows
               nodes={TypsterWeb.FileTree.asset_nodes(@assets, @file_view_mode)}
               collapsed={@collapsed_dirs}
             />
           </ul>
 
-          <div class="ts-side__upload">
+          <div class="ts-side__upload" phx-drop-target={@uploads.dropped.ref}>
             <.form
               id="asset-upload-form"
               for={%{}}
@@ -180,14 +303,95 @@
               </button>
             </.form>
           </div>
+
+          <div class="ts-side__head">
+            <span>{gettext("editor.templates")}</span>
+            <span :if={@templates != []} class="ts-side__count">{length(@templates)}</span>
+          </div>
+
+          <div class="ts-tpl">
+            <div :for={tpl <- @templates} class="ts-tpl__row">
+              <% kind = TypsterWeb.FileTree.file_chip_kind(tpl.name) %>
+              <span class={["ts-filechip", "ts-filechip--#{kind}"]}>
+                {TypsterWeb.FileTree.chip_glyph(kind)}
+              </span>
+              <span class="ts-tpl__name truncate">{tpl.name}</span>
+              <button
+                type="button"
+                class="ts-tree__act"
+                phx-click="use_template"
+                phx-value-id={tpl.id}
+                aria-label={gettext("editor.tpl.use")}
+                title={gettext("editor.tpl.use")}
+              >
+                <.icon name="hero-arrow-right" class="size-3" />
+              </button>
+              <button
+                type="button"
+                class="ts-tree__act ts-tree__act--danger"
+                phx-click="delete_template"
+                phx-value-id={tpl.id}
+                phx-confirm={gettext("editor.tpl.delete_confirm")}
+                aria-label={gettext("editor.tree.delete")}
+                title={gettext("editor.tree.delete")}
+              >
+                <.icon name="hero-trash" class="size-3" />
+              </button>
+            </div>
+
+            <.form id="template-upload-form" for={%{}} phx-change="validate_template">
+              <.live_file_input
+                upload={@uploads.template}
+                id="template-file-input"
+                class="hidden"
+              />
+              <label
+                for="template-file-input"
+                class="ts-tpl__drop"
+                phx-drop-target={@uploads.template.ref}
+              >
+                <.icon name="hero-arrow-up-tray" class="size-3.5" />
+                <span>{gettext("editor.tpl.upload")}</span>
+              </label>
+            </.form>
+          </div>
         </aside>
 
         <%!-- Source pane: tab bar + formatting toolbar + CodeMirror --%>
-        <section class="ts-source">
-          <div class="ts-source__tabs">
-            <div class="ts-tab is-active">
-              <.icon name="hero-document" class="size-3" />
-              {if @current_file, do: @current_file.path, else: gettext("editor.no_file")}
+        <section class="ts-source" phx-drop-target={@uploads.dropped.ref}>
+          <.form id="dropped-upload-form" for={%{}} phx-change="validate_dropped" class="hidden">
+            <.live_file_input upload={@uploads.dropped} id="dropped-file-input" />
+          </.form>
+          <div class="ts-source__tabs" id="editor-tabs" phx-hook="LucideIcons">
+            <%= for file <- open_tabs(@file_tree, @open_file_ids) do %>
+              <% {folder, name} = split_path(file.path) %>
+              <% kind = TypsterWeb.FileTree.file_chip_kind(file.path) %>
+              <div
+                class={["ts-tab", @current_file && @current_file.id == file.id && "is-active"]}
+                phx-click="select_file"
+                phx-value-file-id={file.id}
+              >
+                <span :if={file.pinned} class="ts-tab__pin" title={gettext("editor.tree.pinned")}>
+                  <i data-lucide="pin" aria-hidden="true"></i>
+                </span>
+                <span class={["ts-filechip", "ts-filechip--#{kind}"]}>
+                  {TypsterWeb.FileTree.chip_glyph(kind)}
+                </span>
+                <span class="ts-tab__label">
+                  <span :if={folder} class="ts-tab__folder">{folder}/</span>{name}
+                </span>
+                <span
+                  class="ts-tab__close"
+                  phx-click="close_tab"
+                  phx-value-id={file.id}
+                  aria-label={gettext("editor.tab.close")}
+                >
+                  <.icon name="hero-x-mark" class="size-3" />
+                </span>
+              </div>
+            <% end %>
+            <div :if={@open_file_ids == []} class="ts-tab is-active ts-tab--empty">
+              {gettext("editor.no_file")}
             </div>
           </div>
 
@@ -326,7 +530,12 @@
             <%= cond do %>
               <% @preview_error -> %>
                 <span class="ts-pill ts-pill--error">
-                  <span class="ts-pill__dot"></span>{gettext("editor.preview_failed")}
+                  <span class="ts-pill__dot"></span>
+                  <%= if @preview_error_count > 0 do %>
+                    {ngettext("%{count} error", "%{count} errors", @preview_error_count)}
+                  <% else %>
+                    {gettext("editor.preview_failed")}
+                  <% end %>
                 </span>
               <% @preview_compiling -> %>
                 <span class="ts-pill ts-pill--accent">
@@ -385,6 +594,107 @@
           </div>
         </section>
 
+        <%!-- Compile log + problems drawer — spans all panes --%>
+        <div :if={@drawer_open} class="ts-drawer">
+          <div class="ts-drawer__tabs">
+            <button
+              type="button"
+              class={["ts-drawer__tab", @drawer_tab == "log" && "is-active"]}
+              phx-click="set_drawer_tab"
+              phx-value-tab="log"
+            >
+              <.icon name="hero-play" class="size-3" /> {gettext("editor.drawer.log")}
+            </button>
+            <button
+              type="button"
+              class={["ts-drawer__tab", @drawer_tab == "problems" && "is-active"]}
+              phx-click="set_drawer_tab"
+              phx-value-tab="problems"
+            >
+              <.icon name="hero-exclamation-triangle" class="size-3" />
+              {gettext("editor.drawer.problems")}
+              <span :if={@preview_error_count > 0} class="ts-drawer__count">
+                {@preview_error_count}
+              </span>
+            </button>
+            <div class="ts-spacer" />
+            <button
+              :if={@drawer_tab == "problems" and first_error_line(@diagnostics)}
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--sm"
+              phx-click={
+                JS.dispatch("phx:editor-command",
+                  detail: %{cmd: "goto", line: first_error_line(@diagnostics)}
+                )
+              }
+            >
+              {gettext("editor.drawer.jump_first")}
+            </button>
+            <label :if={@drawer_tab == "log"} class="ts-drawer__delay">
+              {gettext("editor.drawer.recompile")}
+              <select id="compile-delay" phx-hook="CompileDelay" phx-update="ignore">
+                <option value="-1">{gettext("editor.drawer.delay_off")}</option>
+                <option value="300">0.3s</option>
+                <option value="700" selected>0.7s</option>
+                <option value="1500">1.5s</option>
+                <option value="3000">3s</option>
+              </select>
+            </label>
+            <button
+              :if={@drawer_tab == "log"}
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--sm"
+              phx-click="clear_log"
+            >
+              {gettext("editor.drawer.clear")}
+            </button>
+            <button
+              type="button"
+              class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
+              phx-click="toggle_drawer"
+              aria-label={gettext("editor.drawer.close")}
+            >
+              <.icon name="hero-chevron-down" class="size-3" />
+            </button>
+          </div>
+
+          <div :if={@drawer_tab == "log"} class="ts-drawer__body ts-log">
+            <div :if={@compile_log == []} class="ts-drawer__empty">
+              {gettext("editor.drawer.log_empty")}
+            </div>
+            <div
+              :for={entry <- @compile_log}
+              class={["ts-log__row", "ts-log__row--#{entry.kind}"]}
+            >
+              <span class="ts-log__time">{entry.at}</span>
+              <span class="ts-log__text">{entry.text}</span>
+            </div>
+          </div>
+
+          <div :if={@drawer_tab == "problems"} class="ts-drawer__body ts-problems">
+            <div :if={@diagnostics == []} class="ts-drawer__empty">
+              {gettext("editor.drawer.no_problems")}
+            </div>
+            <button
+              :for={d <- @diagnostics}
+              type="button"
+              class="ts-problem"
+              phx-click={
+                d.line &&
+                  JS.dispatch("phx:editor-command", detail: %{cmd: "goto", line: d.line})
+              }
+            >
+              <span class={["ts-problem__dot", "ts-problem__dot--#{d.severity}"]}></span>
+              <span class="ts-problem__body">
+                <span :if={d.file} class="ts-problem__loc">
+                  {String.trim_leading(d.file, "/")}<span :if={d.line}>{" : #{d.line} : #{d.col}"}</span>
+                </span>
+                <span class="ts-problem__msg">{d.message}</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
         <%!-- Status bar — spans all panes --%>
         <div class="ts-statusbar">
           <span class="ts-statusbar__item">
@@ -399,7 +709,22 @@
           <span class="ts-statusbar__sep"></span>
           <span class="ts-statusbar__item">LF</span>
           <div class="ts-spacer" />
-          <span class="ts-statusbar__item">{gettext("editor.command_hint")}</span>
+          <button
+            type="button"
+            class={["ts-statusbar__btn", @preview_error_count > 0 && "is-error"]}
+            phx-click="toggle_drawer"
+            aria-label={gettext("editor.drawer.toggle")}
+          >
+            <.icon
+              name={if @preview_error_count > 0, do: "hero-x-circle", else: "hero-check-circle"}
+              class="size-3.5"
+            />
+            <%= if @preview_error_count > 0 do %>
+              {ngettext("%{count} error", "%{count} errors", @preview_error_count)}
+            <% else %>
+              {gettext("editor.drawer.log")}
+            <% end %>
+          </button>
         </div>
       </div>
     </div>
@@ -448,7 +773,11 @@
         >
           <.icon name="hero-play" class="size-4" />
           <span>{gettext("editor.palette.compile")}</span>
-          <span class="ts-kbd">⌘↵</span>
+          <span class="ts-kbd ts-kbd--combo">
+            <span class="ts-mac" aria-hidden="true"><i data-lucide="command"></i></span>
+            <span class="ts-other">Ctrl</span>
+            <i data-lucide="corner-down-left" aria-hidden="true"></i>
+          </span>
         </button>
         <button
           :if={palette_match?(@palette_query, gettext("editor.palette.settings"))}
@@ -512,36 +841,4 @@
       </div>
     </div>
   </div>
-
-  <%= if @show_new_file_dialog do %>
-    <div class="ts-overlay" phx-click="close_file_dialog">
-      <div class="ts-dialog" phx-click="" phx-window-keydown="close_file_dialog" phx-key="Escape">
-        <div class="ts-dialog__header">
-          <h2 class="ts-dialog__title">{gettext("editor.new_file")}</h2>
-        </div>
-        <div class="ts-dialog__body">
-          <.form for={%{}} id="new-file-form" phx-submit="create_file_from_dialog">
-            <label class="ts-field">
-              <span class="ts-field__label">{gettext("editor.file_name")}</span>
-              <input
-                class="ts-input"
-                name="path"
-                autofocus
-                placeholder="main.typ"
-                required
-              />
-            </label>
-            <div class="ts-dialog__footer">
-              <button type="button" phx-click="close_file_dialog" class="ts-btn ts-btn--ghost">
-                {gettext("common.cancel")}
-              </button>
-              <button type="submit" class="ts-btn ts-btn--primary">
-                {gettext("editor.create_file")}
-              </button>
-            </div>
-          </.form>
-        </div>
-      </div>
-    </div>
-  <% end %>
 </Layouts.app>
