@@ -58,7 +58,8 @@ const basicSetup = [
   rectangularSelection(),
   crosshairCursor(),
   highlightActiveLine(),
-  highlightSelectionMatches(),
+  // Don't spray match boxes for 1-char selections (every `i`/`2` lit up).
+  highlightSelectionMatches({ minSelectionLength: 2 }),
   ...searchPanelExtensions,
   keymap.of([
     ...closeBracketsKeymap,
@@ -106,7 +107,10 @@ const lightTheme = EditorView.theme({
   ".cm-content": {
     padding: "16px",
     minHeight: "100%",
-    lineHeight: "1.6"
+    lineHeight: "1.6",
+    // Ligatures (=>, !=, ->) skew CM's per-char coordinate measurement and make
+    // selection rects/cursor drift; disable them in the editor.
+    fontVariantLigatures: "none"
   },
   ".cm-focused": { outline: "none" },
   ".cm-editor": { height: "100%" },
@@ -115,12 +119,22 @@ const lightTheme = EditorView.theme({
   },
   ".cm-gutters": { backgroundColor: "#f4f4f5", color: "#a1a1aa", border: "none" },
   ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
-  ".cm-activeLine": { backgroundColor: "#fafafa" },
-  ".cm-activeLineGutter": { backgroundColor: "#fafafa", color: "#09090b" },
-  ".cm-selectionMatch": { backgroundColor: "rgba(79, 70, 229, 0.2)" },
-  "&.cm-focused .cm-selectionBackground": { backgroundColor: "rgba(79, 70, 229, 0.2)" },
+  // Translucent so the selection layer (rendered behind the content) shows
+  // through on the cursor's line — an opaque fill hid the selection there.
+  ".cm-activeLine": { backgroundColor: "rgba(9, 9, 11, 0.045)" },
+  ".cm-activeLineGutter": { backgroundColor: "#ececee", color: "#09090b" },
+  // Match highlights must NOT share the selection's indigo hue or the two read
+  // as one — a neutral bordered box reads clearly as "other occurrences".
+  ".cm-selectionMatch": {
+    backgroundColor: "rgba(9, 9, 11, 0.06)",
+    outline: "1px solid rgba(9, 9, 11, 0.28)",
+    borderRadius: "2px"
+  },
   ".cm-cursor": { borderLeftColor: "#09090b" },
-  ".cm-selectionBackground": { backgroundColor: "rgba(79, 70, 229, 0.2)" }
+  // Saturated enough to clearly read as "selected" against the activeLine gray.
+  // !important to outrank CM's base `&light.cm-focused > … .cm-selectionBackground`.
+  ".cm-selectionLayer .cm-selectionBackground, &.cm-focused .cm-selectionLayer .cm-selectionBackground":
+    { backgroundColor: "rgba(79, 70, 229, 0.42) !important" }
 })
 
 const darkTheme = EditorView.theme({
@@ -133,7 +147,8 @@ const darkTheme = EditorView.theme({
   ".cm-content": {
     padding: "16px",
     minHeight: "100%",
-    lineHeight: "1.6"
+    lineHeight: "1.6",
+    fontVariantLigatures: "none"
   },
   ".cm-focused": { outline: "none" },
   ".cm-editor": { height: "100%" },
@@ -142,12 +157,16 @@ const darkTheme = EditorView.theme({
   },
   ".cm-gutters": { backgroundColor: "#18181b", color: "#71717a", border: "none" },
   ".cm-lineNumbers .cm-gutterElement": { minWidth: "3ch", padding: "0 8px 0 16px" },
-  ".cm-activeLine": { backgroundColor: "#27272a" },
+  ".cm-activeLine": { backgroundColor: "rgba(250, 250, 250, 0.06)" },
   ".cm-activeLineGutter": { backgroundColor: "#27272a", color: "#fafafa" },
-  ".cm-selectionMatch": { backgroundColor: "rgba(99, 102, 241, 0.2)" },
-  "&.cm-focused .cm-selectionBackground": { backgroundColor: "rgba(99, 102, 241, 0.2)" },
+  ".cm-selectionMatch": {
+    backgroundColor: "rgba(250, 250, 250, 0.10)",
+    outline: "1px solid rgba(250, 250, 250, 0.35)",
+    borderRadius: "2px"
+  },
   ".cm-cursor": { borderLeftColor: "#fafafa" },
-  ".cm-selectionBackground": { backgroundColor: "rgba(99, 102, 241, 0.2)" }
+  ".cm-selectionLayer .cm-selectionBackground, &.cm-focused .cm-selectionLayer .cm-selectionBackground":
+    { backgroundColor: "rgba(99, 102, 241, 0.46) !important" }
 })
 
 function getThemeExtension() {
