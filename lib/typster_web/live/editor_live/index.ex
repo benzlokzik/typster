@@ -423,6 +423,19 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   @impl true
+  def handle_event("move_file", %{"id" => file_id, "dir" => dir}, socket) do
+    scope = socket.assigns.current_scope
+    file = Files.get_file!(scope, file_id)
+    new_path = moved_path(file.path, dir)
+
+    if new_path == file.path do
+      {:noreply, socket}
+    else
+      {:noreply, do_move(socket, scope, file, new_path)}
+    end
+  end
+
+  @impl true
   def handle_event("delete_file", %{"id" => file_id}, socket) do
     scope = socket.assigns.current_scope
     file = Files.get_file!(scope, file_id)
@@ -715,6 +728,35 @@ defmodule TypsterWeb.EditorLive.Index do
       "." -> ""
       dir -> dir
     end
+  end
+
+  # Destination path for a file dropped onto `dir` ("" / root = project root).
+  defp moved_path(path, dir) do
+    base = Path.basename(path)
+    if dir in [nil, "", "."], do: base, else: dir <> "/" <> base
+  end
+
+  defp do_move(socket, scope, file, new_path) do
+    case Files.update_file(scope, file, %{path: new_path}) do
+      {:ok, moved} -> apply_moved(socket, scope, moved)
+      {:error, _changeset} -> put_flash(socket, :error, gettext("editor.flash.move_conflict"))
+    end
+  end
+
+  # Refresh the tree (and the active file struct, whose path just changed).
+  defp apply_moved(socket, scope, moved) do
+    file_tree = Files.get_file_tree(scope, socket.assigns.project.id)
+    current = socket.assigns.current_file
+
+    socket =
+      socket
+      |> assign(:file_tree, file_tree)
+      |> assign(:project_sources, project_sources(file_tree))
+      |> put_flash(:info, gettext("editor.flash.file_moved"))
+
+    if current && current.id == moved.id,
+      do: assign(socket, :current_file, moved),
+      else: socket
   end
 
   # Open the inline draft targeting the active folder (shown as a static prefix,

@@ -158,7 +158,7 @@
               {gettext("editor.no_files")}
             </div>
           <% else %>
-            <ul class="ts-tree">
+            <ul class="ts-tree" id="file-tree-main" phx-hook="FileTreeDnD">
               <li :if={@creating?} class="ts-tree__draft" id="new-file-draft">
                 <.form
                   for={%{}}
@@ -236,6 +236,7 @@
                 nodes={TypsterWeb.FileTree.file_nodes(@file_tree, @file_view_mode)}
                 collapsed={@collapsed_dirs}
                 current_id={@current_file && @current_file.id}
+                dnd={true}
               />
             </ul>
           <% end %>

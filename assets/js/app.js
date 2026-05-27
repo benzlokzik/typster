@@ -50,7 +50,8 @@ const liveSocket = new LiveSocket("/live", Socket, {
     Palette: Hooks.Palette,
     SlashFocus: Hooks.SlashFocus,
     LucideIcons: Hooks.LucideIcons,
-    CompileDelay: Hooks.CompileDelay
+    CompileDelay: Hooks.CompileDelay,
+    FileTreeDnD: Hooks.FileTreeDnD
   },
 })
 

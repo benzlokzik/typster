@@ -133,7 +133,7 @@ msgstr ""
 msgid "confirmation.welcome"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:267
+#: lib/typster_web/live/editor_live/index.html.heex:268
 #, elixir-autogen, elixir-format
 msgid "editor.assets"
 msgstr ""
@@ -143,8 +143,8 @@ msgstr ""
 msgid "editor.compile"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:575
 #: lib/typster_web/live/editor_live/index.html.heex:576
+#: lib/typster_web/live/editor_live/index.html.heex:577
 #, elixir-autogen, elixir-format
 msgid "editor.download"
 msgstr ""
@@ -155,12 +155,12 @@ msgstr ""
 msgid "editor.files"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:513
+#: lib/typster_web/live/editor_live/index.ex:546
 #, elixir-autogen, elixir-format
 msgid "editor.flash.asset_upload_failed"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:510
+#: lib/typster_web/live/editor_live/index.ex:543
 #, elixir-autogen, elixir-format
 msgid "editor.flash.asset_uploaded"
 msgstr ""
@@ -170,14 +170,14 @@ msgstr ""
 msgid "editor.flash.binary_asset"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:544
+#: lib/typster_web/live/editor_live/index.ex:577
 #, elixir-autogen, elixir-format
 msgid "editor.flash.create_failed"
 msgstr ""
 
 #: lib/typster_web/live/editor_live/index.ex:384
 #: lib/typster_web/live/editor_live/index.ex:408
-#: lib/typster_web/live/editor_live/index.ex:686
+#: lib/typster_web/live/editor_live/index.ex:720
 #, elixir-autogen, elixir-format
 msgid "editor.flash.unsupported_file"
 msgstr ""
@@ -187,7 +187,7 @@ msgstr ""
 msgid "editor.new_file"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:393
+#: lib/typster_web/live/editor_live/index.html.heex:394
 #, elixir-autogen, elixir-format
 msgid "editor.no_file"
 msgstr ""
@@ -197,33 +197,33 @@ msgstr ""
 msgid "editor.no_files"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:528
+#: lib/typster_web/live/editor_live/index.html.heex:529
 #, elixir-autogen, elixir-format
 msgid "editor.preview"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:591
+#: lib/typster_web/live/editor_live/index.html.heex:592
 #, elixir-autogen, elixir-format
 msgid "editor.preview_placeholder"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:621
+#: lib/typster_web/live/editor_live/index.ex:654
 #, elixir-autogen, elixir-format
 msgid "editor.status.error"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:619
+#: lib/typster_web/live/editor_live/index.ex:652
 #, elixir-autogen, elixir-format
 msgid "editor.status.saved"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:620
+#: lib/typster_web/live/editor_live/index.ex:653
 #, elixir-autogen, elixir-format
 msgid "editor.status.saving"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:272
-#: lib/typster_web/live/editor_live/index.html.heex:301
+#: lib/typster_web/live/editor_live/index.html.heex:273
+#: lib/typster_web/live/editor_live/index.html.heex:302
 #, elixir-autogen, elixir-format
 msgid "editor.upload_asset"
 msgstr ""
@@ -511,12 +511,12 @@ msgstr ""
 msgid "settings.title"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:545
+#: lib/typster_web/live/editor_live/index.html.heex:546
 #, elixir-autogen, elixir-format
 msgid "editor.compiled"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:541
+#: lib/typster_web/live/editor_live/index.html.heex:542
 #, elixir-autogen, elixir-format
 msgid "editor.compiling"
 msgstr ""
@@ -527,118 +527,118 @@ msgstr ""
 msgid "editor.find_in_project"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:402
 #: lib/typster_web/live/editor_live/index.html.heex:403
+#: lib/typster_web/live/editor_live/index.html.heex:404
 #, elixir-autogen, elixir-format
 msgid "editor.format.bold"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:421
 #: lib/typster_web/live/editor_live/index.html.heex:422
+#: lib/typster_web/live/editor_live/index.html.heex:423
 #, elixir-autogen, elixir-format
 msgid "editor.format.heading"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:468
 #: lib/typster_web/live/editor_live/index.html.heex:469
+#: lib/typster_web/live/editor_live/index.html.heex:470
 #, elixir-autogen, elixir-format
 msgid "editor.format.image"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:411
 #: lib/typster_web/live/editor_live/index.html.heex:412
+#: lib/typster_web/live/editor_live/index.html.heex:413
 #, elixir-autogen, elixir-format
 msgid "editor.format.italic"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:449
 #: lib/typster_web/live/editor_live/index.html.heex:450
+#: lib/typster_web/live/editor_live/index.html.heex:451
 #, elixir-autogen, elixir-format
 msgid "editor.format.link"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:430
 #: lib/typster_web/live/editor_live/index.html.heex:431
+#: lib/typster_web/live/editor_live/index.html.heex:432
 #, elixir-autogen, elixir-format
 msgid "editor.format.list"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:440
 #: lib/typster_web/live/editor_live/index.html.heex:441
+#: lib/typster_web/live/editor_live/index.html.heex:442
 #, elixir-autogen, elixir-format
 msgid "editor.format.math"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:458
 #: lib/typster_web/live/editor_live/index.html.heex:459
+#: lib/typster_web/live/editor_live/index.html.heex:460
 #, elixir-autogen, elixir-format
 msgid "editor.format.table"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:244
+#: lib/typster_web/live/editor_live/index.html.heex:245
 #, elixir-autogen, elixir-format
 msgid "editor.outline"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:251
+#: lib/typster_web/live/editor_live/index.html.heex:252
 #, elixir-autogen, elixir-format
 msgid "editor.outline_empty"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:757
-#: lib/typster_web/live/editor_live/index.html.heex:765
-#: lib/typster_web/live/editor_live/index.html.heex:774
+#: lib/typster_web/live/editor_live/index.html.heex:758
+#: lib/typster_web/live/editor_live/index.html.heex:766
+#: lib/typster_web/live/editor_live/index.html.heex:775
 #, elixir-autogen, elixir-format
 msgid "editor.palette.compile"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:809
-#: lib/typster_web/live/editor_live/index.html.heex:817
-#: lib/typster_web/live/editor_live/index.html.heex:826
+#: lib/typster_web/live/editor_live/index.html.heex:810
+#: lib/typster_web/live/editor_live/index.html.heex:818
+#: lib/typster_web/live/editor_live/index.html.heex:827
 #, elixir-autogen, elixir-format
 msgid "editor.palette.equation"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:792
+#: lib/typster_web/live/editor_live/index.html.heex:793
 #, elixir-autogen, elixir-format
 msgid "editor.palette.files"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:814
+#: lib/typster_web/live/editor_live/index.html.heex:815
 #, elixir-autogen, elixir-format
 msgid "editor.palette.insert"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:749
+#: lib/typster_web/live/editor_live/index.html.heex:750
 #, elixir-autogen, elixir-format
 msgid "editor.palette.placeholder"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:758
-#: lib/typster_web/live/editor_live/index.html.heex:782
-#: lib/typster_web/live/editor_live/index.html.heex:788
+#: lib/typster_web/live/editor_live/index.html.heex:759
+#: lib/typster_web/live/editor_live/index.html.heex:783
+#: lib/typster_web/live/editor_live/index.html.heex:789
 #, elixir-autogen, elixir-format
 msgid "editor.palette.settings"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:762
+#: lib/typster_web/live/editor_live/index.html.heex:763
 #, elixir-autogen, elixir-format
 msgid "editor.palette.suggested"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:810
-#: lib/typster_web/live/editor_live/index.html.heex:829
-#: lib/typster_web/live/editor_live/index.html.heex:838
+#: lib/typster_web/live/editor_live/index.html.heex:811
+#: lib/typster_web/live/editor_live/index.html.heex:830
+#: lib/typster_web/live/editor_live/index.html.heex:839
 #, elixir-autogen, elixir-format
 msgid "editor.palette.table"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:536
+#: lib/typster_web/live/editor_live/index.html.heex:537
 #, elixir-autogen, elixir-format
 msgid "editor.preview_failed"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:567
+#: lib/typster_web/live/editor_live/index.html.heex:568
 #, elixir-autogen, elixir-format
 msgid "editor.refresh"
 msgstr ""
@@ -653,17 +653,17 @@ msgstr ""
 msgid "editor.share_soon"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:550
+#: lib/typster_web/live/editor_live/index.html.heex:551
 #, elixir-autogen, elixir-format
 msgid "editor.status_ready"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:559
+#: lib/typster_web/live/editor_live/index.html.heex:560
 #, elixir-autogen, elixir-format
 msgid "editor.zoom_in"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:555
+#: lib/typster_web/live/editor_live/index.html.heex:556
 #, elixir-autogen, elixir-format
 msgid "editor.zoom_out"
 msgstr ""
@@ -823,38 +823,38 @@ msgstr ""
 msgid "auth.oauth.soon"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:511
+#: lib/typster_web/live/editor_live/index.html.heex:512
 #, elixir-autogen, elixir-format
 msgid "editor.empty.new_file"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:519
+#: lib/typster_web/live/editor_live/index.html.heex:520
 #, elixir-autogen, elixir-format
 msgid "editor.empty.open_template"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:508
+#: lib/typster_web/live/editor_live/index.html.heex:509
 #, elixir-autogen, elixir-format
 msgid "editor.empty.sub"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:517
+#: lib/typster_web/live/editor_live/index.html.heex:518
 #, elixir-autogen, elixir-format
 msgid "editor.empty.template_soon"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:506
+#: lib/typster_web/live/editor_live/index.html.heex:507
 #, elixir-autogen, elixir-format
 msgid "editor.empty.title_accent"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:505
+#: lib/typster_web/live/editor_live/index.html.heex:506
 #, elixir-autogen, elixir-format
 msgid "editor.empty.title_lead"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:478
 #: lib/typster_web/live/editor_live/index.html.heex:479
+#: lib/typster_web/live/editor_live/index.html.heex:480
 #, elixir-autogen, elixir-format
 msgid "editor.find"
 msgstr ""
@@ -2035,7 +2035,7 @@ msgstr ""
 
 #: lib/typster_web/live/editor_live/index.ex:349
 #: lib/typster_web/live/editor_live/index.ex:395
-#: lib/typster_web/live/editor_live/index.ex:543
+#: lib/typster_web/live/editor_live/index.ex:576
 #, elixir-autogen, elixir-format
 msgid "editor.flash.file_exists"
 msgstr ""
@@ -2045,12 +2045,12 @@ msgstr ""
 msgid "editor.command_open"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:480
+#: lib/typster_web/live/editor_live/index.ex:513
 #, elixir-autogen, elixir-format
 msgid "editor.flash.asset_deleted"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:449
+#: lib/typster_web/live/editor_live/index.ex:482
 #, elixir-autogen, elixir-format
 msgid "editor.flash.file_deleted"
 msgstr ""
@@ -2060,35 +2060,35 @@ msgstr ""
 msgid "editor.pinned"
 msgstr ""
 
-#: lib/typster_web/file_tree.ex:218
-#: lib/typster_web/live/editor_live/index.html.heex:334
+#: lib/typster_web/file_tree.ex:224
 #: lib/typster_web/live/editor_live/index.html.heex:335
+#: lib/typster_web/live/editor_live/index.html.heex:336
 #, elixir-autogen, elixir-format
 msgid "editor.tree.delete"
 msgstr ""
 
-#: lib/typster_web/file_tree.ex:217
+#: lib/typster_web/file_tree.ex:223
 #, elixir-autogen, elixir-format
 msgid "editor.tree.delete_confirm"
 msgstr ""
 
-#: lib/typster_web/file_tree.ex:202
+#: lib/typster_web/file_tree.ex:208
 #, elixir-autogen, elixir-format
 msgid "editor.tree.pin"
 msgstr ""
 
-#: lib/typster_web/file_tree.ex:188
-#: lib/typster_web/live/editor_live/index.html.heex:373
+#: lib/typster_web/file_tree.ex:194
+#: lib/typster_web/live/editor_live/index.html.heex:374
 #, elixir-autogen, elixir-format
 msgid "editor.tree.pinned"
 msgstr ""
 
-#: lib/typster_web/file_tree.ex:201
+#: lib/typster_web/file_tree.ex:207
 #, elixir-autogen, elixir-format
 msgid "editor.tree.unpin"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:246
+#: lib/typster_web/live/editor_live/index.html.heex:247
 #, elixir-autogen, elixir-format
 msgid "%{count} section"
 msgid_plural "%{count} sections"
@@ -2110,110 +2110,120 @@ msgstr ""
 msgid "editor.breadcrumb"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:386
+#: lib/typster_web/live/editor_live/index.html.heex:387
 #, elixir-autogen, elixir-format
 msgid "editor.tab.close"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:636
+#: lib/typster_web/live/editor_live/index.ex:670
 #, elixir-autogen, elixir-format
 msgid "editor.flash.template_saved"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:307
+#: lib/typster_web/live/editor_live/index.html.heex:308
 #, elixir-autogen, elixir-format
 msgid "editor.templates"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:333
+#: lib/typster_web/live/editor_live/index.html.heex:334
 #, elixir-autogen, elixir-format
 msgid "editor.tpl.delete_confirm"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:353
+#: lib/typster_web/live/editor_live/index.html.heex:354
 #, elixir-autogen, elixir-format
 msgid "editor.tpl.upload"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:323
 #: lib/typster_web/live/editor_live/index.html.heex:324
+#: lib/typster_web/live/editor_live/index.html.heex:325
 #, elixir-autogen, elixir-format
 msgid "editor.tpl.use"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:687
+#: lib/typster_web/live/editor_live/index.ex:721
 #, elixir-autogen, elixir-format
 msgid "editor.flash.dropped_added"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.ex:789
-#: lib/typster_web/live/editor_live/index.html.heex:534
-#: lib/typster_web/live/editor_live/index.html.heex:722
+#: lib/typster_web/live/editor_live/index.ex:846
+#: lib/typster_web/live/editor_live/index.html.heex:535
+#: lib/typster_web/live/editor_live/index.html.heex:723
 #, elixir-autogen, elixir-format
 msgid "%{count} error"
 msgid_plural "%{count} errors"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/typster_web/live/editor_live/index.ex:791
+#: lib/typster_web/live/editor_live/index.ex:848
 #, elixir-autogen, elixir-format
 msgid "%{count} warning"
 msgid_plural "%{count} warnings"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/typster_web/live/editor_live/index.ex:795
+#: lib/typster_web/live/editor_live/index.ex:852
 #, elixir-autogen, elixir-format
 msgid "editor.compile_failed"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:648
+#: lib/typster_web/live/editor_live/index.html.heex:649
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.clear"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:654
+#: lib/typster_web/live/editor_live/index.html.heex:655
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.close"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:630
+#: lib/typster_web/live/editor_live/index.html.heex:631
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.jump_first"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:605
-#: lib/typster_web/live/editor_live/index.html.heex:724
+#: lib/typster_web/live/editor_live/index.html.heex:606
+#: lib/typster_web/live/editor_live/index.html.heex:725
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.log"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:662
+#: lib/typster_web/live/editor_live/index.html.heex:663
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.log_empty"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:675
+#: lib/typster_web/live/editor_live/index.html.heex:676
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.no_problems"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:614
+#: lib/typster_web/live/editor_live/index.html.heex:615
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.problems"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:715
+#: lib/typster_web/live/editor_live/index.html.heex:716
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.toggle"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:635
+#: lib/typster_web/live/editor_live/index.html.heex:636
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.delay_off"
 msgstr ""
 
-#: lib/typster_web/live/editor_live/index.html.heex:633
+#: lib/typster_web/live/editor_live/index.html.heex:634
 #, elixir-autogen, elixir-format
 msgid "editor.drawer.recompile"
+msgstr ""
+
+#: lib/typster_web/live/editor_live/index.ex:443
+#, elixir-autogen, elixir-format
+msgid "editor.flash.file_moved"
+msgstr ""
+
+#: lib/typster_web/live/editor_live/index.ex:453
+#, elixir-autogen, elixir-format
+msgid "editor.flash.move_conflict"
 msgstr ""

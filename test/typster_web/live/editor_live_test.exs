@@ -320,6 +320,50 @@ defmodule TypsterWeb.EditorLiveTest do
     assert has_element?(view, ".ts-filechip--bib")
   end
 
+  test "file rows are draggable and folder rows are drop targets",
+       %{conn: conn, user: user, project: project} do
+    file = file_fixture(project, user, %{path: "chapters/intro.typ"})
+    view = open_editor(conn, project)
+
+    assert has_element?(view, "li[draggable='true'][data-dnd-file='#{file.id}']")
+    assert has_element?(view, "li[data-dnd-dir='chapters']")
+  end
+
+  test "dragging a file onto a folder moves it under that folder",
+       %{conn: conn, user: user, project: project} do
+    file = file_fixture(project, user, %{path: "main.typ"})
+    file_fixture(project, user, %{path: "chapters/intro.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "move_file", %{"id" => file.id, "dir" => "chapters"})
+
+    assert path_exists?(user, project, "chapters/main.typ")
+    refute path_exists?(user, project, "main.typ")
+  end
+
+  test "dropping a nested file onto the empty tree moves it to the project root",
+       %{conn: conn, user: user, project: project} do
+    file = file_fixture(project, user, %{path: "chapters/intro.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "move_file", %{"id" => file.id, "dir" => ""})
+
+    assert path_exists?(user, project, "intro.typ")
+    refute path_exists?(user, project, "chapters/intro.typ")
+  end
+
+  test "moving onto a folder that already holds the same name is rejected",
+       %{conn: conn, user: user, project: project} do
+    file = file_fixture(project, user, %{path: "main.typ"})
+    file_fixture(project, user, %{path: "chapters/main.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "move_file", %{"id" => file.id, "dir" => "chapters"})
+
+    assert path_exists?(user, project, "main.typ")
+    assert path_exists?(user, project, "chapters/main.typ")
+  end
+
   defp path_exists?(user, project, path) do
     scope = Typster.Accounts.Scope.for_user(user)
     Enum.any?(Typster.Files.get_file_tree(scope, project.id), &(&1.path == path))

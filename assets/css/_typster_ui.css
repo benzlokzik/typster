@@ -206,6 +206,19 @@
 .ts-tree__count { margin-left: auto; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); background: var(--bd2); padding: 1px 6px; border-radius: 9999px; }
 .ts-tree__smart { margin-left: 4px; color: var(--fg4); font: 11px 'JetBrains Mono', ui-monospace, monospace; flex-shrink: 0; }
 
+/* ── Drag & drop: move a file onto a folder (or empty tree = root) ─────────── */
+/* Rows are selectable-looking but must not text-select while dragging. */
+.ts-tree__item { user-select: none; }
+.ts-tree__item[draggable="true"] { cursor: grab; }
+.ts-tree__item[draggable="true"]:active { cursor: grabbing; }
+.ts-tree__item.is-dnd-dragging { opacity: .45; }
+.ts-tree__dir.is-dnd-over {
+  background: var(--pri-50);
+  box-shadow: inset 0 0 0 1.5px var(--pri);
+  border-radius: var(--r-sm);
+  color: var(--pri-h);
+}
+
 /* ── Pin indicator + hover row actions (pin / delete) ─────────────────────── */
 .ts-side__head--sub { padding-top: 4px; }
 .ts-tree__pin-ind { display: inline-flex; align-items: center; flex-shrink: 0; color: var(--pri); margin-left: 4px; }

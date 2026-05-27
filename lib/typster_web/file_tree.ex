@@ -130,6 +130,7 @@ defmodule TypsterWeb.FileTree do
   attr :collapsed, :any, required: true
   attr :current_id, :any, default: nil
   attr :id_prefix, :string, default: ""
+  attr :dnd, :boolean, default: false
 
   @doc "Recursively render tree rows (siblings share one `<ul>`, indented by depth)."
   def tree_rows(assigns) do
@@ -141,6 +142,7 @@ defmodule TypsterWeb.FileTree do
           style={"padding-left: #{6 + @depth * 14}px"}
           phx-click="toggle_dir"
           phx-value-path={node.path}
+          data-dnd-dir={if @dnd, do: node.path}
         >
           <.icon
             name={
@@ -164,12 +166,16 @@ defmodule TypsterWeb.FileTree do
           collapsed={@collapsed}
           current_id={@current_id}
           id_prefix={@id_prefix}
+          dnd={@dnd}
         />
       <% else %>
+        <% can_drag = @dnd and not node.asset? and node.editable %>
         <li
           id={leaf_dom_id(node, @id_prefix)}
           phx-click={if not node.asset? and node.editable, do: "select_file"}
           phx-value-file-id={node.id}
+          draggable={can_drag && "true"}
+          data-dnd-file={if can_drag, do: node.id}
           class={[
             "ts-tree__item",
             (node.asset? or not node.editable) && "is-disabled",

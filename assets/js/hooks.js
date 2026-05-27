@@ -389,3 +389,51 @@ export const CompileDelay = {
     })
   }
 }
+
+// Drag a file row onto a folder row (or the empty tree area = project root) to
+// move it. Listeners are delegated on the <ul>, so they survive LiveView
+// re-renders without managing any child DOM (no phx-update="ignore" needed).
+// Internal moves are tracked via this.dragId; external file drags (which have
+// no dragId) are ignored so the asset-upload drop target keeps working.
+export const FileTreeDnD = {
+  mounted() {
+    this.dragId = null
+    const root = this.el
+
+    const clearOver = () =>
+      root.querySelectorAll(".is-dnd-over").forEach((n) => n.classList.remove("is-dnd-over"))
+
+    root.addEventListener("dragstart", (e) => {
+      const li = e.target.closest("[data-dnd-file]")
+      if (!li) return
+      this.dragId = li.dataset.dndFile
+      e.dataTransfer.effectAllowed = "move"
+      e.dataTransfer.setData("text/plain", this.dragId)
+      li.classList.add("is-dnd-dragging")
+    })
+
+    root.addEventListener("dragend", () => {
+      root.querySelectorAll(".is-dnd-dragging").forEach((n) => n.classList.remove("is-dnd-dragging"))
+      clearOver()
+      this.dragId = null
+    })
+
+    root.addEventListener("dragover", (e) => {
+      if (!this.dragId) return // not our drag (e.g. a file from the OS)
+      e.preventDefault()
+      e.dataTransfer.dropEffect = "move"
+      clearOver()
+      const dir = e.target.closest("[data-dnd-dir]")
+      if (dir) dir.classList.add("is-dnd-over")
+    })
+
+    root.addEventListener("drop", (e) => {
+      if (!this.dragId) return
+      e.preventDefault()
+      const dir = e.target.closest("[data-dnd-dir]")
+      this.pushEvent("move_file", { id: this.dragId, dir: dir ? dir.dataset.dndDir : "" })
+      clearOver()
+      this.dragId = null
+    })
+  }
+}
