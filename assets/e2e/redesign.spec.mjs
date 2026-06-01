@@ -119,17 +119,24 @@ test.describe('Product UI redesign', () => {
     await expect(cm).toContainText('*')
   })
 
-  test('Typst autocomplete suggests functions after a # prefix', async ({ page }) => {
+  test('autocomplete completes a function to #name() with the caret inside', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'Autocomplete E2E')
     await addMainFile(page)
 
     const cm = page.locator('#editor-container .cm-content')
     await cm.click()
+    await page.keyboard.press('Control+End')
+    await page.keyboard.press('Enter')
     await page.keyboard.type('#figu')
 
     const pop = page.locator('.cm-tooltip-autocomplete')
     await expect(pop).toBeVisible({ timeout: 5_000 })
     await expect(pop.locator('.cm-completionLabel').first()).toContainText('figure')
+
+    // Accepting inserts "#figure()" with the caret between the parens.
+    await pop.locator('li').filter({ hasText: 'figure' }).first().click()
+    await page.keyboard.type('image')
+    await expect(cm).toContainText('#figure(image)')
   })
 
   test('selecting text shows the quick-action bubble and Bold wraps it', async ({ page }) => {

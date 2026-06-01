@@ -8,8 +8,10 @@
 //   - `type`   drives the gutter icon: function | keyword | constant | type | variable
 //   - `detail` is the dimmed signature shown to the right (this is the signature help)
 //   - `info`   is a one-sentence description for the docs tooltip
-//   - functions get an `apply` that inserts an opening paren, so the cursor lands
-//     inside the call; everything else inserts its bare label (no snippets).
+//   - functions / structural keywords expand to a snippet (with the `#` marker
+//     and a `(${})` / scaffold), so accepting one drops the caret into place.
+
+import { snippetCompletion } from "@codemirror/autocomplete"
 
 // ── Markup & layout functions ───────────────────────────────────────────────
 // `sig` becomes `detail`; for functions we also synthesize `apply: "<name>("`.
@@ -174,15 +176,46 @@ const MATH = [
   ["sect", "∩", "Set intersection."]
 ]
 
-function fnOption([label, sig, info]) {
-  return {
-    label,
+// Functions complete to "#name()" with the caret inside the parens. The "#" is
+// part of the snippet; the source anchors `from` at the token start, so the
+// marker is added when missing and never doubled when the user already typed it.
+function fnOption([name, sig, info]) {
+  return snippetCompletion("#" + name + "(${})", {
+    label: "#" + name,
     type: "function",
     detail: sig,
-    info,
-    // Insert the opening paren so the caret lands inside the argument list.
-    apply: `${label}(`
+    info
+  })
+}
+
+// Structural keywords expand to a scaffold with the symbols they require.
+const KEYWORD_SNIPPETS = {
+  set: "#set ${}",
+  show: "#show ${}",
+  let: "#let ${name} = ${value}",
+  import: '#import "${module}"',
+  include: '#include "${file}"',
+  if: "#if ${condition} [${}]",
+  else: "else [${}]",
+  for: "#for ${item} in ${collection} [${}]",
+  while: "#while ${condition} [${}]",
+  return: "#return ${}"
+}
+
+function kwOption([name, sig, info]) {
+  const template = KEYWORD_SNIPPETS[name]
+
+  if (template) {
+    return snippetCompletion(template, {
+      label: template[0] === "#" ? "#" + name : name,
+      type: "keyword",
+      detail: sig,
+      info
+    })
   }
+
+  // Sub-keywords (in, as, break, continue) just insert their bare label.
+  return { label: name, type: "keyword", detail: sig, info }
 }
 
 function plainOption(type) {
@@ -193,28 +226,28 @@ function plainOption(type) {
 export const TYPST_COMPLETIONS = [
   ...FUNCTIONS.map(fnOption),
   ...SPACING.map(fnOption),
-  ...KEYWORDS.map(plainOption("keyword")),
+  ...KEYWORDS.map(kwOption),
   ...CONSTANTS.map(plainOption("constant")),
   ...TYPES.map(plainOption("type")),
   ...MATH.map(plainOption("variable"))
 ]
 
-// A valid CM6 `CompletionSource`. Returns null when there is nothing to
-// complete (empty token and not explicitly triggered), otherwise a result
-// anchored at the start of the current word token.
+// A valid CM6 `CompletionSource`. Anchors `from` at the token start (including
+// any leading #/@) so snippet labels like "#figure" match and replace cleanly,
+// adding the marker when it is missing. Auto-opens only after a #/@ marker —
+// Typst's escape into code — so it never pops while writing prose; everything
+// is still reachable on an explicit invoke (Ctrl-Space).
 export function typstCompletionSource(context) {
-  // Match an optional #/@ call-or-ref marker plus the identifier being typed.
   const word = context.matchBefore(/[#@]?[\w.-]*/)
-  if (!word || (word.from === word.to && !context.explicit)) return null
+  if (!word) return null
 
-  // Anchor completion AFTER the marker so the typed text ("figu") filters
-  // against bare labels ("figure") and apply leaves the marker in place
-  // (e.g. "#figu" → "#figure(").
-  const hasMarker = word.text[0] === "#" || word.text[0] === "@"
+  const marked = word.text[0] === "#" || word.text[0] === "@"
+  if (!marked && !context.explicit) return null
+  if (word.from === word.to && !context.explicit) return null
 
   return {
-    from: hasMarker ? word.from + 1 : word.from,
+    from: word.from,
     options: TYPST_COMPLETIONS,
-    validFor: /^[\w.-]*$/
+    validFor: /^[#@]?[\w.-]*$/
   }
 }
