@@ -18,15 +18,19 @@ defmodule Typster.Accounts.Scope do
 
   alias Typster.Accounts.User
 
-  defstruct user: nil
+  @type t :: %__MODULE__{user: User.t() | nil, plan: :free | :pro}
+
+  defstruct user: nil, plan: :free
 
   @doc """
   Creates a scope for the given user.
 
-  Returns nil if no user is given.
+  The scope carries the user's nominal billing `plan` (`:free` | `:pro`) so
+  callers and `Typster.Features` can reason about entitlements without
+  re-loading the user. Returns nil if no user is given.
   """
   def for_user(%User{} = user) do
-    %__MODULE__{user: user}
+    %__MODULE__{user: user, plan: user.plan || :free}
   end
 
   def for_user(nil), do: nil
