@@ -86,16 +86,16 @@ defmodule Typster.MixProject do
   end
 
   # Closed-source "Pro" modules live in the private `typster-pro` repo, mounted
-  # here as a git submodule at `pro/` and consumed as a path dependency — but
-  # ONLY when present. A plain public clone (or CI without access) leaves `pro/`
-  # empty, so the dependency is never declared and the open-core build compiles
-  # cleanly under `--warning-as-errors`. Path deps never enter `mix.lock`, so
-  # `deps.unlock --unused` in `precommit` has nothing to strip. The host
-  # dispatches to `Typster.Pro.*` at runtime via `Code.ensure_loaded?/1`
+  # here as a git submodule at `vendor/pro/` and consumed as a path dependency —
+  # but ONLY when present. A plain public clone (or CI without access) leaves
+  # `vendor/pro/` empty, so the dependency is never declared and the open-core
+  # build compiles cleanly under `--warning-as-errors`. Path deps never enter
+  # `mix.lock`, so `deps.unlock --unused` in `precommit` has nothing to strip.
+  # The host dispatches to `Typster.Pro.*` at runtime via `Code.ensure_loaded?/1`
   # (see `Typster.Features`), never at compile time.
   defp pro_deps do
-    if File.exists?("pro/mix.exs") do
-      [{:typster_pro, path: "pro"}]
+    if File.exists?("vendor/pro/mix.exs") do
+      [{:typster_pro, path: "vendor/pro"}]
     else
       []
     end
