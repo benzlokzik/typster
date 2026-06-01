@@ -26,7 +26,7 @@ defmodule TypsterWeb.SharedProjectLive do
 
       link ->
         files = Sharing.files_for_link(link)
-        entry = entry_file(files)
+        entry = pick_entry(files, params["file"])
 
         {:ok,
          socket
@@ -34,12 +34,25 @@ defmodule TypsterWeb.SharedProjectLive do
          |> assign(:project, link.project)
          |> assign(:scope_kind, link.scope)
          |> assign(:embed?, socket.assigns.live_action == :embed)
+         |> assign(:embed_theme, embed_theme(params["theme"]))
+         |> assign(:show_preview?, params["preview"] != "0")
          |> assign(:entry, entry)
          |> assign(:content, (entry && entry.content) || "")
          |> assign(:language, entry_language(entry))
          |> assign(:project_sources, project_sources(files))
          |> assign(:page_title, link.project.name)}
     end
+  end
+
+  # The embed honors `?theme=light|dark` (anything else inherits the host theme).
+  defp embed_theme(theme) when theme in ~w(light dark), do: theme
+  defp embed_theme(_), do: nil
+
+  # `?file=path` selects which file the embed opens to; otherwise auto-pick.
+  defp pick_entry(files, nil), do: entry_file(files)
+
+  defp pick_entry(files, path) do
+    Enum.find(files, &(&1.path == path)) || entry_file(files)
   end
 
   @impl true
@@ -58,8 +71,16 @@ defmodule TypsterWeb.SharedProjectLive do
 
   def render(assigns) do
     ~H"""
-    <div class={["mk-body", "share-public", @embed? && "share-public--embed"]} data-theme-scope>
-      <div class={["embed-comp", show_source?(@scope_kind) && "embed-comp--split"]}>
+    <div
+      class={["mk-body", "share-public", @embed? && "share-public--embed"]}
+      id={if(@embed?, do: "typster-embed")}
+      data-theme={@embed_theme}
+      data-theme-scope
+    >
+      <div class={[
+        "embed-comp",
+        (show_source?(@scope_kind) and @show_preview?) && "embed-comp--split"
+      ]}>
         <div class="embed-bar">
           <span class="t-glyph ts-serif">T</span>
           <span class="slug truncate">{@project.name}</span>
@@ -85,7 +106,7 @@ defmodule TypsterWeb.SharedProjectLive do
           </div>
         </section>
 
-        <section class="embed-preview">
+        <section :if={@show_preview?} class="embed-preview">
           <div :if={!show_source?(@scope_kind)} class="embed-hidden-src" hidden>
             <div
               id="editor-container"
@@ -119,7 +140,7 @@ defmodule TypsterWeb.SharedProjectLive do
           </span>
           <span class="spacer"></span>
           <.link navigate={~p"/projects/#{@project.id}/edit"} class="embed-foot__cta">
-            {gettext("share.public.open_in_typster")} <span aria-hidden="true">↗</span>
+            {gettext("share.public.open_in_typster")}
           </.link>
         </div>
       </div>

@@ -204,7 +204,7 @@ msgid "editor.preview"
 msgstr "Preview"
 
 #: lib/typster_web/live/editor_live/index.html.heex:732
-#: lib/typster_web/live/shared_project_live.ex:111
+#: lib/typster_web/live/shared_project_live.ex:132
 #, elixir-autogen, elixir-format
 msgid "editor.preview_placeholder"
 msgstr "Preview appears here after Typst does the math"
@@ -2150,7 +2150,7 @@ msgstr "Start a file from this template"
 msgid "editor.flash.dropped_added"
 msgstr "Added to the project."
 
-#: lib/typster_web/live/editor_live/index.ex:1393
+#: lib/typster_web/live/editor_live/index.ex:1308
 #: lib/typster_web/live/editor_live/index.html.heex:675
 #: lib/typster_web/live/editor_live/index.html.heex:883
 #, elixir-autogen, elixir-format
@@ -2159,14 +2159,14 @@ msgid_plural "%{count} errors"
 msgstr[0] "%{count} error"
 msgstr[1] "%{count} errors"
 
-#: lib/typster_web/live/editor_live/index.ex:1395
+#: lib/typster_web/live/editor_live/index.ex:1310
 #, elixir-autogen, elixir-format
 msgid "%{count} warning"
 msgid_plural "%{count} warnings"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/typster_web/live/editor_live/index.ex:1399
+#: lib/typster_web/live/editor_live/index.ex:1314
 #, elixir-autogen, elixir-format
 msgid "editor.compile_failed"
 msgstr "Compile failed"
@@ -2298,12 +2298,12 @@ msgid "common.close"
 msgstr "Close"
 
 #: lib/typster_web/live/editor_live/index.html.heex:1150
-#: lib/typster_web/live/editor_live/index.html.heex:1428
+#: lib/typster_web/live/editor_live/index.html.heex:1441
 #, elixir-autogen, elixir-format
 msgid "common.copy"
 msgstr "Copy"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1469
+#: lib/typster_web/live/editor_live/index.html.heex:1482
 #, elixir-autogen, elixir-format
 msgid "common.done"
 msgstr "Done"
@@ -2353,12 +2353,12 @@ msgstr "Visitors must sign in with a Typster account."
 msgid "share.embed.components"
 msgstr "Components"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1334
+#: lib/typster_web/live/editor_live/index.html.heex:1338
 #, elixir-autogen, elixir-format
 msgid "share.embed.editable"
 msgstr "Visitor can edit"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1326
+#: lib/typster_web/live/editor_live/index.html.heex:1328
 #, elixir-autogen, elixir-format
 msgid "share.embed.file_tree"
 msgstr "File tree"
@@ -2373,27 +2373,27 @@ msgstr "Visitors can read & open your project on any plan. Upgrade to let them e
 msgid "share.embed.free_title"
 msgstr "Embed is free — interactive sandbox is Pro"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1329
+#: lib/typster_web/live/editor_live/index.html.heex:1333
 #, elixir-autogen, elixir-format
 msgid "share.embed.preview"
 msgstr "Compiled preview"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1454
+#: lib/typster_web/live/editor_live/index.html.heex:1467
 #, elixir-autogen, elixir-format
 msgid "share.export.download"
 msgstr "Download PDF"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1460
+#: lib/typster_web/live/editor_live/index.html.heex:1473
 #, elixir-autogen, elixir-format
 msgid "share.export.hint"
 msgstr "Exports the document compiled in your browser."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1438
+#: lib/typster_web/live/editor_live/index.html.heex:1451
 #, elixir-autogen, elixir-format
 msgid "share.export.label"
 msgstr "Last successful compile"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1446
+#: lib/typster_web/live/editor_live/index.html.heex:1459
 #, elixir-autogen, elixir-format
 msgid "share.export.meta"
 msgstr "Includes embedded fonts. Re-export to refresh."
@@ -2408,7 +2408,7 @@ msgstr "Could not send that invite."
 msgid "share.flash.invited"
 msgstr "Invited %{email}"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1466
+#: lib/typster_web/live/editor_live/index.html.heex:1479
 #, elixir-autogen, elixir-format
 msgid "share.learn"
 msgstr "Learn about permissions →"
@@ -2548,7 +2548,7 @@ msgstr "Free"
 msgid "share.plan.pro"
 msgstr "Pro"
 
-#: lib/typster_web/live/shared_project_live.ex:53
+#: lib/typster_web/live/shared_project_live.ex:66
 #, elixir-autogen, elixir-format
 msgid "share.public.home"
 msgstr "Go to Typster"
@@ -2558,18 +2558,17 @@ msgstr "Go to Typster"
 msgid "share.public.invalid"
 msgstr "Invalid link"
 
-#: lib/typster_web/live/shared_project_live.ex:52
+#: lib/typster_web/live/shared_project_live.ex:65
 #, elixir-autogen, elixir-format
 msgid "share.public.invalid_sub"
 msgstr "The share link may have been rotated or revoked."
 
-#: lib/typster_web/live/shared_project_live.ex:51
+#: lib/typster_web/live/shared_project_live.ex:64
 #, elixir-autogen, elixir-format
 msgid "share.public.invalid_title"
 msgstr "This link isn't valid"
 
-#: lib/typster_web/live/editor_live/index.ex:1311
-#: lib/typster_web/live/shared_project_live.ex:122
+#: lib/typster_web/live/shared_project_live.ex:143
 #, elixir-autogen, elixir-format
 msgid "share.public.open_in_typster"
 msgstr "Open in Typster ↗"
@@ -2592,17 +2591,17 @@ msgstr "Owner"
 msgid "share.role.viewer"
 msgstr "Viewer"
 
-#: lib/typster_web/live/shared_project_live.ex:143
+#: lib/typster_web/live/shared_project_live.ex:164
 #, elixir-autogen, elixir-format
 msgid "share.scope.full"
 msgstr "Full access"
 
-#: lib/typster_web/live/shared_project_live.ex:142
+#: lib/typster_web/live/shared_project_live.ex:163
 #, elixir-autogen, elixir-format
 msgid "share.scope.output"
 msgstr "Compiled output"
 
-#: lib/typster_web/live/shared_project_live.ex:144
+#: lib/typster_web/live/shared_project_live.ex:165
 #, elixir-autogen, elixir-format
 msgid "share.scope.read"
 msgstr "Read-only"
@@ -2652,7 +2651,7 @@ msgstr "People"
 msgid "share.title"
 msgstr "Share"
 
-#: lib/typster_web/live/editor_live/index.ex:1186
+#: lib/typster_web/live/editor_live/index.ex:1169
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.cta"
 msgstr "Upgrade"
@@ -2692,88 +2691,63 @@ msgstr "You're in — welcome to the project."
 msgid "share.invite.invalid"
 msgstr "That invite link is invalid or has expired."
 
-#: lib/typster_web/live/editor_live/index.ex:1308
-#: lib/typster_web/live/shared_project_live.ex:118
+#: lib/typster_web/live/shared_project_live.ex:139
 #, elixir-autogen, elixir-format
 msgid "share.public.powered_by"
 msgstr "Powered by"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1353
+#: lib/typster_web/live/editor_live/index.html.heex:1357
 #, elixir-autogen, elixir-format
 msgid "share.embed.cta_always"
 msgstr "Always"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1355
+#: lib/typster_web/live/editor_live/index.html.heex:1359
 #, elixir-autogen, elixir-format
 msgid "share.embed.cta_hidden"
 msgstr "Hidden"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1354
+#: lib/typster_web/live/editor_live/index.html.heex:1358
 #, elixir-autogen, elixir-format
 msgid "share.embed.cta_onedit"
 msgstr "On edit"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1340
+#: lib/typster_web/live/editor_live/index.html.heex:1344
 #, elixir-autogen, elixir-format
 msgid "share.embed.hide_footer"
 msgstr "Hide Typster footer"
 
-#: lib/typster_web/live/editor_live/index.ex:1267
-#, elixir-autogen, elixir-format
-msgid "share.embed.host_example"
-msgstr "yoursite.dev/embedded-report"
-
-#: lib/typster_web/live/editor_live/index.html.heex:1391
+#: lib/typster_web/live/editor_live/index.html.heex:1395
+#: lib/typster_web/live/editor_live/index.html.heex:1405
 #, elixir-autogen, elixir-format
 msgid "share.embed.live_preview"
 msgstr "Live preview"
 
-#: lib/typster_web/live/editor_live/index.ex:1280
-#, elixir-autogen, elixir-format
-msgid "share.embed.readonly"
-msgstr "Read-only"
-
-#: lib/typster_web/live/editor_live/index.ex:1303
-#, elixir-autogen, elixir-format
-msgid "share.embed.sample_body"
-msgstr "This is roughly how your compiled document appears to visitors."
-
-#: lib/typster_web/live/editor_live/index.ex:1302
-#, elixir-autogen, elixir-format
-msgid "share.embed.sample_meta"
-msgstr "Compiled preview"
-
-#: lib/typster_web/live/editor_live/index.ex:1277
-#, elixir-autogen, elixir-format
-msgid "share.embed.sandbox"
-msgstr "Sandbox"
-
-#: lib/typster_web/live/editor_live/index.html.heex:1347
+#: lib/typster_web/live/editor_live/index.html.heex:1351
 #, elixir-autogen, elixir-format
 msgid "share.embed.save_cta"
 msgstr "Save CTA"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1361
+#: lib/typster_web/live/editor_live/index.html.heex:1365
 #, elixir-autogen, elixir-format
 msgid "share.embed.theme"
 msgstr "Theme"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1367
+#: lib/typster_web/live/editor_live/index.html.heex:1371
 #, elixir-autogen, elixir-format
 msgid "share.embed.theme_auto"
 msgstr "Auto"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1369
+#: lib/typster_web/live/editor_live/index.html.heex:1373
 #, elixir-autogen, elixir-format
 msgid "share.embed.theme_dark"
 msgstr "Dark"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1368
+#: lib/typster_web/live/editor_live/index.html.heex:1372
 #, elixir-autogen, elixir-format
 msgid "share.embed.theme_light"
 msgstr "Light"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1375
+#: lib/typster_web/live/editor_live/index.html.heex:1379
 #, elixir-autogen, elixir-format
 msgid "share.embed.width"
 msgstr "Width"

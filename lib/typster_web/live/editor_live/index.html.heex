@@ -1397,13 +1397,16 @@
               class="embed-width-frame"
               style={"max-width: #{if(@embed_cfg.width == "responsive", do: "none", else: @embed_cfg.width <> "px")}"}
             >
-              <.embed_preview
-                cfg={@embed_cfg}
-                project={@project}
-                entry={@current_file}
-                sources={@project_sources}
-                pro={pro?}
-              />
+              <%!-- A real, live iframe of the embed: real highlight, real compiled
+                    PDF and real theme — exactly what visitors will see. --%>
+              <iframe
+                class="embed-live-frame"
+                src={embed_src(@share_link, @current_file, @embed_cfg)}
+                title={gettext("share.embed.live_preview")}
+                loading="lazy"
+                allow="clipboard-write"
+              >
+              </iframe>
             </div>
           </div>
 

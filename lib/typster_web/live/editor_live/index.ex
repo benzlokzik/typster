@@ -1127,24 +1127,6 @@ defmodule TypsterWeb.EditorLive.Index do
     """
   end
 
-  # CSS grid columns for the live-preview comp, honoring the tree/preview toggles.
-  defp embed_preview_cols(cfg) do
-    tree = if cfg.tree, do: "130px ", else: ""
-    prev = if cfg.preview, do: " 1fr", else: ""
-    "grid-template-columns: #{tree}1fr#{prev};"
-  end
-
-  # First `n` source lines of the entry file, for the read-only preview pane.
-  defp embed_preview_lines(%{content: content}, n) when is_binary(content) do
-    content
-    |> String.split("\n")
-    |> Enum.take(n)
-    |> Enum.with_index(1)
-    |> Enum.map(fn {text, i} -> {i, text} end)
-  end
-
-  defp embed_preview_lines(_entry, _n), do: [{1, ""}]
-
   # ── Share modal function components ─────────────────────────────────────────
   attr :scope, :string, required: true
   attr :tone, :string, required: true
@@ -1242,74 +1224,6 @@ defmodule TypsterWeb.EditorLive.Index do
         phx-value-val={o.v}
       >
         {o.label}<span :if={o[:locked]} class="pro-badge">PRO</span>
-      </div>
-    </div>
-    """
-  end
-
-  attr :cfg, :map, required: true
-  attr :project, :map, required: true
-  attr :entry, :map, default: nil
-  attr :sources, :list, default: []
-  attr :pro, :boolean, default: false
-
-  # The "Live preview" — a representative embed rendered inside a fake host page,
-  # driven by the configurator (tree/preview/editable/unbranded/theme/width).
-  defp embed_preview(assigns) do
-    assigns =
-      assign(assigns, :sandbox?, assigns.cfg.editable and assigns.pro)
-      |> assign(:branded?, !(assigns.cfg.unbranded and assigns.pro))
-
-    ~H"""
-    <div class="host-page" data-theme={if(@cfg.theme in ~w(light dark), do: @cfg.theme)}>
-      <div class="host-chrome">
-        <div class="dots"><i></i><i></i><i></i></div>
-        <span class="url">{gettext("share.embed.host_example")}</span>
-      </div>
-
-      <div class="embed-comp" style={embed_preview_cols(@cfg)}>
-        <div class="embed-bar">
-          <span class="t-glyph ts-serif">T</span>
-          <span class="slug">{@project.name}</span>
-          <span :if={@entry} style="color: var(--text-mute)">· {@entry.path}</span>
-          <span class="spacer"></span>
-          <span :if={@sandbox?} class="sandbox-pill">
-            <span class="pulse"></span>{gettext("share.embed.sandbox")}
-          </span>
-          <span :if={!@sandbox?} style="font: 500 10.5px var(--font-sans); color: var(--text-mute)">
-            {gettext("share.embed.readonly")}
-          </span>
-        </div>
-
-        <div :if={@cfg.tree} class="embed-tree">
-          <div class="node dir">▾ {@project.name}</div>
-          <div
-            :for={src <- Enum.take(@sources, 5)}
-            class={["node", "nest", @entry && src.path == @entry.path && "active"]}
-          >
-            {src.path}
-          </div>
-        </div>
-
-        <div class="embed-code">
-          <div :for={{n, text} <- embed_preview_lines(@entry, 11)}>
-            <span class="ln">{n}</span>{text}
-          </div>
-        </div>
-
-        <div :if={@cfg.preview} class="embed-preview-doc">
-          <h1>{@project.name}</h1>
-          <div class="meta">{gettext("share.embed.sample_meta")}</div>
-          <p>{gettext("share.embed.sample_body")}</p>
-        </div>
-
-        <div class="embed-foot">
-          <span :if={@branded?} class="powered">
-            {gettext("share.public.powered_by")} <strong style="color: var(--text)">Typster</strong>
-          </span>
-          <span class="spacer"></span>
-          <span class="btn primary">{gettext("share.public.open_in_typster")} ↗</span>
-        </div>
       </div>
     </div>
     """
