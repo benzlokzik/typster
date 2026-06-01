@@ -473,17 +473,25 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     }
   })
 
+  // Editing aids (lint, v3 assists, autocomplete) are skipped in read-only mode
+  // — e.g. a shared/embedded view: just highlighting on a frozen, uneditable doc.
+  const editingExtensions = options.readonly
+    ? [EditorState.readOnly.of(true), EditorView.editable.of(false)]
+    : [
+        lintGutter(),
+        ...editorV3Extensions,
+        autocompletion(
+          language === "typst"
+            ? { override: [(ctx) => typstCompletionSource(ctx, options.project)] }
+            : {}
+        )
+      ]
+
   const state = EditorState.create({
     doc: initialContent || "",
     extensions: [
       basicSetup,
-      lintGutter(),
-      ...editorV3Extensions,
-      autocompletion(
-        language === "typst"
-          ? { override: [(ctx) => typstCompletionSource(ctx, options.project)] }
-          : {}
-      ),
+      ...editingExtensions,
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
       ...(language === "typst" ? [typstCloseBrackets, ...typst()] : []),
@@ -500,7 +508,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     registerTypstView(editor)
   }
 
-  if (initialContent && language === "typst") {
+  if (initialContent && language === "typst" && !options.readonly) {
     compileTypst(initialContent, options.project || {})
   }
 

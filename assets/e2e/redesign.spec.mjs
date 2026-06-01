@@ -25,6 +25,35 @@ async function addMainFile(page) {
 }
 
 test.describe('Product UI redesign', () => {
+  test('share modal: real link, invite, and a public read-only view', async ({ page }) => {
+    test.setTimeout(120_000)
+    await createProjectAndOpenEditor(page, 'quarterly-report')
+    await addMainFile(page)
+
+    await page.locator('.ts-tb__share').click()
+    const modal = page.locator('.share-shell')
+    await expect(modal).toBeVisible({ timeout: 5000 })
+
+    // A real, copyable link with a token.
+    const url = (await modal.locator('.link-box .path').textContent()).trim()
+    expect(url).toMatch(/\/p\/quarterly-report\?key=.+/)
+
+    // Pro features are gated.
+    await expect(modal.locator('.perm-card.tone-write.gated .pro-badge')).toBeVisible()
+    await expect(modal.locator('.locked-section .lock-shield')).toBeVisible()
+
+    // Invite a collaborator → they appear in the access list.
+    await modal.locator('.share-tabs .tab').filter({ hasText: 'People' }).click()
+    await modal.locator('input[name="invite[email]"]').fill('newperson@studio.io')
+    await modal.locator('button[type="submit"]').filter({ hasText: 'Send invite' }).click()
+    await expect(modal.locator('.people-list')).toContainText('newperson@studio.io')
+
+    // The link opens a public, read-only view that compiles client-side.
+    await page.goto(url)
+    await expect(page.locator('.share-public')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('#preview-container')).toBeVisible()
+  })
+
   test('autocomplete suggests local #let and imported symbols', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'LocalImport E2E')
     await addMainFile(page)

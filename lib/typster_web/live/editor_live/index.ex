@@ -2,10 +2,15 @@ defmodule TypsterWeb.EditorLive.Index do
   use TypsterWeb, :live_view
 
   alias Typster.Assets
+  alias Typster.Features
   alias Typster.Files
   alias Typster.Projects
   alias Typster.Revisions
+  alias Typster.Sharing
   alias Typster.Templates
+
+  # Stable avatar colours for the share People list (hashed from the email).
+  @collab_palette ~w(#6366f1 #8b5cf6 #0ea5e9 #10b981 #f43f5e #f59e0b)
 
   @impl true
   def mount(%{"id" => project_id}, _session, socket) do
@@ -54,6 +59,11 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:collapsed_dirs, MapSet.new())
      |> assign(:show_palette, false)
      |> assign(:palette_query, "")
+     |> assign(:show_share, false)
+     |> assign(:share_tab, "link")
+     |> assign(:share_link, nil)
+     |> assign(:share_collaborators, [])
+     |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
      |> stream(:outline, [])
      |> assign(:outline_count, 0)
      |> assign(:page_title, project.name)
@@ -218,6 +228,88 @@ defmodule TypsterWeb.EditorLive.Index do
   @impl true
   def handle_event("filter_palette", %{"value" => query}, socket) do
     {:noreply, assign(socket, :palette_query, query)}
+  end
+
+  @impl true
+  def handle_event("open_share", _params, socket) do
+    {:noreply, socket |> load_share() |> assign(:show_share, true)}
+  end
+
+  @impl true
+  def handle_event("close_share", _params, socket) do
+    {:noreply, assign(socket, :show_share, false)}
+  end
+
+  @impl true
+  def handle_event("share_tab", %{"tab" => tab}, socket)
+      when tab in ~w(people link embed export) do
+    {:noreply, assign(socket, :share_tab, tab)}
+  end
+
+  @impl true
+  def handle_event("share_scope", %{"scope" => scope}, socket)
+      when scope in ~w(read output full) do
+    {:noreply, update_share_link(socket, %{scope: scope})}
+  end
+
+  def handle_event("share_scope", _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("share_rotate", _params, socket) do
+    scope = socket.assigns.current_scope
+
+    socket =
+      with link when not is_nil(link) <- socket.assigns.share_link,
+           {:ok, rotated} <- Sharing.rotate_link(scope, link) do
+        assign(socket, :share_link, rotated)
+      else
+        _ -> socket
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("share_toggle_download", _params, socket) do
+    case socket.assigns.share_link do
+      nil -> {:noreply, socket}
+      link -> {:noreply, update_share_link(socket, %{allow_download: !link.allow_download})}
+    end
+  end
+
+  @impl true
+  def handle_event("share_invite", %{"invite" => %{"email" => email, "role" => role}}, socket) do
+    scope = socket.assigns.current_scope
+    project = socket.assigns.project
+
+    case Sharing.invite_collaborator(scope, project.id, email, invite_role(role)) do
+      {:ok, _collaborator} ->
+        {:noreply,
+         socket
+         |> assign(:share_collaborators, Sharing.list_collaborators(scope, project.id))
+         |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
+         |> put_flash(:info, gettext("share.flash.invited", email: email))}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, gettext("share.flash.invite_failed"))}
+    end
+  end
+
+  @impl true
+  def handle_event("share_remove_collab", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+    project = socket.assigns.project
+
+    socket =
+      with collab when not is_nil(collab) <-
+             Enum.find(socket.assigns.share_collaborators, &(&1.id == id)),
+           {:ok, _} <- Sharing.remove_collaborator(scope, collab) do
+        assign(socket, :share_collaborators, Sharing.list_collaborators(scope, project.id))
+      else
+        _ -> socket
+      end
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -845,6 +937,143 @@ defmodule TypsterWeb.EditorLive.Index do
 
   defp email_local_parts(email) do
     email |> String.split("@") |> List.first() |> String.split(~r/[._-]/, trim: true)
+  end
+
+  # ── Share modal helpers ─────────────────────────────────────────────────────
+  defp load_share(socket) do
+    scope = socket.assigns.current_scope
+    project = socket.assigns.project
+
+    socket
+    |> assign(:share_link, Sharing.get_or_create_link(scope, project.id))
+    |> assign(:share_collaborators, Sharing.list_collaborators(scope, project.id))
+  end
+
+  defp update_share_link(socket, attrs) do
+    scope = socket.assigns.current_scope
+
+    with link when not is_nil(link) <- socket.assigns.share_link,
+         {:ok, updated} <- Sharing.update_link(scope, link, attrs) do
+      assign(socket, :share_link, updated)
+    else
+      _ -> socket
+    end
+  end
+
+  defp invite_role("owner"), do: :owner
+  defp invite_role("viewer"), do: :viewer
+  defp invite_role(_), do: :editor
+
+  # Full public share URL for the project's link (for display + copy).
+  defp share_url(project, %{token: token}), do: url(~p"/p/#{share_slug(project)}?#{[key: token]}")
+  defp share_url(_project, _link), do: "#"
+
+  defp share_slug(%{name: name}) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
+    |> String.trim("-")
+    |> case do
+      "" -> "project"
+      slug -> slug
+    end
+  end
+
+  # Role label + avatar colour for the People list.
+  defp collab_initials(%{email: email}), do: email |> initials_from(2)
+  defp collab_color(%{email: email}), do: Enum.at(@collab_palette, :erlang.phash2(email, 6))
+
+  defp initials_from(email, take) do
+    email
+    |> String.split("@")
+    |> List.first()
+    |> String.split(~r/[._-]+/, trim: true)
+    |> Enum.map(&String.first/1)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.take(take)
+    |> Enum.map_join("", &String.upcase/1)
+    |> case do
+      "" -> "?"
+      s -> s
+    end
+  end
+
+  defp plan_label(scope) do
+    if Features.pro?(scope), do: gettext("share.plan.pro"), else: gettext("share.plan.free")
+  end
+
+  defp role_label(:owner), do: gettext("share.role.owner")
+  defp role_label(:viewer), do: gettext("share.role.viewer")
+  defp role_label(_), do: gettext("share.role.editor")
+
+  defp collab_status(%{status: :pending}), do: gettext("share.people.invite_sent")
+  defp collab_status(%{role: role}), do: role_label(role)
+
+  defp embed_iframe(%{token: token}) do
+    src = url(~p"/embed/#{token}")
+
+    ~s(<iframe src="#{src}" width="100%" height="540" loading="lazy" allow="clipboard-write"></iframe>)
+  end
+
+  defp embed_iframe(_link), do: ""
+
+  # ── Share modal function components ─────────────────────────────────────────
+  attr :scope, :string, required: true
+  attr :tone, :string, required: true
+  attr :active, :boolean, default: false
+  attr :icon, :string, required: true
+  attr :badge, :string, default: nil
+  attr :title, :string, required: true
+  attr :desc, :string, required: true
+
+  defp perm_card(assigns) do
+    ~H"""
+    <div
+      class={["perm-card", "tone-#{@tone}", @active && "active"]}
+      phx-click="share_scope"
+      phx-value-scope={@scope}
+    >
+      <div class="ic"><.icon name={@icon} class="size-4" /></div>
+      <div class="body">
+        <div class="h">{@title}<span :if={@badge} class="badge">{@badge}</span></div>
+        <div class="d">{@desc}</div>
+      </div>
+      <div class="radio"></div>
+    </div>
+    """
+  end
+
+  attr :title, :string, required: true
+  attr :desc, :string, default: nil
+  attr :compact, :boolean, default: false
+
+  defp upgrade_banner(assigns) do
+    ~H"""
+    <div class={["upgrade-banner", @compact && "compact"]}>
+      <div class="ic"><.icon name="hero-sparkles" class="size-4" /></div>
+      <div class="meta">
+        <div class="h">{@title}</div>
+        <div :if={@desc} class="d">{@desc}</div>
+      </div>
+      <button type="button" class="cta">{gettext("share.upgrade.cta")}</button>
+    </div>
+    """
+  end
+
+  attr :label, :string, required: true
+  attr :sub, :string, default: nil
+  attr :on, :boolean, default: false
+
+  defp toggle_row(assigns) do
+    ~H"""
+    <div class={["toggle-row", @on && "on"]}>
+      <div class="meta">
+        <div class="h">{@label}</div>
+        <div :if={@sub} class="d">{@sub}</div>
+      </div>
+      <div class="switch"></div>
+    </div>
+    """
   end
 
   # Append a file id to the open-tabs list (keeping order, no duplicates).

@@ -9,6 +9,7 @@
 @import "./_typster_ui.css";
 @import "./_editor_topbar.css";
 @import "./_editor_v3.css";
+@import "./_share.css";
 @source "../css";
 @source "../js";
 @source "../../lib/typster_web";
