@@ -1182,11 +1182,16 @@
                 title={gettext("share.perm.output")}
                 desc={gettext("share.perm.output_desc")}
               />
-              <div class={[
-                "perm-card",
-                "tone-write",
-                !Features.can?(@current_scope, :share_write_scoped) && "gated"
-              ]}>
+              <div
+                class={[
+                  "perm-card",
+                  "tone-write",
+                  !Features.can?(@current_scope, :share_write_scoped) && "gated",
+                  @share_write_preview && "active"
+                ]}
+                phx-click="share_scope"
+                phx-value-scope="write"
+              >
                 <div class="ic">
                   <.icon
                     name={
@@ -1210,7 +1215,9 @@
                   </div>
                   <div class="d">{gettext("share.perm.write_desc")}</div>
                   <div
-                    :if={!Features.can?(@current_scope, :share_write_scoped)}
+                    :if={
+                      @share_write_preview && !Features.can?(@current_scope, :share_write_scoped)
+                    }
                     style="margin-top: 10px;"
                   >
                     <.upgrade_banner

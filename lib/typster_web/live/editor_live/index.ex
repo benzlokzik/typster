@@ -63,6 +63,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:show_share, false)
      |> assign(:share_tab, "link")
      |> assign(:share_link, nil)
+     |> assign(:share_write_preview, false)
      |> assign(:share_collaborators, [])
      |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
      |> stream(:outline, [])
@@ -233,7 +234,11 @@ defmodule TypsterWeb.EditorLive.Index do
 
   @impl true
   def handle_event("open_share", _params, %{assigns: %{owner?: true}} = socket) do
-    {:noreply, socket |> load_share() |> assign(:show_share, true)}
+    {:noreply,
+     socket
+     |> load_share()
+     |> assign(:share_write_preview, false)
+     |> assign(:show_share, true)}
   end
 
   # Sharing is managed by the owner only; collaborators can edit but not invite.
@@ -253,7 +258,17 @@ defmodule TypsterWeb.EditorLive.Index do
   @impl true
   def handle_event("share_scope", %{"scope" => scope}, socket)
       when scope in ~w(read output full) do
-    {:noreply, update_share_link(socket, %{scope: scope})}
+    {:noreply,
+     socket
+     |> assign(:share_write_preview, false)
+     |> update_share_link(%{scope: scope})}
+  end
+
+  # Pro "per-file write scope". The card is clickable so visitors can preview the
+  # capability, but on Free it only reveals the upsell — it never changes the
+  # link's real scope (which stays read/output/full). Pro swaps in the file picker.
+  def handle_event("share_scope", %{"scope" => "write"}, socket) do
+    {:noreply, assign(socket, :share_write_preview, true)}
   end
 
   def handle_event("share_scope", _params, socket), do: {:noreply, socket}

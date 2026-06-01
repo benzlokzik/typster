@@ -429,6 +429,32 @@ defmodule TypsterWeb.EditorLiveTest do
     Enum.any?(Typster.Files.get_file_tree(scope, project.id), &(&1.path == path))
   end
 
+  describe "share modal — Pro write-scope card" do
+    test "is clickable, previews the upsell, but never changes the link scope",
+         %{conn: conn, user: user, project: project} do
+      view = open_editor(conn, project)
+
+      view |> element(".ts-tb__share") |> render_click()
+      assert has_element?(view, ".perm-card.tone-write")
+      # Resting state: not active, no upgrade banner yet.
+      refute has_element?(view, ".perm-card.tone-write.active")
+
+      # Clicking the Pro card activates it and reveals the upsell (not usable)…
+      view |> element("[phx-click='share_scope'][phx-value-scope='write']") |> render_click()
+      assert has_element?(view, ".perm-card.tone-write.active")
+      assert has_element?(view, ".perm-card.tone-write .upgrade-banner")
+
+      # …but the real link scope is unchanged (still a free scope, never :write).
+      scope = Typster.Accounts.Scope.for_user(user)
+      link = Typster.Sharing.get_or_create_link(scope, project.id)
+      assert link.scope in [:read, :output, :full]
+
+      # Choosing a real scope clears the preview.
+      view |> element("[phx-click='share_scope'][phx-value-scope='output']") |> render_click()
+      refute has_element?(view, ".perm-card.tone-write.active")
+    end
+  end
+
   describe "collaborator access" do
     setup %{user: owner, project: project} do
       owner_scope = Typster.Accounts.Scope.for_user(owner)
