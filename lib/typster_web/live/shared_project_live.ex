@@ -45,9 +45,9 @@ defmodule TypsterWeb.SharedProjectLive do
   @impl true
   def render(%{link: nil} = assigns) do
     ~H"""
-    <div class="mk-body share-public share-public--invalid">
+    <div class="mk-body share-public share-public--invalid" data-theme-scope>
       <div class="share-public__panel">
-        <div class="ts-emptystate__tile ts-serif">T</div>
+        <div class="t-glyph t-glyph--lg ts-serif">T</div>
         <h1>{gettext("share.public.invalid_title")}</h1>
         <p>{gettext("share.public.invalid_sub")}</p>
         <a href={~p"/"} class="ts-btn ts-btn--primary ts-btn--sm">{gettext("share.public.home")}</a>
@@ -59,36 +59,34 @@ defmodule TypsterWeb.SharedProjectLive do
   def render(assigns) do
     ~H"""
     <div class={["mk-body", "share-public", @embed? && "share-public--embed"]} data-theme-scope>
-      <header class="share-public__bar">
-        <span class="ts-tb__proj-glyph ts-serif">T</span>
-        <span class="share-public__name truncate">{@project.name}</span>
-        <span :if={@entry} class="share-public__file">· {@entry.path}</span>
-        <span class="share-public__pill">{scope_label(@scope_kind)}</span>
-        <div class="ts-spacer" />
-        <.link navigate={~p"/projects/#{@project.id}/edit"} class="ts-btn ts-btn--primary ts-btn--sm">
-          {gettext("share.public.open_in_typster")}
-        </.link>
-      </header>
+      <div class={["embed-comp", show_source?(@scope_kind) && "embed-comp--split"]}>
+        <div class="embed-bar">
+          <span class="t-glyph ts-serif">T</span>
+          <span class="slug truncate">{@project.name}</span>
+          <span :if={@entry} class="file truncate">· {@entry.path}</span>
+          <span class="spacer"></span>
+          <span class="ro-pill">
+            <.icon name="hero-eye" class="size-3" /> {scope_label(@scope_kind)}
+          </span>
+        </div>
 
-      <div class={["share-public__body", show_source?(@scope_kind) && "with-source"]}>
-        <section :if={show_source?(@scope_kind)} class="share-public__source">
+        <section :if={show_source?(@scope_kind)} class="embed-source">
           <div
             id="editor-container"
             phx-hook="CodeMirror"
             phx-update="ignore"
             data-content={@content}
-            data-file-id=""
+            data-file-id={@entry && @entry.id}
             data-readonly="true"
             data-language={@language}
             data-project-sources={Jason.encode!(@project_sources)}
             data-project-assets="[]"
-            class="ts-source__editor"
           >
           </div>
         </section>
 
-        <section class="share-public__preview">
-          <div :if={!show_source?(@scope_kind)} class="share-public__hidden-src" hidden>
+        <section class="embed-preview">
+          <div :if={!show_source?(@scope_kind)} class="embed-hidden-src" hidden>
             <div
               id="editor-container"
               phx-hook="CodeMirror"
@@ -109,11 +107,21 @@ defmodule TypsterWeb.SharedProjectLive do
             class="ts-preview__scroll"
           >
             <div id="preview-placeholder" class="ts-preview__placeholder">
-              <span style="color: var(--mk-fg4);"><.icon name="hero-eye" class="size-8" /></span>
+              <span class="ts-preview__placeholder-ic"><.icon name="hero-eye" class="size-8" /></span>
               <p>{gettext("editor.preview_placeholder")}</p>
             </div>
           </div>
         </section>
+
+        <div class="embed-foot">
+          <span class="powered">
+            {gettext("share.public.powered_by")} <strong class="ts-serif">Typster</strong>
+          </span>
+          <span class="spacer"></span>
+          <.link navigate={~p"/projects/#{@project.id}/edit"} class="embed-foot__cta">
+            {gettext("share.public.open_in_typster")} <span aria-hidden="true">↗</span>
+          </.link>
+        </div>
       </div>
     </div>
     """
