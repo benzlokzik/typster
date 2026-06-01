@@ -42,6 +42,14 @@ defmodule TypsterWeb.Presence do
       color: color_for(user.id),
       online_at: System.system_time(:second)
     })
+  rescue
+    ArgumentError ->
+      Logger.warning(
+        "TypsterWeb.Presence is not running — cannot track collaborator. " <>
+          "Restart the server (a newly-added supervision child needs a fresh boot)."
+      )
+
+      {:error, :presence_unavailable}
   end
 
   @doc """
