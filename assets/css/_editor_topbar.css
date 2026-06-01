@@ -22,6 +22,13 @@
 }
 .ts-tb--dense { height: 36px; padding: 0 6px 0 8px; font-size: 12.5px; }
 
+/* Icon weight + size — the design uses thin 1.6 strokes (lucide defaults to 2)
+   and small, even glyphs. Small decorative chevrons sit a touch tighter. */
+.ts-tb svg { width: 14px; height: 14px; stroke-width: 1.6; }
+.ts-tb .ts-tb__proj svg,
+.ts-tb .ts-tb__avatar svg,
+.ts-tb .ts-tb__branch-glyph { width: 12px; height: 12px; }
+
 /* ── Project switcher ─────────────────────────────────────────────────────── */
 .ts-tb__proj {
   display: inline-flex;
@@ -145,7 +152,7 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-.ts-tb__branch-glyph { color: var(--mk-fg3); font-weight: 700; }
+.ts-tb__branch-glyph { color: var(--mk-fg3); }
 .ts-tb__branch-ahead { color: var(--mk-success); font-weight: 600; }
 
 /* ── Omnibox (center search / command field) ──────────────────────────────── */
