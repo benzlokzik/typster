@@ -103,6 +103,10 @@ defmodule TypsterWeb.EditorLive.Index do
      assign(socket, :collaborators, present_collaborators(scope, socket.assigns.project.id))}
   end
 
+  # Ignore stray process messages (e.g. the Swoosh test adapter's {:email, _}
+  # delivered to this process when an invite is sent) so they never crash the LV.
+  def handle_info(_msg, socket), do: {:noreply, socket}
+
   @impl true
   def handle_event("save_started", _params, socket) do
     {:noreply, assign(socket, :save_status, "saving")}
@@ -1031,7 +1035,15 @@ defmodule TypsterWeb.EditorLive.Index do
   defp embed_iframe(%{token: token}) do
     src = url(~p"/embed/#{token}")
 
-    ~s(<iframe src="#{src}" width="100%" height="540" loading="lazy" allow="clipboard-write"></iframe>)
+    """
+    <iframe
+      src="#{src}"
+      width="100%"
+      height="540"
+      loading="lazy"
+      allow="clipboard-write"
+    ></iframe>\
+    """
   end
 
   defp embed_iframe(_link), do: ""

@@ -1235,7 +1235,9 @@
   padding: 12px 14px;
   font: 12px/1.6 var(--font-mono);
   color: var(--text);
-  overflow-x: auto;
+  /* Wrap the iframe snippet instead of scrolling horizontally. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .snippet-box pre .tag {
   color: var(--code-keyword);
@@ -1500,12 +1502,19 @@
   font-size: 11.5px;
 }
 
-/* Gated permission card — same shape as others, dashed border (color handled by tone) */
+/* Gated permission card — clearly visible dashed border in the write tone so the
+   "locked Pro option" reads at a glance (the faint --border was barely visible). */
 .perm-card.gated {
   border-style: dashed;
+  border-width: 1.5px;
+  border-color: color-mix(in oklab, var(--amber-500) 60%, var(--border));
+}
+.perm-card.gated:hover {
+  border-color: color-mix(in oklab, var(--amber-500) 80%, var(--border));
 }
 .perm-card.gated.active {
   border-style: solid;
+  border-color: var(--amber-500);
 }
 
 /* ============================================================
