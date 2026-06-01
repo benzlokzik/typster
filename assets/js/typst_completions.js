@@ -232,6 +232,97 @@ export const TYPST_COMPLETIONS = [
   ...MATH.map(plainOption("variable"))
 ]
 
+// Local `#let` definitions in the current buffer, surfaced as completions so a
+// user's own variables and functions are suggested alongside the built-ins.
+// `#let f(..) = ..` completes to a call; a bare `#let x = ..` to the name.
+// `boost: 50` ranks locals above the built-ins.
+const LET_RE = /#let\s+([A-Za-z_][\w-]*)\s*(\([^)]*\))?\s*=/g
+
+export function localCompletions(state) {
+  const text = state.doc.toString()
+  const seen = new Set()
+  const out = []
+  LET_RE.lastIndex = 0
+
+  let m
+  while ((m = LET_RE.exec(text))) {
+    const name = m[1]
+    if (seen.has(name)) continue
+    seen.add(name)
+
+    if (m[2]) {
+      out.push(
+        snippetCompletion("#" + name + "(${})", {
+          label: "#" + name,
+          type: "function",
+          detail: m[2].slice(1, -1) || "..",
+          info: "Local function",
+          boost: 50
+        })
+      )
+    } else {
+      out.push({
+        label: "#" + name,
+        type: "variable",
+        detail: "local",
+        info: "Local variable",
+        boost: 50
+      })
+    }
+  }
+
+  return out
+}
+
+// Symbols pulled in by `#import` statements in the current buffer, e.g.
+// `#import "@preview/cetz:0.2.0": canvas, draw` or `#import "u.typ" as u`.
+// Explicit names complete to a call (most imports are functions); an `as` alias
+// is offered as a module handle. Wildcards (`: *`) can't be enumerated without
+// the module source, so they're skipped.
+const IMPORT_RE = /#import\s+(?:"[^"]*"|[\w@/.:-]+)\s*(?::\s*([^\n]+)|\bas\s+([A-Za-z_][\w-]*))/g
+
+export function importedCompletions(state) {
+  const text = state.doc.toString()
+  const seen = new Set()
+  const out = []
+  IMPORT_RE.lastIndex = 0
+
+  let m
+  while ((m = IMPORT_RE.exec(text))) {
+    if (m[2]) {
+      const alias = m[2]
+      if (seen.has(alias)) continue
+      seen.add(alias)
+      out.push({
+        label: "#" + alias,
+        type: "namespace",
+        detail: "module",
+        info: "Imported module",
+        boost: 40
+      })
+      continue
+    }
+
+    for (const part of m[1].split(",")) {
+      const as = /\bas\s+([A-Za-z_][\w-]*)/.exec(part)
+      const name = as ? as[1] : part.trim().replace(/[^\w-].*$/, "")
+      if (!name || !/^[A-Za-z_]/.test(name) || seen.has(name)) continue
+      seen.add(name)
+      out.push(
+        snippetCompletion("#" + name + "(${})", {
+          label: "#" + name,
+          type: "function",
+          detail: "imported",
+          info: "Imported symbol",
+          boost: 40
+        })
+      )
+    }
+  }
+
+  return out
+}
+
 // A valid CM6 `CompletionSource`. Anchors `from` at the token start (including
 // any leading #/@) so snippet labels like "#figure" match and replace cleanly,
 // adding the marker when it is missing. Auto-opens only after a #/@ marker —
@@ -247,7 +338,10 @@ export function typstCompletionSource(context) {
 
   return {
     from: word.from,
-    options: TYPST_COMPLETIONS,
+    options: TYPST_COMPLETIONS.concat(
+      localCompletions(context.state),
+      importedCompletions(context.state)
+    ),
     validFor: /^[#@]?[\w.-]*$/
   }
 }

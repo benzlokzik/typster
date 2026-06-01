@@ -25,6 +25,41 @@ async function addMainFile(page) {
 }
 
 test.describe('Product UI redesign', () => {
+  test('autocomplete suggests local #let and imported symbols', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'LocalImport E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    const pop = page.locator('.cm-tooltip-autocomplete')
+    await cm.click()
+    await page.keyboard.press('Control+End')
+    await page.keyboard.press('Enter')
+
+    const line = async (t) => {
+      await page.keyboard.type(t)
+      await page.keyboard.press('Escape')
+      await page.keyboard.press('End')
+      await page.keyboard.press('Enter')
+    }
+    await line('#let mylocalfn(x) = x')
+    await line('#import "lib.typ": importedfn')
+
+    // The user's own local function is suggested.
+    await page.keyboard.type('#mylo')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(pop.locator('.cm-completionLabel').filter({ hasText: 'mylocalfn' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+
+    // A symbol imported in this buffer is suggested too.
+    await page.keyboard.type('#importedf')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(
+      pop.locator('.cm-completionLabel').filter({ hasText: 'importedfn' })
+    ).toBeVisible()
+  })
+
   test('brackets and Typst math auto-close their pairs', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'Autoclose E2E')
     await addMainFile(page)
