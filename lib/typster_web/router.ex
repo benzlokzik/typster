@@ -9,6 +9,15 @@ defmodule TypsterWeb.Router do
     conn
   end
 
+  # Default browser hardening, but with `frame-ancestors *` so the embed can be
+  # iframed from any origin. `put_secure_browser_headers/2` merges the given map
+  # over its secure defaults, so only the CSP directive changes.
+  defp put_embeddable_browser_headers(conn, _opts) do
+    put_secure_browser_headers(conn, %{
+      "content-security-policy" => "base-uri 'self'; frame-ancestors *"
+    })
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -16,6 +25,21 @@ defmodule TypsterWeb.Router do
     plug :put_root_layout, html: {TypsterWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_current_scope_for_user
+    plug :set_locale
+  end
+
+  # Like `:browser`, but allows the response to be framed by any origin —
+  # embedding `/embed/:token` on third-party sites is its entire purpose. The
+  # default `put_secure_browser_headers` pins `frame-ancestors 'self'`, which
+  # blocks cross-origin iframes; we override just that directive here.
+  pipeline :embeddable do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {TypsterWeb.Layouts, :root}
+    plug :protect_from_forgery
+    plug :put_embeddable_browser_headers
     plug :fetch_current_scope_for_user
     plug :set_locale
   end
@@ -126,12 +150,25 @@ defmodule TypsterWeb.Router do
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new
 
-      # Public, read-only shared/embedded project views (the link token authorizes).
+      # Public, read-only shared project view (the link token authorizes).
       live "/p/:slug", SharedProjectLive, :show
-      live "/embed/:token", SharedProjectLive, :embed
     end
 
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete
+  end
+
+  # The embed view is identical to the shared view but framable cross-origin, so
+  # it gets the `:embeddable` pipeline and its own `live_session`.
+  scope "/", TypsterWeb do
+    pipe_through [:embeddable]
+
+    live_session :embed,
+      on_mount: [
+        {TypsterWeb.RestoreLocale, :default},
+        {TypsterWeb.UserAuth, :mount_current_scope}
+      ] do
+      live "/embed/:token", SharedProjectLive, :embed
+    end
   end
 end

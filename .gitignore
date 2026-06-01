@@ -44,3 +44,6 @@ npm-debug.log
 
 # Ignore sarif files (security scan results).
 *.sarif
+
+# Playwright MCP screenshot/snapshot artifacts
+.playwright-mcp/

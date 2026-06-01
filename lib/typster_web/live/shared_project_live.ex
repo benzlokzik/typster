@@ -119,6 +119,14 @@ defmodule TypsterWeb.SharedProjectLive do
     """
   end
 
+  # The public/embed view reuses the editor's client hooks (CodeMirror, Preview),
+  # which push compile/outline/save events back to the LiveView. This view is
+  # read-only and compiles entirely client-side, so there is no server state to
+  # update — we accept and ignore them. Without this clause, the first
+  # `update_preview` push would crash the LiveView (undefined handle_event/3).
+  @impl true
+  def handle_event(_event, _params, socket), do: {:noreply, socket}
+
   # ── helpers ──────────────────────────────────────────────────────────────
   defp show_source?(:output), do: false
   defp show_source?(_), do: true
