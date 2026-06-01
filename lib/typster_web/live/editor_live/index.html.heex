@@ -7,7 +7,7 @@
         class="ts-tb__proj"
         title={gettext("editor.topbar.switch_project")}
       >
-        <span class="ts-tb__proj-glyph ts-serif">T</span>
+        <span class="ts-tb__proj-glyph">T</span>
         <span class="truncate">{@project.name}</span>
         <i data-lucide="chevron-down" aria-hidden="true"></i>
       </.link>
@@ -45,6 +45,10 @@
           <span class="ts-savestat__dot"></span>
         </div>
       </nav>
+
+      <span class="ts-tb__branch" title={gettext("editor.topbar.branch")}>
+        <span class="ts-tb__branch-glyph" aria-hidden="true">⎇</span> main
+      </span>
 
       <button
         type="button"
