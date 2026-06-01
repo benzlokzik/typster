@@ -71,11 +71,10 @@ test.describe('Product UI redesign', () => {
     await addMainFile(page)
 
     await expect(page.locator('html')).not.toHaveClass(/is-mac/)
-    // Non-mac: terminal icon + "Ctrl K" shown, ⌘ variant hidden.
-    await expect(page.locator('.ts-cmdk .ts-kbd.ts-other')).toBeVisible()
-    await expect(page.locator('.ts-cmdk .ts-kbd.ts-other')).toHaveText('Ctrl K')
-    await expect(page.locator('.ts-cmdk .ts-kbd.ts-mac')).toBeHidden()
-    await expect(page.locator('.ts-cmdk__icon.ts-mac')).toBeHidden()
+    // Non-mac: "Ctrl K" shown in the merged top-bar omnibox, ⌘ variant hidden.
+    await expect(page.locator('.ts-tb__omni-key .ts-other')).toBeVisible()
+    await expect(page.locator('.ts-tb__omni-key .ts-other')).toHaveText('Ctrl K')
+    await expect(page.locator('.ts-tb__omni-key .ts-mac')).toBeHidden()
 
     // The button still opens the palette regardless of platform labelling.
     await page.getByRole('button', { name: 'Open command palette' }).click()

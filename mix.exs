@@ -82,7 +82,23 @@ defmodule Typster.MixProject do
       {:sobelow, "~> 0.14", only: [:dev, :test], runtime: false},
       {:igniter, "~> 0.6", runtime: false},
       {:assay, "~> 0.5", only: [:dev, :test], runtime: false}
-    ]
+    ] ++ pro_deps()
+  end
+
+  # Closed-source "Pro" modules live in the private `typster-pro` repo, mounted
+  # here as a git submodule at `pro/` and consumed as a path dependency — but
+  # ONLY when present. A plain public clone (or CI without access) leaves `pro/`
+  # empty, so the dependency is never declared and the open-core build compiles
+  # cleanly under `--warning-as-errors`. Path deps never enter `mix.lock`, so
+  # `deps.unlock --unused` in `precommit` has nothing to strip. The host
+  # dispatches to `Typster.Pro.*` at runtime via `Code.ensure_loaded?/1`
+  # (see `Typster.Features`), never at compile time.
+  defp pro_deps do
+    if File.exists?("pro/mix.exs") do
+      [{:typster_pro, path: "pro"}]
+    else
+      []
+    end
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

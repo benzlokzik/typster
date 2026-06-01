@@ -18,7 +18,7 @@
 // To load it, simply add a second `<link>` to your `root.html.heex` file.
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
-import { createIcons, ArrowDown, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, ChevronDown, CircleCheck, CornerDownLeft, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, Folder, FolderClosed, FolderOpen, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Pin, PinOff, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Share2, Sigma, Sparkles, SquareTerminal, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X as XIcon, Zap } from "lucide"
+import { createIcons, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CornerDownLeft, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, Folder, FolderClosed, FolderOpen, GitBranch, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, LogOut, Minus, Moon, NotebookPen, PenLine, Pin, PinOff, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Settings, Share2, Sigma, Sparkles, SquareTerminal, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X as XIcon, Zap } from "lucide"
 import { siGithub, siGoogle } from "simple-icons"
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
@@ -71,13 +71,26 @@ window.liveSocket = liveSocket
 
 const Github = [["path", { d: siGithub.path, fill: "currentColor", stroke: "none" }]]
 const Google = [["path", { d: siGoogle.path, fill: "currentColor", stroke: "none" }]]
-const mkIconSet = { ArrowDown, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, ChevronDown, CircleCheck, CornerDownLeft, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, Folder, FolderClosed, FolderOpen, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, Minus, Moon, NotebookPen, PenLine, Pin, PinOff, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Share2, Sigma, Sparkles, SquareTerminal, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X: XIcon, Zap, Github, Google }
+const mkIconSet = { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bell, Bold, BookText, CaseSensitive, ChartNoAxesColumn, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CornerDownLeft, CircleX, CloudUpload, Command, Download, Eye, File, FileInput, FileText, Folder, FolderClosed, FolderOpen, GitBranch, GraduationCap, Heading, History, Image, Info, Italic, Link2, List, LogOut, Minus, Moon, NotebookPen, PenLine, Pin, PinOff, Play, Plus, ReceiptText, RefreshCw, Regex, Replace, ReplaceAll, Search, Settings, Share2, Sigma, Sparkles, SquareTerminal, Star, Sun, Table, Trash2, TriangleAlert, Type, Upload, Users, WholeWord, X: XIcon, Zap, Github, Google }
 const mkIcons = (root = document) => {
   createIcons({ icons: mkIconSet, root })
   root.querySelectorAll("svg[data-lucide]").forEach((svg) => svg.removeAttribute("data-lucide"))
 }
 window.mkIcons = mkIcons
 mkIcons()
+
+// ── Set theme explicitly (account-menu appearance segments) ───────────────
+// Mirrors toggleMkTheme's persistence ("phx:theme" + data-theme on <html>).
+// "system" clears the override so the OS preference wins.
+window.setMkTheme = (theme) => {
+  if (theme === "system") {
+    localStorage.removeItem("phx:theme");
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    localStorage.setItem("phx:theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+};
 
 // ── Theme toggle (view-transition pour reveal) ────────────────────────────
 // The button "pours" the next theme into the page: a round-shaped clip-path

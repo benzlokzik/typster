@@ -13,6 +13,7 @@ defmodule Typster.Application do
       Typster.Repo,
       {DNSCluster, query: Application.get_env(:typster, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Typster.PubSub},
+      TypsterWeb.Presence,
       {Oban, Application.get_env(:typster, Oban)},
       # Start to serve requests, typically the last entry
       TypsterWeb.Endpoint

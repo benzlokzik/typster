@@ -1,64 +1,203 @@
-<Layouts.app flash={@flash} current_scope={@current_scope}>
+<Layouts.app flash={@flash} current_scope={@current_scope} nav={false}>
   <div class="ts-editor" id="editor-shell" phx-hook="CommandPalette">
-    <%!-- Editor top bar: breadcrumb, save status, actions --%>
-    <div class="ts-editor__bar">
+    <%!-- Top bar v3.1 — merged chrome: project · breadcrumb · omnibox · compile · account --%>
+    <div class="ts-tb" id="editor-topbar" phx-hook="LucideIcons">
       <.link
         navigate={~p"/projects"}
-        class="ts-btn ts-btn--ghost ts-btn--icon ts-btn--sm"
-        aria-label={gettext("nav.projects")}
-        title={gettext("nav.projects")}
+        class="ts-tb__proj"
+        title={gettext("editor.topbar.switch_project")}
       >
-        <.icon name="hero-chevron-left" class="size-3" />
+        <span class="ts-tb__proj-glyph">T</span>
+        <span class="truncate">{@project.name}</span>
+        <i data-lucide="chevron-down" aria-hidden="true"></i>
       </.link>
-      <nav class="ts-crumb" aria-label={gettext("editor.breadcrumb")}>
-        <span class="ts-crumb__seg">{@project.name}</span>
-        <span :for={seg <- path_segments(@current_file)}>
-          <span class="ts-crumb__sep">/</span>
-          <span class={["ts-crumb__seg", seg.last && "is-active"]}>{seg.name}</span>
-        </span>
-      </nav>
 
-      <div
-        id="save-status"
-        phx-hook="SaveStatus"
-        class={"ts-savestat ts-savestat--#{@save_status}"}
-      >
-        <span class="ts-savestat__dot"></span>
-        <span class="ts-savestat__label">{save_status_label(@save_status)}</span>
-      </div>
-
-      <div class="ts-spacer" />
+      <span class="ts-tb__div"></span>
 
       <button
         type="button"
-        class="ts-btn ts-btn--ghost ts-btn--sm ts-cmdk"
+        class="ts-tb__navbtn"
+        onclick="history.back()"
+        aria-label={gettext("editor.topbar.back")}
+      >
+        <i data-lucide="chevron-left" aria-hidden="true"></i>
+      </button>
+      <button
+        type="button"
+        class="ts-tb__navbtn"
+        onclick="history.forward()"
+        aria-label={gettext("editor.topbar.forward")}
+      >
+        <i data-lucide="chevron-right" aria-hidden="true"></i>
+      </button>
+
+      <nav class="ts-tb__crumb" aria-label={gettext("editor.breadcrumb")}>
+        <span :for={seg <- topbar_segments(@project, @current_file)}>
+          <span class={["ts-tb__seg", seg.last && "is-active"]}>{seg.name}</span>
+          <span :if={!seg.last} class="ts-tb__sep">/</span>
+        </span>
+        <div
+          id="save-status"
+          phx-hook="SaveStatus"
+          class={"ts-savestat ts-savestat--#{@save_status}"}
+          title={save_status_label(@save_status)}
+        >
+          <span class="ts-savestat__dot"></span>
+        </div>
+      </nav>
+
+      <span class="ts-tb__branch" title={gettext("editor.topbar.branch")}>
+        <i class="ts-tb__branch-glyph" data-lucide="git-branch" aria-hidden="true"></i> main
+      </span>
+
+      <button
+        type="button"
+        class="ts-tb__omni"
         phx-click="open_palette"
         aria-label={gettext("editor.command_open")}
       >
-        <span class="ts-cmdk__icon ts-mac" aria-hidden="true"><i data-lucide="command"></i></span>
-        <span class="ts-cmdk__icon ts-other" aria-hidden="true">
-          <i data-lucide="square-terminal"></i>
+        <i data-lucide="search" aria-hidden="true"></i>
+        <span class="ts-tb__omni-ph truncate">{gettext("editor.topbar.omni_placeholder")}</span>
+        <span class="ts-tb__omni-key">
+          <span class="ts-mac">⌘K</span><span class="ts-other">Ctrl K</span>
         </span>
-        <%!-- The ⌘ icon already conveys the modifier, so the Mac key is just "K"
-             (avoids a duplicated ⌘). Non-mac spells out "Ctrl" beside the icon. --%>
-        <span class="ts-kbd ts-mac">K</span>
-        <span class="ts-kbd ts-other">Ctrl K</span>
       </button>
+
       <button
         type="button"
-        class="ts-btn ts-btn--ghost ts-btn--sm"
+        class="ts-btn ts-btn--ghost ts-btn--sm ts-tb__share"
         disabled
         title={gettext("editor.share_soon")}
       >
-        <.icon name="hero-arrow-up-tray" class="size-3" /> {gettext("editor.share")}
+        <i data-lucide="upload" aria-hidden="true"></i> {gettext("editor.share")}
       </button>
-      <button
-        type="button"
-        class="ts-btn ts-btn--primary ts-btn--sm"
-        phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "compile"})}
+
+      <%= cond do %>
+        <% @preview_compiling -> %>
+          <button type="button" class="ts-tb__compile is-compiling" disabled>
+            <span class="ts-tb__compile-spin"></span> {gettext("editor.compiling")}
+          </button>
+        <% @preview_error -> %>
+          <button
+            type="button"
+            class="ts-tb__compile is-error"
+            phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "compile"})}
+          >
+            <i data-lucide="triangle-alert" aria-hidden="true"></i>
+            {gettext("editor.topbar.failed")}
+            <span :if={@preview_error_count > 0} class="ts-tb__compile-count">
+              {@preview_error_count}
+            </span>
+          </button>
+        <% @preview_stats -> %>
+          <button
+            type="button"
+            class="ts-tb__compile is-success"
+            phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "compile"})}
+          >
+            <i data-lucide="check" aria-hidden="true"></i>
+            {gettext("editor.compiled")}
+            <span :if={@preview_stats.ms} class="ts-tb__compile-ms">{@preview_stats.ms}ms</span>
+          </button>
+        <% true -> %>
+          <button
+            type="button"
+            class="ts-tb__compile"
+            phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "compile"})}
+          >
+            <i data-lucide="play" aria-hidden="true"></i>
+            {gettext("editor.compile")}
+            <span class="ts-kbd">
+              <span class="ts-mac">⌘↩</span><span class="ts-other">Ctrl ↵</span>
+            </span>
+          </button>
+      <% end %>
+
+      <span :if={@collaborators != []} class="ts-tb__div"></span>
+      <div
+        :if={@collaborators != []}
+        class="ts-tb__collab"
+        aria-label={gettext("editor.topbar.collaborators")}
       >
-        <.icon name="hero-play" class="size-3" /> {gettext("editor.compile")}
-      </button>
+        <span
+          :for={c <- @collaborators}
+          class="ts-tb__av"
+          style={"background: #{c.color}"}
+          title={c.name}
+        >
+          {c.initials}<span class="ts-tb__pulse"></span>
+        </span>
+      </div>
+
+      <div class="ts-tb__right">
+        <div class="ts-tb__util">
+          <button
+            type="button"
+            class="mk-theme-toggle"
+            onclick="toggleMkTheme(this)"
+            aria-label={gettext("layout.theme.toggle")}
+          >
+            <i data-lucide="moon" class="mk-icon-moon" aria-hidden="true"></i>
+            <i data-lucide="sun" class="mk-icon-sun" aria-hidden="true"></i>
+          </button>
+          <.link
+            href={
+              ~p"/locale/#{if Gettext.get_locale(TypsterWeb.Gettext) == "ru", do: "en", else: "ru"}"
+            }
+            class="ts-tb__lang"
+            aria-label={gettext("editor.topbar.language")}
+          >
+            {if Gettext.get_locale(TypsterWeb.Gettext) == "ru", do: "RU", else: "EN"}
+          </.link>
+        </div>
+
+        <div class="ts-tb__acct">
+          <button
+            type="button"
+            class="ts-tb__avatar"
+            phx-click={JS.toggle(to: "#tb-account-menu")}
+            aria-label={gettext("editor.topbar.account")}
+          >
+            <span>{user_initials(@current_scope)}</span>
+            <i data-lucide="chevron-down" aria-hidden="true"></i>
+          </button>
+          <div
+            id="tb-account-menu"
+            class="ts-tb__menu hidden"
+            phx-click-away={JS.hide(to: "#tb-account-menu")}
+          >
+            <div class="ts-tb__menu-who">
+              <div class="ts-tb__menu-name">{user_display_name(@current_scope)}</div>
+              <div :if={@current_scope && @current_scope.user} class="ts-tb__menu-email">
+                {@current_scope.user.email}
+              </div>
+            </div>
+            <div class="ts-tb__menu-label">{gettext("editor.topbar.appearance")}</div>
+            <div class="ts-tb__menu-segs">
+              <button type="button" class="ts-tb__menu-seg" onclick="setMkTheme('light')">
+                <i data-lucide="sun" aria-hidden="true"></i> {gettext("layout.theme.light")}
+              </button>
+              <button type="button" class="ts-tb__menu-seg" onclick="setMkTheme('dark')">
+                <i data-lucide="moon" aria-hidden="true"></i> {gettext("layout.theme.dark")}
+              </button>
+              <button type="button" class="ts-tb__menu-seg" onclick="setMkTheme('system')">
+                {gettext("layout.theme.system")}
+              </button>
+            </div>
+            <div class="ts-tb__menu-sep"></div>
+            <.link navigate={~p"/projects"} class="ts-tb__menu-item">
+              <i data-lucide="folder" aria-hidden="true"></i> {gettext("nav.projects")}
+            </.link>
+            <.link navigate={~p"/users/settings"} class="ts-tb__menu-item">
+              <i data-lucide="settings" aria-hidden="true"></i> {gettext("nav.settings")}
+            </.link>
+            <div class="ts-tb__menu-sep"></div>
+            <.link href={~p"/users/log-out"} method="delete" class="ts-tb__menu-item is-danger">
+              <i data-lucide="log-out" aria-hidden="true"></i> {gettext("auth.log_out")}
+            </.link>
+          </div>
+        </div>
+      </div>
     </div>
 
     <%!-- Three-pane window --%>

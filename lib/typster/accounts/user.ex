@@ -11,6 +11,8 @@ defmodule Typster.Accounts.User do
   @doc "The accent color keys a user may choose for the product UI."
   def accent_colors, do: @accent_colors
 
+  @type t :: %__MODULE__{}
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "users" do
@@ -20,6 +22,9 @@ defmodule Typster.Accounts.User do
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
     field :accent_color, :string, default: "indigo"
+    # Billing plan for the open-core paywall. Set programmatically by billing
+    # code via `plan_changeset/2` — never from user-submitted params.
+    field :plan, Ecto.Enum, values: [:free, :pro], default: :free
     has_many :projects, Typster.Projects.Project
 
     timestamps(type: :utc_datetime)
@@ -127,6 +132,16 @@ defmodule Typster.Accounts.User do
     |> cast(attrs, [:accent_color])
     |> validate_required([:accent_color])
     |> validate_inclusion(:accent_color, @accent_colors)
+  end
+
+  @doc """
+  Sets the billing plan (`:free` | `:pro`).
+
+  Billing-only: this is driven by billing/admin code, never by user-submitted
+  params, so it uses `change/2` directly rather than `cast/3`.
+  """
+  def plan_changeset(user, plan) when plan in [:free, :pro] do
+    change(user, plan: plan)
   end
 
   @doc """

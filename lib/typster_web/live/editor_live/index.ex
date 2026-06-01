@@ -15,9 +15,15 @@ defmodule TypsterWeb.EditorLive.Index do
     assets = Assets.list_assets(scope, project_id)
     main_file = initial_file(file_tree)
 
+    if connected?(socket) and scope.user do
+      TypsterWeb.Presence.track_user(self(), project.id, scope.user)
+      Phoenix.PubSub.subscribe(Typster.PubSub, TypsterWeb.Presence.topic(project.id))
+    end
+
     {:ok,
      socket
      |> assign(:project, project)
+     |> assign(:collaborators, present_collaborators(scope, project.id))
      |> assign(:file_tree, file_tree)
      |> assign(:assets, assets)
      |> assign(:current_file, main_file)
@@ -74,6 +80,14 @@ defmodule TypsterWeb.EditorLive.Index do
   @impl true
   def handle_params(_params, _url, socket) do
     {:noreply, assign(socket, :page_title, socket.assigns.project.name)}
+  end
+
+  @impl true
+  def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff"}, socket) do
+    scope = socket.assigns.current_scope
+
+    {:noreply,
+     assign(socket, :collaborators, present_collaborators(scope, socket.assigns.project.id))}
   end
 
   @impl true
@@ -777,13 +791,57 @@ defmodule TypsterWeb.EditorLive.Index do
   defp join_dir("", name), do: name
   defp join_dir(dir, name), do: "#{dir}/#{name}"
 
-  # Breadcrumb segments from the active file's path; the filename is `last`.
-  defp path_segments(nil), do: []
+  # Top-bar breadcrumb: project name + folder path (no filename — the file lives
+  # on the tab and, in v3, on the breadcrumb row under the tabs). Last is active.
+  defp topbar_segments(project, current_file) do
+    folders =
+      case current_file do
+        %{path: path} ->
+          case Path.dirname(path) do
+            "." -> []
+            dir -> Path.split(dir)
+          end
 
-  defp path_segments(%{path: path}) do
-    parts = String.split(path, "/")
-    count = length(parts)
-    parts |> Enum.with_index(1) |> Enum.map(fn {p, i} -> %{name: p, last: i == count} end)
+        _ ->
+          []
+      end
+
+    names = [project.name | folders]
+    count = length(names)
+    names |> Enum.with_index(1) |> Enum.map(fn {n, i} -> %{name: n, last: i == count} end)
+  end
+
+  # The other people currently present in this project's editor (excludes self).
+  defp present_collaborators(scope, project_id) do
+    exclude = scope && scope.user && scope.user.id
+    TypsterWeb.Presence.list_collaborators(project_id, exclude)
+  end
+
+  # Initials/display-name for the account avatar, derived from the email local
+  # part (e.g. "sam.reeves@..." -> "SR" / "Sam Reeves").
+  defp user_initials(%{user: %{email: email}}) when is_binary(email) do
+    email
+    |> email_local_parts()
+    |> Enum.map(&String.first/1)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.take(2)
+    |> Enum.map_join("", &String.upcase/1)
+    |> case do
+      "" -> "?"
+      s -> s
+    end
+  end
+
+  defp user_initials(_), do: "?"
+
+  defp user_display_name(%{user: %{email: email}}) when is_binary(email) do
+    email |> email_local_parts() |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  defp user_display_name(_), do: gettext("editor.topbar.guest")
+
+  defp email_local_parts(email) do
+    email |> String.split("@") |> List.first() |> String.split(~r/[._-]/, trim: true)
   end
 
   # Append a file id to the open-tabs list (keeping order, no duplicates).

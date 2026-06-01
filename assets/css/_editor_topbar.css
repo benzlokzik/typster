@@ -1,0 +1,431 @@
+/* ── Editor top bar v3.1 — ts-tb-* class system ──────────────────────────────
+   Faithful port of the v3.1 design (project switcher · breadcrumb · branch ·
+   omnibox · compile · collaborators · utilities · account). Token-driven via
+   --mk-* so light/dark flip for free. Mono = JetBrains Mono · Sans = Inter.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.ts-tb {
+  --tb-mono: "JetBrains Mono", ui-monospace, monospace;
+  --tb-bd-strong: color-mix(in oklab, var(--mk-bd) 45%, var(--mk-fg4));
+
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 8px 0 10px;
+  border-bottom: 1px solid var(--mk-bd);
+  background: var(--mk-bg);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.ts-tb--dense { height: 36px; padding: 0 6px 0 8px; font-size: 12.5px; }
+
+/* Icon weight + size — the design uses thin 1.6 strokes (lucide defaults to 2)
+   and small, even glyphs. Small decorative chevrons sit a touch tighter. */
+.ts-tb svg { width: 14px; height: 14px; stroke-width: 1.6; }
+.ts-tb .ts-tb__proj svg,
+.ts-tb .ts-tb__avatar svg,
+.ts-tb .ts-tb__branch-glyph { width: 12px; height: 12px; }
+
+/* ── Project switcher ─────────────────────────────────────────────────────── */
+.ts-tb__proj {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px 0 5px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--mk-fg);
+  font: 600 12.5px var(--tb-mono);
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s var(--mk-ease), border-color 0.18s var(--mk-ease);
+}
+.ts-tb__proj:hover { background: var(--mk-bg2); border-color: var(--mk-bd); }
+.ts-tb__proj-glyph {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: linear-gradient(180deg, var(--mk-pri) 0%, var(--mk-pri-h) 100%);
+  color: #fff;
+  font: 700 11px "Inter", system-ui, sans-serif;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.ts-tb__proj svg { color: var(--mk-fg3); }
+
+/* ── Vertical divider ─────────────────────────────────────────────────────── */
+.ts-tb__div {
+  width: 1px;
+  height: 18px;
+  margin: 0 2px;
+  background: var(--mk-bd);
+  flex-shrink: 0;
+}
+
+/* ── Back / forward nav buttons ───────────────────────────────────────────── */
+.ts-tb__navbtn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mk-fg2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s var(--mk-ease), color 0.18s var(--mk-ease);
+}
+.ts-tb__navbtn:hover { background: var(--mk-bg2); color: var(--mk-fg); }
+
+/* ── Breadcrumb ───────────────────────────────────────────────────────────── */
+.ts-tb__crumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+.ts-tb__seg {
+  padding: 3px 6px;
+  border-radius: 5px;
+  color: var(--mk-fg2);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.18s var(--mk-ease), color 0.18s var(--mk-ease);
+}
+.ts-tb__seg:hover { background: var(--mk-bg2); color: var(--mk-fg); }
+.ts-tb__seg.is-active { color: var(--mk-fg); font: 600 12.5px var(--tb-mono); }
+.ts-tb__sep { color: var(--mk-fg3); }
+
+/* ── Save dot (reuses the SaveStatus hook element) ────────────────────────── */
+.ts-tb .ts-savestat {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 4px 0 2px;
+  padding: 0;
+  background: none;
+  border: 0;
+  flex-shrink: 0;
+}
+.ts-tb .ts-savestat__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--mk-fg3);
+  transition: all 0.18s var(--mk-ease);
+}
+.ts-tb .ts-savestat--saving .ts-savestat__dot {
+  border-color: var(--mk-fg3);
+  border-top-color: var(--mk-pri);
+  animation: ts-tb-spin 0.7s linear infinite;
+}
+.ts-tb .ts-savestat--error .ts-savestat__dot {
+  background: var(--mk-error);
+  border-color: var(--mk-error);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--mk-error) 18%, transparent);
+}
+
+/* ── Branch chip ──────────────────────────────────────────────────────────── */
+.ts-tb__branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 5px;
+  background: var(--mk-bg2);
+  color: var(--mk-fg2);
+  font: 500 11px var(--tb-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ts-tb__branch-glyph { color: var(--mk-fg3); }
+.ts-tb__branch-ahead { color: var(--mk-success); font-weight: 600; }
+
+/* ── Omnibox (center search / command field) ──────────────────────────────── */
+.ts-tb__omni {
+  flex: 1 1 auto;
+  min-width: 160px;
+  max-width: 460px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 7px;
+  background: var(--mk-bg2);
+  color: var(--mk-fg3);
+  font: 13px "Inter", system-ui, sans-serif;
+  cursor: text;
+  transition: background 0.18s var(--mk-ease), border-color 0.18s var(--mk-ease);
+}
+.ts-tb__omni:hover { background: var(--mk-bg); border-color: var(--tb-bd-strong); }
+.ts-tb__omni svg { color: var(--mk-fg3); flex-shrink: 0; }
+.ts-tb__omni-ph {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.ts-tb__omni-key {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 4px;
+  background: var(--mk-bg);
+  color: var(--mk-fg3);
+  font: 500 10.5px var(--tb-mono);
+}
+
+/* ── Share button — pin the action cluster to the right edge ──────────────── */
+.ts-tb__share { margin-left: auto; flex-shrink: 0; }
+
+/* ── Compile button (single element + state modifiers) ────────────────────── */
+.ts-tb__compile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--mk-pri);
+  color: #fff;
+  font: 600 12.5px "Inter", system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: filter 0.18s var(--mk-ease), background 0.18s var(--mk-ease);
+}
+.ts-tb__compile:hover { filter: brightness(1.08); }
+.ts-tb__compile svg { display: block; }
+
+.ts-tb__compile.is-compiling {
+  background: color-mix(in oklab, var(--mk-pri) 78%, var(--mk-fg3));
+  cursor: progress;
+}
+.ts-tb__compile.is-compiling:hover { filter: none; }
+.ts-tb__compile.is-success { background: var(--mk-success); }
+.ts-tb__compile.is-warn { background: var(--mk-warning); }
+.ts-tb__compile.is-error { background: var(--mk-error); }
+
+.ts-tb__compile-spin {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ts-tb-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+.ts-tb__compile-ms {
+  font: 500 11px var(--tb-mono);
+  opacity: 0.82;
+}
+.ts-tb__compile-count {
+  font: 600 10.5px var(--tb-mono);
+  padding: 1px 5px;
+  margin-left: 2px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.22);
+}
+/* Keyboard hint nested in the (always solid) compile button: light-on-fill. */
+.ts-tb__compile .ts-kbd {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+  color: inherit;
+}
+
+@keyframes ts-tb-spin { to { transform: rotate(360deg); } }
+
+/* ── Collaborator stack ───────────────────────────────────────────────────── */
+.ts-tb__collab {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.ts-tb__av {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  margin-left: -6px;
+  border: 2px solid var(--mk-bg);
+  border-radius: 50%;
+  color: #fff;
+  font: 600 9.5px "Inter", system-ui, sans-serif;
+  cursor: pointer;
+}
+.ts-tb__av:first-child { margin-left: 0; }
+.ts-tb__pulse {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--mk-bg);
+  border-radius: 50%;
+  background: var(--mk-success);
+  animation: ts-tb-pulse 1.8s var(--mk-ease) infinite;
+}
+@keyframes ts-tb-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--mk-success) 55%, transparent); }
+  50%      { box-shadow: 0 0 0 3px color-mix(in oklab, var(--mk-success) 0%, transparent); }
+}
+
+/* ── Right cluster ────────────────────────────────────────────────────────── */
+.ts-tb__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.ts-tb__util {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 8px;
+  background: var(--mk-bg2);
+}
+.ts-tb__util button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--mk-fg2);
+  cursor: pointer;
+  transition: background 0.18s var(--mk-ease), color 0.18s var(--mk-ease);
+}
+.ts-tb__util button:hover { background: var(--mk-bg); color: var(--mk-fg); }
+.ts-tb__lang {
+  width: auto;
+  padding: 0 8px;
+  font: 500 11px var(--tb-mono);
+  text-decoration: none;
+}
+
+/* ── Account avatar + dropdown ────────────────────────────────────────────── */
+.ts-tb__acct { position: relative; flex-shrink: 0; }
+.ts-tb__avatar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 3px 7px 3px 3px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 9999px;
+  background: var(--mk-bg);
+  color: var(--mk-fg);
+  cursor: pointer;
+  transition: background 0.18s var(--mk-ease), border-color 0.18s var(--mk-ease);
+}
+.ts-tb__avatar:hover { background: var(--mk-bg2); border-color: var(--tb-bd-strong); }
+.ts-tb__avatar > span:first-child {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mk-pri-50);
+  color: var(--mk-pri);
+  font: 600 10px "Inter", system-ui, sans-serif;
+  flex-shrink: 0;
+}
+.ts-tb__avatar svg { color: var(--mk-fg3); }
+
+.ts-tb__menu {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  width: 240px;
+  padding: 6px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 10px;
+  background: var(--mk-bg);
+  box-shadow: var(--mk-sh-lg);
+  z-index: 50;
+}
+.ts-tb__menu-who {
+  padding: 8px 10px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--mk-bd);
+}
+.ts-tb__menu-name { font: 600 13px "Inter", system-ui, sans-serif; color: var(--mk-fg); }
+.ts-tb__menu-email { font: 12px "Inter", system-ui, sans-serif; color: var(--mk-fg3); }
+.ts-tb__menu-label {
+  padding: 8px 10px 2px;
+  font: 600 10px "Inter", system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mk-fg3);
+}
+.ts-tb__menu-segs {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px 6px;
+}
+.ts-tb__menu-seg {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--mk-bg2);
+  color: var(--mk-fg2);
+  font: 500 12px "Inter", system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.18s var(--mk-ease), color 0.18s var(--mk-ease);
+}
+.ts-tb__menu-seg:hover { color: var(--mk-fg); }
+.ts-tb__menu-seg.is-active {
+  background: var(--mk-pri-50);
+  color: var(--mk-pri);
+  border-color: color-mix(in oklab, var(--mk-pri) 30%, transparent);
+}
+.ts-tb__menu-sep { height: 1px; margin: 6px 0; background: var(--mk-bd); }
+.ts-tb__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mk-fg);
+  font: 500 13px "Inter", system-ui, sans-serif;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s var(--mk-ease);
+}
+.ts-tb__menu-item:hover { background: var(--mk-bg2); }
+.ts-tb__menu-item svg { color: var(--mk-fg3); }
+.ts-tb__menu-item.is-danger { color: var(--mk-error); }
+.ts-tb__menu-item.is-danger svg { color: var(--mk-error); }
+.ts-tb__menu-item.is-danger:hover { background: var(--mk-error-50); }

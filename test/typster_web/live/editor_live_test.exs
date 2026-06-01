@@ -229,13 +229,50 @@ defmodule TypsterWeb.EditorLiveTest do
     assert has_element?(view, ".ts-log__row--ok", "compiled")
   end
 
-  test "the header breadcrumb shows the active file's path segments",
+  test "the merged top bar breadcrumb shows the active file's folder path (no filename)",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "sections/intro.typ"})
     view = open_editor(conn, project)
 
-    assert has_element?(view, ".ts-crumb .ts-crumb__seg", "sections")
-    assert has_element?(view, ".ts-crumb .ts-crumb__seg.is-active", "intro.typ")
+    # v3.1 merged top bar: project + folder segments, the last folder is active,
+    # and the filename is no longer in the crumb — it lives on the tab.
+    assert has_element?(view, ".ts-tb__crumb .ts-tb__seg", "sections")
+    assert has_element?(view, ".ts-tb__crumb .ts-tb__seg.is-active", "sections")
+    refute has_element?(view, ".ts-tb__crumb .ts-tb__seg", "intro.typ")
+    assert has_element?(view, ".ts-tab", "intro.typ")
+  end
+
+  test "the merged top bar renders the project switcher, omnibox and account menu",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    assert has_element?(view, ".ts-tb__proj", project.name)
+    assert has_element?(view, ".ts-tb__omni")
+    assert has_element?(view, ".ts-tb__avatar")
+    # The account dropdown is in the DOM (hidden until toggled) with a logout row.
+    assert has_element?(view, "#tb-account-menu .ts-tb__menu-item.is-danger")
+  end
+
+  test "the top bar compile button reflects the latest successful compile",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "update_preview", %{"ms" => 47, "pages" => 1})
+
+    assert has_element?(view, ".ts-tb__compile.is-success", "47")
+    refute has_element?(view, ".ts-tb__compile.is-error")
+  end
+
+  test "the top bar compile button reflects a failed compile",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "preview_error", %{"message" => "boom", "errors" => 2})
+
+    assert has_element?(view, ".ts-tb__compile.is-error", "2")
   end
 
   test "outline numbers headings and shows a section count",
