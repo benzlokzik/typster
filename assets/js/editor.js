@@ -39,6 +39,8 @@ import { markdown } from "@codemirror/lang-markdown"
 import { yaml } from "@codemirror/lang-yaml"
 import { stex } from "@codemirror/legacy-modes/mode/stex"
 import { compileTypst, downloadTypstPdf } from "./typst_worker"
+import { editorV3Extensions, setDiagData } from "./editor_v3"
+import { typstCompletionSource } from "./typst_completions"
 
 // Native selection paints nothing visible for a selected trailing newline (an
 // empty line shows nothing, a text line ends right at the glyphs). VS Code draws
@@ -121,7 +123,7 @@ const basicSetup = [
   syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   bracketMatching(),
   closeBrackets(),
-  autocompletion(),
+  // autocompletion() is added per-editor below so its source can be Typst-aware.
   highlightActiveLine(),
   // Don't spray match boxes for 1-char selections (every `i`/`2` lit up).
   highlightSelectionMatches({ minSelectionLength: 2 }),
@@ -136,6 +138,14 @@ const basicSetup = [
     ...lintKeymap
   ])
 ]
+
+// Typst-aware auto-closing pairs for `closeBrackets()`: the usual brackets plus
+// `$ $` for math mode. Single-quote is intentionally dropped so apostrophes in
+// prose ("it's") aren't auto-paired. Provided as languageData so closeBrackets
+// picks it up only for Typst buffers.
+const typstCloseBrackets = EditorState.languageData.of(() => [
+  { closeBrackets: { brackets: ["(", "[", "{", "$", "\"", "`"] } }
+])
 
 // Auto-recompile debounce (ms from the last keystroke). Configurable via
 // localStorage so a single keystroke doesn't thrash the WASM compiler; a
@@ -468,9 +478,15 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     extensions: [
       basicSetup,
       lintGutter(),
+      ...editorV3Extensions,
+      autocompletion(
+        language === "typst"
+          ? { override: [(ctx) => typstCompletionSource(ctx, options.project)] }
+          : {}
+      ),
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
-      ...(language === "typst" ? typst() : []),
+      ...(language === "typst" ? [typstCloseBrackets, ...typst()] : []),
       updateListener
     ]
   })
@@ -515,8 +531,11 @@ export function initEditor(container, initialContent, socket, fileId, options = 
     updateLanguage,
     runCommand: (cmd, arg) => runEditorCommand(editor, language, cmd, arg),
     openSearch: () => openSearchPanel(editor),
-    setDiagnostics: (diags) =>
-      editor.dispatch(setDiagnostics(editor.state, toCmDiagnostics(editor, diags))),
+    setDiagnostics: (diags) => {
+      const cm = toCmDiagnostics(editor, diags)
+      editor.dispatch(setDiagnostics(editor.state, cm))
+      editor.dispatch({ effects: setDiagData.of(cm) })
+    },
     compile: () => {
       // Only Typst files compile; the worker treats the active buffer as main.typ.
       if (language === "typst") compileTypst(editor.state.doc.toString(), options.project || {})

@@ -39,6 +39,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:preview_error, nil)
      |> assign(:preview_error_count, 0)
      |> assign(:preview_compiling, false)
+     |> assign(:compile_history, [])
      |> assign(:diagnostics, [])
      |> assign(:compile_log, [])
      |> assign(:drawer_open, false)
@@ -142,6 +143,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:preview_error, nil)
      |> assign(:preview_error_count, 0)
      |> assign(:diagnostics, [])
+     |> push_compile(%{ms: params["ms"], status: :ok})
      |> push_log(log)}
   end
 
@@ -157,6 +159,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:preview_error_count, errors)
      |> assign(:preview_compiling, false)
      |> assign(:diagnostics, diagnostics)
+     |> push_compile(%{ms: nil, status: if(errors > 0, do: :error, else: :warn)})
      |> push_log(log_entry(:error, error_log_text(errors, warnings)))}
   end
 
@@ -901,6 +904,21 @@ defmodule TypsterWeb.EditorLive.Index do
   defp push_log(socket, entry) do
     assign(socket, :compile_log, Enum.take(socket.assigns.compile_log ++ [entry], -40))
   end
+
+  # Status-bar compile sparkline: keep the last 12 compiles (ms + status).
+  defp push_compile(socket, entry) do
+    assign(socket, :compile_history, Enum.take(socket.assigns.compile_history ++ [entry], -12))
+  end
+
+  # Bar height (2–12px) for one compile, scaled to the slowest successful run.
+  defp spark_height(%{ms: ms}, history) when is_integer(ms) do
+    max_ms =
+      history |> Enum.map(& &1.ms) |> Enum.filter(&is_integer/1) |> Enum.max(fn -> 1 end)
+
+    trunc(max(2, ms / max(max_ms, 1) * 12))
+  end
+
+  defp spark_height(_entry, _history), do: 9
 
   defp error_log_text(errors, warnings) do
     parts =

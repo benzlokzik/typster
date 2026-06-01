@@ -275,6 +275,29 @@ defmodule TypsterWeb.EditorLiveTest do
     assert has_element?(view, ".ts-tb__compile.is-error", "2")
   end
 
+  test "the status bar builds a compile sparkline from compile history",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    refute has_element?(view, ".ts-spark")
+
+    render_hook(view, "update_preview", %{"ms" => 47, "pages" => 1})
+    render_hook(view, "update_preview", %{"ms" => 60, "pages" => 1})
+
+    assert has_element?(view, ".ts-spark .ts-spark__bar")
+  end
+
+  test "a failed compile records an error bar in the sparkline",
+       %{conn: conn, user: user, project: project} do
+    file_fixture(project, user, %{path: "main.typ"})
+    view = open_editor(conn, project)
+
+    render_hook(view, "preview_error", %{"message" => "boom", "errors" => 1})
+
+    assert has_element?(view, ".ts-spark .ts-spark__bar.is-err")
+  end
+
   test "outline numbers headings and shows a section count",
        %{conn: conn, user: user, project: project} do
     file_fixture(project, user, %{path: "main.typ"})

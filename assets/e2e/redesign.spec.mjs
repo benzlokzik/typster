@@ -25,6 +25,105 @@ async function addMainFile(page) {
 }
 
 test.describe('Product UI redesign', () => {
+  test('autocomplete suggests local #let and imported symbols', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'LocalImport E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    const pop = page.locator('.cm-tooltip-autocomplete')
+    await cm.click()
+    await page.keyboard.press('Control+End')
+    await page.keyboard.press('Enter')
+
+    const line = async (t) => {
+      await page.keyboard.type(t)
+      await page.keyboard.press('Escape')
+      await page.keyboard.press('End')
+      await page.keyboard.press('Enter')
+    }
+    await line('#let mylocalfn(x) = x')
+    await line('#import "lib.typ": importedfn')
+    await line('#for myloopvar in xs [ ]')
+
+    // The user's own local function is suggested.
+    await page.keyboard.type('#mylo')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(pop.locator('.cm-completionLabel').filter({ hasText: 'mylocalfn' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+
+    // A symbol imported in this buffer is suggested too.
+    await page.keyboard.type('#importedf')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(
+      pop.locator('.cm-completionLabel').filter({ hasText: 'importedfn' })
+    ).toBeVisible()
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+
+    // A `#for` loop variable is offered too.
+    await page.keyboard.type('#myloop')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(
+      pop.locator('.cm-completionLabel').filter({ hasText: 'myloopvar' })
+    ).toBeVisible()
+  })
+
+  test('autocomplete resolves a wildcard import from a project file', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Wildcard E2E')
+
+    const newFile = async (name) => {
+      await page.locator('#create-main-file-button').click()
+      const draft = page.locator('#new-file-form input[name="path"]')
+      await expect(draft).toBeVisible()
+      await draft.fill(name)
+      await draft.press('Enter')
+      await expect(page.locator('#editor-container .cm-content')).toBeVisible({ timeout: 10_000 })
+    }
+
+    const cm = page.locator('#editor-container .cm-content')
+    const pop = page.locator('.cm-tooltip-autocomplete')
+
+    // A sibling module with an exported function.
+    await newFile('lib.typ')
+    await cm.click()
+    await page.keyboard.type('#let libwildfn(a) = a')
+    await page.waitForTimeout(1200) // let it autosave into project sources
+
+    // Import everything from it and complete one of its exports.
+    await newFile('main.typ')
+    await cm.click()
+    await page.keyboard.type('#import "lib.typ": *')
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('#libwild')
+
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(
+      pop.locator('.cm-completionLabel').filter({ hasText: 'libwildfn' })
+    ).toBeVisible()
+  })
+
+  test('brackets and Typst math auto-close their pairs', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Autoclose E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    await cm.click()
+    await page.keyboard.press('Control+End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('(') // -> ()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('$') // -> $$ (Typst math)
+
+    await expect(cm).toContainText('()')
+    await expect(cm).toContainText('$$')
+  })
+
   test('accent picker persists on the user record', async ({ page }) => {
     await page.goto('/users/settings')
     await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
@@ -100,6 +199,47 @@ test.describe('Product UI redesign', () => {
     await page.getByRole('button', { name: 'Bold' }).click()
 
     await expect(cm).toContainText('*')
+  })
+
+  test('autocomplete completes a function to #name() with the caret inside', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Autocomplete E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    await cm.click()
+    await page.keyboard.press('Control+End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('#figu')
+
+    const pop = page.locator('.cm-tooltip-autocomplete')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(pop.locator('.cm-completionLabel').first()).toContainText('figure')
+
+    // Accepting inserts "#figure()" with the caret between the parens.
+    await pop.locator('li').filter({ hasText: 'figure' }).first().click()
+    await page.keyboard.type('image')
+    await expect(cm).toContainText('#figure(image)')
+  })
+
+  test('selecting text shows the quick-action bubble and Bold wraps it', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Bubble E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    await cm.click()
+    // Put the prose on its own fresh line so the selection is exactly it.
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('Some prose to select.')
+    await page.keyboard.press('Home')
+    await page.keyboard.press('Shift+End')
+
+    const bubble = page.locator('.cm-qa')
+    await expect(bubble).toBeVisible({ timeout: 5_000 })
+    await expect(bubble.locator('.cm-qa__btn.is-primary')).toContainText('Heading')
+
+    await bubble.locator('button[title^="Bold"]').click()
+    await expect(cm).toContainText('*Some prose to select.*')
   })
 
   test('download button exports the compiled document as a PDF', async ({ page }) => {
