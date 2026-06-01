@@ -72,7 +72,7 @@ defmodule TypsterWeb.ProjectLiveTest do
     assert has_element?(view, ".ts-preview__bar .ts-pill")
     refute has_element?(view, "#command-palette")
 
-    view |> element("button.ts-cmdk") |> render_click()
+    view |> element("button.ts-tb__omni") |> render_click()
 
     assert has_element?(view, "#command-palette")
     assert has_element?(view, "#command-palette #palette-input")

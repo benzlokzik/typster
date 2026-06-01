@@ -154,12 +154,17 @@ defmodule TypsterWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :nav, :boolean,
+    default: true,
+    doc:
+      "render the shared floating nav; set false on screens with their own chrome (e.g. the editor's merged top bar)"
+
   slot :inner_block, required: true
 
   def app(assigns) do
     ~H"""
     <div class="ts-app" data-accent={accent_color(@current_scope)}>
-      <.mk_nav app_mode={true} current_scope={@current_scope}>
+      <.mk_nav :if={@nav} app_mode={true} current_scope={@current_scope}>
         <:nav_links>
           <.link navigate={~p"/projects"}>{gettext("nav.projects")}</.link>
           <.link :if={@current_scope && @current_scope.user} navigate={~p"/users/settings"}>
