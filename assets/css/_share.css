@@ -699,10 +699,10 @@
   border-color: var(--border-strong);
 }
 .cfg-chip .check {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border: 1.5px solid var(--border-strong);
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--surface);
   display: inline-grid;
   place-items: center;
@@ -710,14 +710,15 @@
   flex-shrink: 0;
 }
 .cfg-chip.on {
-  background: color-mix(in oklab, var(--accent) 8%, var(--surface));
-  border-color: color-mix(in oklab, var(--accent) 40%, var(--border));
+  background: color-mix(in oklab, var(--accent) 10%, var(--surface));
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
   color: var(--accent);
 }
 .cfg-chip.on .check {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--accent-text, white);
+  /* High-contrast checkmark — the white glyph reads clearly on the accent fill. */
+  color: #fff;
 }
 
 /* segmented control for theme/width */
@@ -1841,4 +1842,34 @@
   place-items: center;
   font-size: 26px;
   line-height: 1;
+}
+
+/* ── Embed snippet "coming soon" language tabs (React / npm) ──────────────────
+   These packages aren't shipped yet, so their tabs carry a small "soon" badge
+   and render a playful placeholder instead of a snippet. */
+.snippet-box .head .lang.lang--soon {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.snippet-box .head .lang .lang-soon {
+  font: 600 8px var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+/* Keep the live-preview compact inside the modal so the snippet below stays
+   reachable without a long scroll (the standalone /embed view is full-height). */
+.embed-preview-wrap .embed-comp {
+  min-height: 0;
+}
+.embed-preview-wrap .embed-code,
+.embed-preview-wrap .embed-tree,
+.embed-preview-wrap .embed-preview-doc {
+  max-height: 220px;
+  overflow: hidden;
 }

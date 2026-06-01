@@ -1316,43 +1316,129 @@
               desc={gettext("share.embed.free_desc")}
             />
           </div>
-          <div class="share-section">
-            <div class="embed-controls">
-              <div class="cfg-group grow">
-                <div class="lbl">{gettext("share.embed.components")}</div>
-                <div class="row">
-                  <div class="cfg-chip on">
-                    <span class="check"><.icon name="hero-check" class="size-3" /></span>
-                    {gettext("share.embed.file_tree")}
-                  </div>
-                  <div class="cfg-chip on">
-                    <span class="check"><.icon name="hero-check" class="size-3" /></span>
-                    {gettext("share.embed.preview")}
-                  </div>
-                  <div class="cfg-chip locked">
-                    <span class="check"><.icon name="hero-lock-closed" class="size-3" /></span>
-                    {gettext("share.embed.editable")}<span class="pro-badge">PRO</span>
-                  </div>
-                </div>
+
+          <% pro? = Features.pro?(@current_scope) %>
+
+          <div class="embed-controls">
+            <div class="cfg-group grow">
+              <div class="lbl">{gettext("share.embed.components")}</div>
+              <div class="row">
+                <.cfg_chip
+                  key="tree"
+                  label={gettext("share.embed.file_tree")}
+                  on={@embed_cfg.tree}
+                />
+                <.cfg_chip
+                  key="preview"
+                  label={gettext("share.embed.preview")}
+                  on={@embed_cfg.preview}
+                />
+                <.cfg_chip
+                  key="editable"
+                  label={gettext("share.embed.editable")}
+                  on={@embed_cfg.editable}
+                  locked={!pro?}
+                />
+                <.cfg_chip
+                  key="unbranded"
+                  label={gettext("share.embed.hide_footer")}
+                  on={@embed_cfg.unbranded}
+                  locked={!pro?}
+                />
+              </div>
+            </div>
+            <div class="cfg-group">
+              <div class="lbl">{gettext("share.embed.save_cta")}</div>
+              <div class="row">
+                <.cfg_seg
+                  key="cta"
+                  value={@embed_cfg.cta}
+                  opts={[
+                    %{v: "always", label: gettext("share.embed.cta_always")},
+                    %{v: "on-edit", label: gettext("share.embed.cta_onedit"), locked: !pro?},
+                    %{v: "never", label: gettext("share.embed.cta_hidden")}
+                  ]}
+                />
+              </div>
+            </div>
+            <div class="cfg-group">
+              <div class="lbl">{gettext("share.embed.theme")}</div>
+              <div class="row">
+                <.cfg_seg
+                  key="theme"
+                  value={@embed_cfg.theme}
+                  opts={[
+                    %{v: "auto", label: gettext("share.embed.theme_auto")},
+                    %{v: "light", label: gettext("share.embed.theme_light")},
+                    %{v: "dark", label: gettext("share.embed.theme_dark")}
+                  ]}
+                />
+              </div>
+            </div>
+            <div class="cfg-group">
+              <div class="lbl">{gettext("share.embed.width")}</div>
+              <div class="row">
+                <.cfg_seg
+                  key="width"
+                  value={@embed_cfg.width}
+                  opts={[
+                    %{v: "responsive", label: "100%"},
+                    %{v: "640", label: "640"},
+                    %{v: "800", label: "800"}
+                  ]}
+                />
               </div>
             </div>
           </div>
+
+          <div class="embed-preview-wrap">
+            <span class="preview-tag">{gettext("share.embed.live_preview")}</span>
+            <div
+              class="embed-width-frame"
+              style={"max-width: #{if(@embed_cfg.width == "responsive", do: "none", else: @embed_cfg.width <> "px")}"}
+            >
+              <.embed_preview
+                cfg={@embed_cfg}
+                project={@project}
+                entry={@current_file}
+                sources={@project_sources}
+                pro={pro?}
+              />
+            </div>
+          </div>
+
           <div class="snippet-box">
             <div class="head">
               <div class="langs">
-                <div class="lang active">iframe</div>
+                <div
+                  :for={lang <- ~w(iframe react npm)}
+                  class={[
+                    "lang",
+                    @embed_lang == lang && "active",
+                    lang != "iframe" && "lang--soon"
+                  ]}
+                  phx-click="embed_lang"
+                  phx-value-lang={lang}
+                >
+                  {if(lang == "react", do: "React", else: lang)}<span
+                    :if={lang != "iframe"}
+                    class="lang-soon"
+                  >soon</span>
+                </div>
               </div>
               <button
                 type="button"
                 class="copy"
                 id="embed-copy"
                 phx-hook="Clipboard"
-                data-clipboard={embed_iframe(@share_link)}
+                data-clipboard={
+                  embed_snippet(@share_link, @current_file, @embed_cfg, @embed_lang)
+                }
               >
                 <.icon name="hero-clipboard-document" class="size-3" /> {gettext("common.copy")}
               </button>
             </div>
-            <pre>{embed_iframe(@share_link)}</pre>
+            <pre>{embed_snippet(@share_link, @current_file, @embed_cfg, @embed_lang)}</pre>
           </div>
         </div>
 

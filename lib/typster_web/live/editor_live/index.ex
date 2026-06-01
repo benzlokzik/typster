@@ -64,6 +64,8 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:share_tab, "link")
      |> assign(:share_link, nil)
      |> assign(:share_write_preview, false)
+     |> assign(:embed_cfg, default_embed_cfg())
+     |> assign(:embed_lang, "iframe")
      |> assign(:share_collaborators, [])
      |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
      |> stream(:outline, [])
@@ -242,6 +244,8 @@ defmodule TypsterWeb.EditorLive.Index do
      socket
      |> load_share()
      |> assign(:share_write_preview, false)
+     |> assign(:embed_cfg, default_embed_cfg())
+     |> assign(:embed_lang, "iframe")
      |> assign(:show_share, true)}
   end
 
@@ -298,6 +302,44 @@ defmodule TypsterWeb.EditorLive.Index do
       nil -> {:noreply, socket}
       link -> {:noreply, update_share_link(socket, %{allow_download: !link.allow_download})}
     end
+  end
+
+  # ── Embed tab configurator ──────────────────────────────────────────────────
+  # Toggle a boolean component chip. `editable`/`unbranded` are Pro-only; clicks
+  # are ignored on Free (the chip renders locked with a PRO badge).
+  @impl true
+  def handle_event("embed_toggle", %{"key" => key}, socket)
+      when key in ~w(tree preview editable unbranded) do
+    pro? = Features.pro?(socket.assigns.current_scope)
+    locked? = key in ~w(editable unbranded) and not pro?
+
+    cfg =
+      if locked? do
+        socket.assigns.embed_cfg
+      else
+        Map.update!(socket.assigns.embed_cfg, String.to_existing_atom(key), &(!&1))
+      end
+
+    {:noreply, assign(socket, :embed_cfg, cfg)}
+  end
+
+  # Pick a value in a segmented control (Save CTA / Theme / Width). The `on-edit`
+  # Save-CTA mode is Pro-only.
+  def handle_event("embed_set", %{"key" => key, "val" => val}, socket)
+      when key in ~w(cta theme width) do
+    pro? = Features.pro?(socket.assigns.current_scope)
+    locked? = key == "cta" and val == "on-edit" and not pro?
+
+    cfg =
+      if locked?,
+        do: socket.assigns.embed_cfg,
+        else: Map.put(socket.assigns.embed_cfg, String.to_existing_atom(key), val)
+
+    {:noreply, assign(socket, :embed_cfg, cfg)}
+  end
+
+  def handle_event("embed_lang", %{"lang" => lang}, socket) when lang in ~w(iframe react npm) do
+    {:noreply, assign(socket, :embed_lang, lang)}
   end
 
   @impl true
@@ -1032,13 +1074,52 @@ defmodule TypsterWeb.EditorLive.Index do
   defp collab_status(%{status: :pending}), do: gettext("share.people.invite_sent")
   defp collab_status(%{role: role}), do: role_label(role)
 
-  defp embed_iframe(%{token: token}) do
-    src = url(~p"/embed/#{token}")
+  # Default embed configurator state (mirrors the v3 EmbedTab prototype).
+  defp default_embed_cfg do
+    %{
+      tree: true,
+      preview: true,
+      editable: false,
+      unbranded: false,
+      cta: "always",
+      theme: "auto",
+      width: "responsive"
+    }
+  end
 
+  # Build the embed URL with the configurator's options encoded as query params.
+  defp embed_src(%{token: token}, entry, cfg) do
+    query =
+      [
+        entry && "file=#{entry.path}",
+        "theme=#{cfg.theme}",
+        !cfg.tree && "tree=0",
+        !cfg.preview && "preview=0",
+        cfg.editable && "editable=1"
+      ]
+      |> Enum.filter(& &1)
+      |> Enum.join("&")
+
+    "#{url(~p"/embed/#{token}")}?#{query}"
+  end
+
+  defp embed_src(_link, _entry, _cfg), do: ""
+
+  defp embed_width_value(%{width: "responsive"}), do: "100%"
+  defp embed_width_value(%{width: w}), do: w
+
+  # The copyable snippet for the active language tab. The React and npm packages
+  # aren't shipped yet, so those tabs show a playful "coming soon" placeholder
+  # instead of a snippet that wouldn't work.
+  defp embed_snippet(_link, _entry, _cfg, lang) when lang in ~w(react npm) do
+    gettext("share.embed.coming_soon")
+  end
+
+  defp embed_snippet(link, entry, cfg, _iframe) do
     """
     <iframe
-      src="#{src}"
-      width="100%"
+      src="#{embed_src(link, entry, cfg)}"
+      width="#{embed_width_value(cfg)}"
       height="540"
       loading="lazy"
       allow="clipboard-write"
@@ -1046,7 +1127,23 @@ defmodule TypsterWeb.EditorLive.Index do
     """
   end
 
-  defp embed_iframe(_link), do: ""
+  # CSS grid columns for the live-preview comp, honoring the tree/preview toggles.
+  defp embed_preview_cols(cfg) do
+    tree = if cfg.tree, do: "130px ", else: ""
+    prev = if cfg.preview, do: " 1fr", else: ""
+    "grid-template-columns: #{tree}1fr#{prev};"
+  end
+
+  # First `n` source lines of the entry file, for the read-only preview pane.
+  defp embed_preview_lines(%{content: content}, n) when is_binary(content) do
+    content
+    |> String.split("\n")
+    |> Enum.take(n)
+    |> Enum.with_index(1)
+    |> Enum.map(fn {text, i} -> {i, text} end)
+  end
+
+  defp embed_preview_lines(_entry, _n), do: [{1, ""}]
 
   # ── Share modal function components ─────────────────────────────────────────
   attr :scope, :string, required: true
@@ -1103,6 +1200,117 @@ defmodule TypsterWeb.EditorLive.Index do
         <div :if={@sub} class="d">{@sub}</div>
       </div>
       <div class="switch"></div>
+    </div>
+    """
+  end
+
+  attr :key, :string, required: true
+  attr :label, :string, required: true
+  attr :on, :boolean, default: false
+  attr :locked, :boolean, default: false
+
+  # A toggle chip in the embed Components group. Locked chips are Pro-gated.
+  defp cfg_chip(assigns) do
+    ~H"""
+    <div
+      class={["cfg-chip", (@on and !@locked) && "on", @locked && "locked"]}
+      phx-click="embed_toggle"
+      phx-value-key={@key}
+    >
+      <span class="check">
+        <.icon :if={@locked} name="hero-lock-closed" class="size-3" />
+        <.icon :if={!@locked and @on} name="hero-check-solid" class="size-3.5" />
+      </span>
+      {@label}<span :if={@locked} class="pro-badge">PRO</span>
+    </div>
+    """
+  end
+
+  attr :key, :string, required: true
+  attr :value, :string, required: true
+  attr :opts, :list, required: true
+
+  # A segmented control (Save CTA / Theme / Width). Options may be Pro-locked.
+  defp cfg_seg(assigns) do
+    ~H"""
+    <div class="cfg-seg">
+      <div
+        :for={o <- @opts}
+        class={["opt", (@value == o.v and !o[:locked]) && "active", o[:locked] && "locked"]}
+        phx-click="embed_set"
+        phx-value-key={@key}
+        phx-value-val={o.v}
+      >
+        {o.label}<span :if={o[:locked]} class="pro-badge">PRO</span>
+      </div>
+    </div>
+    """
+  end
+
+  attr :cfg, :map, required: true
+  attr :project, :map, required: true
+  attr :entry, :map, default: nil
+  attr :sources, :list, default: []
+  attr :pro, :boolean, default: false
+
+  # The "Live preview" — a representative embed rendered inside a fake host page,
+  # driven by the configurator (tree/preview/editable/unbranded/theme/width).
+  defp embed_preview(assigns) do
+    assigns =
+      assign(assigns, :sandbox?, assigns.cfg.editable and assigns.pro)
+      |> assign(:branded?, !(assigns.cfg.unbranded and assigns.pro))
+
+    ~H"""
+    <div class="host-page" data-theme={if(@cfg.theme in ~w(light dark), do: @cfg.theme)}>
+      <div class="host-chrome">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <span class="url">{gettext("share.embed.host_example")}</span>
+      </div>
+
+      <div class="embed-comp" style={embed_preview_cols(@cfg)}>
+        <div class="embed-bar">
+          <span class="t-glyph ts-serif">T</span>
+          <span class="slug">{@project.name}</span>
+          <span :if={@entry} style="color: var(--text-mute)">· {@entry.path}</span>
+          <span class="spacer"></span>
+          <span :if={@sandbox?} class="sandbox-pill">
+            <span class="pulse"></span>{gettext("share.embed.sandbox")}
+          </span>
+          <span :if={!@sandbox?} style="font: 500 10.5px var(--font-sans); color: var(--text-mute)">
+            {gettext("share.embed.readonly")}
+          </span>
+        </div>
+
+        <div :if={@cfg.tree} class="embed-tree">
+          <div class="node dir">▾ {@project.name}</div>
+          <div
+            :for={src <- Enum.take(@sources, 5)}
+            class={["node", "nest", @entry && src.path == @entry.path && "active"]}
+          >
+            {src.path}
+          </div>
+        </div>
+
+        <div class="embed-code">
+          <div :for={{n, text} <- embed_preview_lines(@entry, 11)}>
+            <span class="ln">{n}</span>{text}
+          </div>
+        </div>
+
+        <div :if={@cfg.preview} class="embed-preview-doc">
+          <h1>{@project.name}</h1>
+          <div class="meta">{gettext("share.embed.sample_meta")}</div>
+          <p>{gettext("share.embed.sample_body")}</p>
+        </div>
+
+        <div class="embed-foot">
+          <span :if={@branded?} class="powered">
+            {gettext("share.public.powered_by")} <strong style="color: var(--text)">Typster</strong>
+          </span>
+          <span class="spacer"></span>
+          <span class="btn primary">{gettext("share.public.open_in_typster")} ↗</span>
+        </div>
+      </div>
     </div>
     """
   end
