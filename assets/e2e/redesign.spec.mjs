@@ -54,6 +54,40 @@ test.describe('Product UI redesign', () => {
     await expect(page.locator('#preview-container')).toBeVisible()
   })
 
+  test('redesigned embed view + clickable-but-locked Pro write card', async ({ page }) => {
+    test.setTimeout(120_000)
+    await createProjectAndOpenEditor(page, 'embed-look')
+    await addMainFile(page)
+
+    await page.locator('.ts-tb__share').click()
+    const modal = page.locator('.share-shell')
+    await expect(modal).toBeVisible({ timeout: 5000 })
+
+    // Pro write-scope card is clickable but NOT usable: clicking activates it
+    // and reveals the upsell inline — it never selects a real write scope.
+    const writeCard = modal.locator('.perm-card.tone-write')
+    await expect(writeCard).not.toHaveClass(/\bactive\b/)
+    await writeCard.click()
+    await expect(writeCard).toHaveClass(/\bactive\b/)
+    await expect(writeCard.locator('.upgrade-banner')).toBeVisible()
+
+    // Pull the link token and open the cross-origin-framable embed view.
+    const path = (await modal.locator('.link-box .path').textContent()).trim()
+    const token = path.match(/key=([\w-]+)/)[1]
+    await page.goto(`/embed/${token}`)
+
+    // Redesigned embed chrome: identity bar, read-only pill, real read-only
+    // source + live preview, and the single footer CTA.
+    await expect(page.locator('.share-public--embed .embed-comp')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('.embed-bar .slug')).toContainText('embed-look')
+    await expect(page.locator('.ro-pill')).toBeVisible()
+    await expect(page.locator('.embed-source #editor-container .cm-content')).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect(page.locator('#preview-container')).toBeVisible()
+    await expect(page.locator('.embed-foot__cta')).toBeVisible()
+  })
+
   test('autocomplete suggests local #let and imported symbols', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'LocalImport E2E')
     await addMainFile(page)
