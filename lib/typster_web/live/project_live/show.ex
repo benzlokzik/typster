@@ -8,7 +8,7 @@ defmodule TypsterWeb.ProjectLive.Show do
   @impl true
   def mount(%{"id" => id}, _session, socket) do
     scope = socket.assigns.current_scope
-    project = Projects.get_project!(scope, id)
+    project = Projects.get_editable_project!(scope, id)
     file_tree = Files.get_file_tree(scope, id)
     assets = Assets.list_assets(scope, id)
 
@@ -24,7 +24,7 @@ defmodule TypsterWeb.ProjectLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, socket.assigns.project.name)
-     |> assign(:project, Projects.get_project!(socket.assigns.current_scope, id))}
+     |> assign(:project, Projects.get_editable_project!(socket.assigns.current_scope, id))}
   end
 
   @impl true

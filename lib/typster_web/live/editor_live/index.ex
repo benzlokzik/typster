@@ -2,15 +2,20 @@ defmodule TypsterWeb.EditorLive.Index do
   use TypsterWeb, :live_view
 
   alias Typster.Assets
+  alias Typster.Features
   alias Typster.Files
   alias Typster.Projects
   alias Typster.Revisions
+  alias Typster.Sharing
   alias Typster.Templates
+
+  # Stable avatar colours for the share People list (hashed from the email).
+  @collab_palette ~w(#6366f1 #8b5cf6 #0ea5e9 #10b981 #f43f5e #f59e0b)
 
   @impl true
   def mount(%{"id" => project_id}, _session, socket) do
     scope = socket.assigns.current_scope
-    project = Projects.get_project!(scope, project_id)
+    project = Projects.get_editable_project!(scope, project_id)
     file_tree = Files.get_file_tree(scope, project_id)
     assets = Assets.list_assets(scope, project_id)
     main_file = initial_file(file_tree)
@@ -23,6 +28,7 @@ defmodule TypsterWeb.EditorLive.Index do
     {:ok,
      socket
      |> assign(:project, project)
+     |> assign(:owner?, Projects.owner?(scope, project))
      |> assign(:collaborators, present_collaborators(scope, project.id))
      |> assign(:file_tree, file_tree)
      |> assign(:assets, assets)
@@ -54,6 +60,14 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:collapsed_dirs, MapSet.new())
      |> assign(:show_palette, false)
      |> assign(:palette_query, "")
+     |> assign(:show_share, false)
+     |> assign(:share_tab, "link")
+     |> assign(:share_link, nil)
+     |> assign(:share_write_preview, false)
+     |> assign(:embed_cfg, default_embed_cfg())
+     |> assign(:embed_lang, "iframe")
+     |> assign(:share_collaborators, [])
+     |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
      |> stream(:outline, [])
      |> assign(:outline_count, 0)
      |> assign(:page_title, project.name)
@@ -90,6 +104,10 @@ defmodule TypsterWeb.EditorLive.Index do
     {:noreply,
      assign(socket, :collaborators, present_collaborators(scope, socket.assigns.project.id))}
   end
+
+  # Ignore stray process messages (e.g. the Swoosh test adapter's {:email, _}
+  # delivered to this process when an invite is sent) so they never crash the LV.
+  def handle_info(_msg, socket), do: {:noreply, socket}
 
   @impl true
   def handle_event("save_started", _params, socket) do
@@ -218,6 +236,145 @@ defmodule TypsterWeb.EditorLive.Index do
   @impl true
   def handle_event("filter_palette", %{"value" => query}, socket) do
     {:noreply, assign(socket, :palette_query, query)}
+  end
+
+  @impl true
+  def handle_event("open_share", _params, %{assigns: %{owner?: true}} = socket) do
+    {:noreply,
+     socket
+     |> load_share()
+     |> assign(:share_write_preview, false)
+     |> assign(:embed_cfg, default_embed_cfg())
+     |> assign(:embed_lang, "iframe")
+     |> assign(:show_share, true)}
+  end
+
+  # Sharing is managed by the owner only; collaborators can edit but not invite.
+  def handle_event("open_share", _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("close_share", _params, socket) do
+    {:noreply, assign(socket, :show_share, false)}
+  end
+
+  @impl true
+  def handle_event("share_tab", %{"tab" => tab}, socket)
+      when tab in ~w(people link embed export) do
+    {:noreply, assign(socket, :share_tab, tab)}
+  end
+
+  @impl true
+  def handle_event("share_scope", %{"scope" => scope}, socket)
+      when scope in ~w(read output full) do
+    {:noreply,
+     socket
+     |> assign(:share_write_preview, false)
+     |> update_share_link(%{scope: scope})}
+  end
+
+  # Pro "per-file write scope". The card is clickable so visitors can preview the
+  # capability, but on Free it only reveals the upsell — it never changes the
+  # link's real scope (which stays read/output/full). Pro swaps in the file picker.
+  def handle_event("share_scope", %{"scope" => "write"}, socket) do
+    {:noreply, assign(socket, :share_write_preview, true)}
+  end
+
+  def handle_event("share_scope", _params, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_event("share_rotate", _params, socket) do
+    scope = socket.assigns.current_scope
+
+    socket =
+      with link when not is_nil(link) <- socket.assigns.share_link,
+           {:ok, rotated} <- Sharing.rotate_link(scope, link) do
+        assign(socket, :share_link, rotated)
+      else
+        _ -> socket
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("share_toggle_download", _params, socket) do
+    case socket.assigns.share_link do
+      nil -> {:noreply, socket}
+      link -> {:noreply, update_share_link(socket, %{allow_download: !link.allow_download})}
+    end
+  end
+
+  # ── Embed tab configurator ──────────────────────────────────────────────────
+  # Toggle a boolean component chip. `editable`/`unbranded` are Pro-only; clicks
+  # are ignored on Free (the chip renders locked with a PRO badge).
+  @impl true
+  def handle_event("embed_toggle", %{"key" => key}, socket)
+      when key in ~w(tree preview editable unbranded) do
+    pro? = Features.pro?(socket.assigns.current_scope)
+    locked? = key in ~w(editable unbranded) and not pro?
+
+    cfg =
+      if locked? do
+        socket.assigns.embed_cfg
+      else
+        Map.update!(socket.assigns.embed_cfg, String.to_existing_atom(key), &(!&1))
+      end
+
+    {:noreply, assign(socket, :embed_cfg, cfg)}
+  end
+
+  # Pick a value in a segmented control (Save CTA / Theme / Width). The `on-edit`
+  # Save-CTA mode is Pro-only.
+  def handle_event("embed_set", %{"key" => key, "val" => val}, socket)
+      when key in ~w(cta theme width) do
+    pro? = Features.pro?(socket.assigns.current_scope)
+    locked? = key == "cta" and val == "on-edit" and not pro?
+
+    cfg =
+      if locked?,
+        do: socket.assigns.embed_cfg,
+        else: Map.put(socket.assigns.embed_cfg, String.to_existing_atom(key), val)
+
+    {:noreply, assign(socket, :embed_cfg, cfg)}
+  end
+
+  def handle_event("embed_lang", %{"lang" => lang}, socket) when lang in ~w(iframe react npm) do
+    {:noreply, assign(socket, :embed_lang, lang)}
+  end
+
+  @impl true
+  def handle_event("share_invite", %{"invite" => %{"email" => email, "role" => role}}, socket) do
+    scope = socket.assigns.current_scope
+    project = socket.assigns.project
+
+    case Sharing.invite_collaborator(scope, project.id, email, invite_role(role)) do
+      {:ok, _collaborator} ->
+        {:noreply,
+         socket
+         |> assign(:share_collaborators, Sharing.list_collaborators(scope, project.id))
+         |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
+         |> put_flash(:info, gettext("share.flash.invited", email: email))}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, gettext("share.flash.invite_failed"))}
+    end
+  end
+
+  @impl true
+  def handle_event("share_remove_collab", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
+    project = socket.assigns.project
+
+    socket =
+      with collab when not is_nil(collab) <-
+             Enum.find(socket.assigns.share_collaborators, &(&1.id == id)),
+           {:ok, _} <- Sharing.remove_collaborator(scope, collab) do
+        assign(socket, :share_collaborators, Sharing.list_collaborators(scope, project.id))
+      else
+        _ -> socket
+      end
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -845,6 +1002,231 @@ defmodule TypsterWeb.EditorLive.Index do
 
   defp email_local_parts(email) do
     email |> String.split("@") |> List.first() |> String.split(~r/[._-]/, trim: true)
+  end
+
+  # ── Share modal helpers ─────────────────────────────────────────────────────
+  defp load_share(socket) do
+    scope = socket.assigns.current_scope
+    project = socket.assigns.project
+
+    socket
+    |> assign(:share_link, Sharing.get_or_create_link(scope, project.id))
+    |> assign(:share_collaborators, Sharing.list_collaborators(scope, project.id))
+  end
+
+  defp update_share_link(socket, attrs) do
+    scope = socket.assigns.current_scope
+
+    with link when not is_nil(link) <- socket.assigns.share_link,
+         {:ok, updated} <- Sharing.update_link(scope, link, attrs) do
+      assign(socket, :share_link, updated)
+    else
+      _ -> socket
+    end
+  end
+
+  defp invite_role("owner"), do: :owner
+  defp invite_role("viewer"), do: :viewer
+  defp invite_role(_), do: :editor
+
+  # Full public share URL for the project's link (for display + copy).
+  defp share_url(project, %{token: token}), do: url(~p"/p/#{share_slug(project)}?#{[key: token]}")
+  defp share_url(_project, _link), do: "#"
+
+  defp share_slug(%{name: name}) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
+    |> String.trim("-")
+    |> case do
+      "" -> "project"
+      slug -> slug
+    end
+  end
+
+  # Role label + avatar colour for the People list.
+  defp collab_initials(%{email: email}), do: email |> initials_from(2)
+  defp collab_color(%{email: email}), do: Enum.at(@collab_palette, :erlang.phash2(email, 6))
+
+  defp initials_from(email, take) do
+    email
+    |> String.split("@")
+    |> List.first()
+    |> String.split(~r/[._-]+/, trim: true)
+    |> Enum.map(&String.first/1)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.take(take)
+    |> Enum.map_join("", &String.upcase/1)
+    |> case do
+      "" -> "?"
+      s -> s
+    end
+  end
+
+  defp plan_label(scope) do
+    if Features.pro?(scope), do: gettext("share.plan.pro"), else: gettext("share.plan.free")
+  end
+
+  defp role_label(:owner), do: gettext("share.role.owner")
+  defp role_label(:viewer), do: gettext("share.role.viewer")
+  defp role_label(_), do: gettext("share.role.editor")
+
+  defp collab_status(%{status: :pending}), do: gettext("share.people.invite_sent")
+  defp collab_status(%{role: role}), do: role_label(role)
+
+  # Default embed configurator state (mirrors the v3 EmbedTab prototype).
+  defp default_embed_cfg do
+    %{
+      tree: true,
+      preview: true,
+      editable: false,
+      unbranded: false,
+      cta: "always",
+      theme: "auto",
+      width: "responsive"
+    }
+  end
+
+  # Build the embed URL with the configurator's options encoded as query params.
+  defp embed_src(%{token: token}, entry, cfg) do
+    query =
+      [
+        entry && "file=#{entry.path}",
+        "theme=#{cfg.theme}",
+        !cfg.tree && "tree=0",
+        !cfg.preview && "preview=0",
+        cfg.editable && "editable=1"
+      ]
+      |> Enum.filter(& &1)
+      |> Enum.join("&")
+
+    "#{url(~p"/embed/#{token}")}?#{query}"
+  end
+
+  defp embed_src(_link, _entry, _cfg), do: ""
+
+  defp embed_width_value(%{width: "responsive"}), do: "100%"
+  defp embed_width_value(%{width: w}), do: w
+
+  # The copyable snippet for the active language tab. The React and npm packages
+  # aren't shipped yet, so those tabs show a playful "coming soon" placeholder
+  # instead of a snippet that wouldn't work.
+  defp embed_snippet(_link, _entry, _cfg, lang) when lang in ~w(react npm) do
+    gettext("share.embed.coming_soon")
+  end
+
+  defp embed_snippet(link, entry, cfg, _iframe) do
+    """
+    <iframe
+      src="#{embed_src(link, entry, cfg)}"
+      width="#{embed_width_value(cfg)}"
+      height="540"
+      loading="lazy"
+      allow="clipboard-write"
+    ></iframe>\
+    """
+  end
+
+  # ── Share modal function components ─────────────────────────────────────────
+  attr :scope, :string, required: true
+  attr :tone, :string, required: true
+  attr :active, :boolean, default: false
+  attr :icon, :string, required: true
+  attr :badge, :string, default: nil
+  attr :title, :string, required: true
+  attr :desc, :string, required: true
+
+  defp perm_card(assigns) do
+    ~H"""
+    <div
+      class={["perm-card", "tone-#{@tone}", @active && "active"]}
+      phx-click="share_scope"
+      phx-value-scope={@scope}
+    >
+      <div class="ic"><.icon name={@icon} class="size-4" /></div>
+      <div class="body">
+        <div class="h">{@title}<span :if={@badge} class="badge">{@badge}</span></div>
+        <div class="d">{@desc}</div>
+      </div>
+      <div class="radio"></div>
+    </div>
+    """
+  end
+
+  attr :title, :string, required: true
+  attr :desc, :string, default: nil
+  attr :compact, :boolean, default: false
+
+  defp upgrade_banner(assigns) do
+    ~H"""
+    <div class={["upgrade-banner", @compact && "compact"]}>
+      <div class="ic"><.icon name="hero-sparkles" class="size-4" /></div>
+      <div class="meta">
+        <div class="h">{@title}</div>
+        <div :if={@desc} class="d">{@desc}</div>
+      </div>
+      <button type="button" class="cta">{gettext("share.upgrade.cta")}</button>
+    </div>
+    """
+  end
+
+  attr :label, :string, required: true
+  attr :sub, :string, default: nil
+  attr :on, :boolean, default: false
+
+  defp toggle_row(assigns) do
+    ~H"""
+    <div class={["toggle-row", @on && "on"]}>
+      <div class="meta">
+        <div class="h">{@label}</div>
+        <div :if={@sub} class="d">{@sub}</div>
+      </div>
+      <div class="switch"></div>
+    </div>
+    """
+  end
+
+  attr :key, :string, required: true
+  attr :label, :string, required: true
+  attr :on, :boolean, default: false
+  attr :locked, :boolean, default: false
+
+  # A toggle chip in the embed Components group. Locked chips are Pro-gated.
+  defp cfg_chip(assigns) do
+    ~H"""
+    <div
+      class={["cfg-chip", (@on and !@locked) && "on", @locked && "locked"]}
+      phx-click="embed_toggle"
+      phx-value-key={@key}
+    >
+      <span class="check">
+        <.icon :if={@locked} name="hero-lock-closed" class="size-3" />
+        <.icon :if={!@locked and @on} name="hero-check-solid" class="size-3.5" />
+      </span>
+      {@label}<span :if={@locked} class="pro-badge">PRO</span>
+    </div>
+    """
+  end
+
+  attr :key, :string, required: true
+  attr :value, :string, required: true
+  attr :opts, :list, required: true
+
+  # A segmented control (Save CTA / Theme / Width). Options may be Pro-locked.
+  defp cfg_seg(assigns) do
+    ~H"""
+    <div class="cfg-seg">
+      <div
+        :for={o <- @opts}
+        class={["opt", (@value == o.v and !o[:locked]) && "active", o[:locked] && "locked"]}
+        phx-click="embed_set"
+        phx-value-key={@key}
+        phx-value-val={o.v}
+      >
+        {o.label}<span :if={o[:locked]} class="pro-badge">PRO</span>
+      </div>
+    </div>
+    """
   end
 
   # Append a file id to the open-tabs list (keeping order, no duplicates).

@@ -27,6 +27,7 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/typster"
 import topbar from "../vendor/topbar"
 import * as Hooks from "./hooks"
+import { bootEmbed } from "./embed_boot"
 
 // Tag the document with the OS family so shortcut hints can show ⌘ on Apple
 // platforms and Ctrl everywhere else (CSS toggles `.ts-mac` / `.ts-other`).
@@ -50,6 +51,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     Palette: Hooks.Palette,
     SlashFocus: Hooks.SlashFocus,
     LucideIcons: Hooks.LucideIcons,
+    Clipboard: Hooks.Clipboard,
     CompileDelay: Hooks.CompileDelay,
     FileTreeDnD: Hooks.FileTreeDnD
   },
@@ -60,8 +62,13 @@ topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", () => { topbar.hide(); mkIcons(); })
 
-// connect if there are any LiveViews on the page
-liveSocket.connect()
+// The embed page (/embed/:token) is framed cross-site, where its SameSite=Lax
+// session cookie is blocked — a LiveView socket would never join and the client
+// would reload-loop. Boot it standalone (read-only editor + WASM preview, no
+// socket). Every other page connects LiveView normally.
+if (!bootEmbed()) {
+  liveSocket.connect()
+}
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

@@ -17,6 +17,7 @@ function parseJsonDataset(value, fallback) {
 function editorOptions(element) {
   return {
     language: element.dataset.language || "typst",
+    readonly: element.dataset.readonly === "true",
     project: {
       sources: parseJsonDataset(element.dataset.projectSources, []),
       assets: parseJsonDataset(element.dataset.projectAssets, [])
@@ -377,6 +378,22 @@ export const PreviewZoom = {
 export const LucideIcons = {
   mounted() { window.mkIcons?.(this.el) },
   updated() { window.mkIcons?.(this.el) }
+}
+
+// Copy `data-clipboard` to the clipboard on click; flashes `.copied` briefly.
+export const Clipboard = {
+  mounted() {
+    this.handler = () => {
+      const text = this.el.dataset.clipboard || ""
+      if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {})
+      this.el.classList.add("copied")
+      setTimeout(() => this.el.classList.remove("copied"), 1200)
+    }
+    this.el.addEventListener("click", this.handler)
+  },
+  destroyed() {
+    this.el.removeEventListener("click", this.handler)
+  }
 }
 
 // Persist the auto-recompile debounce (read by editor.js' compileDelay()).

@@ -5,13 +5,16 @@ defmodule Typster.Assets do
 
   import Ecto.Query, warn: false
   alias Typster.Accounts.Scope
-  alias Typster.Repo
   alias Typster.Assets.Asset
+  alias Typster.Repo
+  alias Typster.Sharing.Collaborator
 
   def get_asset!(%Scope{user: user}, id) do
     from(a in Asset,
       join: p in assoc(a, :project),
-      where: a.id == ^id and p.user_id == ^user.id
+      left_join: c in Collaborator,
+      on: c.project_id == p.id and c.user_id == ^user.id and c.status == :accepted,
+      where: a.id == ^id and (p.user_id == ^user.id or not is_nil(c.id))
     )
     |> Repo.one!()
   end
@@ -19,13 +22,15 @@ defmodule Typster.Assets do
   def get_asset(%Scope{user: user}, id) do
     from(a in Asset,
       join: p in assoc(a, :project),
-      where: a.id == ^id and p.user_id == ^user.id
+      left_join: c in Collaborator,
+      on: c.project_id == p.id and c.user_id == ^user.id and c.status == :accepted,
+      where: a.id == ^id and (p.user_id == ^user.id or not is_nil(c.id))
     )
     |> Repo.one()
   end
 
   def upload_asset(%Scope{} = scope, project_id, object_key, attrs) do
-    _project = Typster.Projects.get_project!(scope, project_id)
+    _project = Typster.Projects.get_editable_project!(scope, project_id)
 
     %Asset{project_id: project_id, inserted_at: DateTime.utc_now(:second)}
     |> Asset.changeset(
@@ -77,7 +82,7 @@ defmodule Typster.Assets do
   end
 
   def list_assets(%Scope{} = scope, project_id) do
-    _project = Typster.Projects.get_project!(scope, project_id)
+    _project = Typster.Projects.get_editable_project!(scope, project_id)
 
     from(a in Asset,
       where: a.project_id == ^project_id,

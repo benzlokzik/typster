@@ -428,4 +428,62 @@ defmodule TypsterWeb.EditorLiveTest do
     scope = Typster.Accounts.Scope.for_user(user)
     Enum.any?(Typster.Files.get_file_tree(scope, project.id), &(&1.path == path))
   end
+
+  describe "share modal — Pro write-scope card" do
+    test "is clickable, previews the upsell, but never changes the link scope",
+         %{conn: conn, user: user, project: project} do
+      view = open_editor(conn, project)
+
+      view |> element(".ts-tb__share") |> render_click()
+      assert has_element?(view, ".perm-card.tone-write")
+      # Resting state: not active, no upgrade banner yet.
+      refute has_element?(view, ".perm-card.tone-write.active")
+
+      # Clicking the Pro card activates it and reveals the upsell (not usable)…
+      view |> element("[phx-click='share_scope'][phx-value-scope='write']") |> render_click()
+      assert has_element?(view, ".perm-card.tone-write.active")
+      assert has_element?(view, ".perm-card.tone-write .upgrade-banner")
+
+      # …but the real link scope is unchanged (still a free scope, never :write).
+      scope = Typster.Accounts.Scope.for_user(user)
+      link = Typster.Sharing.get_or_create_link(scope, project.id)
+      assert link.scope in [:read, :output, :full]
+
+      # Choosing a real scope clears the preview.
+      view |> element("[phx-click='share_scope'][phx-value-scope='output']") |> render_click()
+      refute has_element?(view, ".perm-card.tone-write.active")
+    end
+  end
+
+  describe "collaborator access" do
+    setup %{user: owner, project: project} do
+      owner_scope = Typster.Accounts.Scope.for_user(owner)
+
+      {:ok, invite} =
+        Typster.Sharing.invite_collaborator(owner_scope, project.id, "c@x.com", :editor)
+
+      collaborator = Typster.AccountsFixtures.user_fixture()
+
+      {:ok, _} =
+        Typster.Sharing.accept_invite(Typster.Accounts.Scope.for_user(collaborator), invite.id)
+
+      collab_conn = log_in_user(build_conn(), collaborator)
+      %{collab_conn: collab_conn}
+    end
+
+    test "an accepted collaborator can open the owner's editor",
+         %{collab_conn: conn, user: user, project: project} do
+      file_fixture(project, user, %{path: "main.typ"})
+      view = open_editor(conn, project)
+
+      assert has_element?(view, ".ts-tb__proj", project.name)
+      assert has_element?(view, "#create-main-file-button")
+    end
+
+    test "the Share button is owner-only",
+         %{conn: owner_conn, collab_conn: collab_conn, project: project} do
+      assert has_element?(open_editor(owner_conn, project), ".ts-tb__share")
+      refute has_element?(open_editor(collab_conn, project), ".ts-tb__share")
+    end
+  end
 end

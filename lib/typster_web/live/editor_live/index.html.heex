@@ -64,10 +64,11 @@
       </button>
 
       <button
+        :if={@owner?}
         type="button"
         class="ts-btn ts-btn--ghost ts-btn--sm ts-tb__share"
-        disabled
-        title={gettext("editor.share_soon")}
+        phx-click="open_share"
+        title={gettext("editor.share")}
       >
         <i data-lucide="upload" aria-hidden="true"></i> {gettext("editor.share")}
       </button>
@@ -996,6 +997,489 @@
         >
           <.icon name="hero-table-cells" class="size-4" />
           <span>{gettext("editor.palette.table")}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <%!-- Share modal --%>
+  <div
+    :if={@show_share}
+    class="share-overlay"
+    phx-click="close_share"
+    phx-window-keydown="close_share"
+    phx-key="Escape"
+  >
+    <div class="share-shell" id="share-modal" phx-click="">
+      <div class="share-head">
+        <div>
+          <div class="ttl">
+            {gettext("share.title")} <span class="proj">{@project.name}</span>
+          </div>
+          <div class="sub">{gettext("share.subtitle")}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+          <span class="pro-badge subtle">{plan_label(@current_scope)}</span>
+          <button
+            type="button"
+            class="x"
+            phx-click="close_share"
+            aria-label={gettext("common.close")}
+          >
+            <.icon name="hero-x-mark" class="size-4" />
+          </button>
+        </div>
+      </div>
+
+      <div class="share-tabs">
+        <button
+          :for={
+            {id, label} <- [
+              {"people", gettext("share.tab.people")},
+              {"link", gettext("share.tab.link")},
+              {"embed", gettext("share.tab.embed")},
+              {"export", gettext("share.tab.export")}
+            ]
+          }
+          type="button"
+          class={["tab", @share_tab == id && "active"]}
+          phx-click="share_tab"
+          phx-value-tab={id}
+        >
+          {label}
+          <span :if={id == "people" and @share_collaborators != []} class="badge">
+            {length(@share_collaborators)}
+          </span>
+        </button>
+      </div>
+
+      <div class="share-body">
+        <%!-- People --%>
+        <div :if={@share_tab == "people"}>
+          <div class="share-section">
+            <div class="label">{gettext("share.people.invite")}</div>
+            <.form
+              for={@invite_form}
+              id="invite-form"
+              phx-submit="share_invite"
+              class="invite-row"
+            >
+              <div class="field">
+                <.icon name="hero-at-symbol" class="size-3.5" />
+                <input
+                  name="invite[email]"
+                  type="email"
+                  value={@invite_form[:email].value}
+                  placeholder={gettext("share.people.add_placeholder")}
+                  autocomplete="off"
+                  required
+                />
+              </div>
+              <select name="invite[role]" class="role-select">
+                <option value="editor">{gettext("share.role.editor")}</option>
+                <option value="viewer">{gettext("share.role.viewer")}</option>
+              </select>
+              <button type="submit" class="ts-btn ts-btn--primary" style="height: 36px;">
+                <.icon name="hero-paper-airplane" class="size-3" /> {gettext("share.people.send")}
+              </button>
+            </.form>
+            <div class="sub-label">{gettext("share.people.invite_hint")}</div>
+          </div>
+
+          <div class="share-section">
+            <div class="label">
+              {gettext("share.people.with_access")} ({length(@share_collaborators) + 1})
+            </div>
+            <div class="people-list">
+              <div class="person-row">
+                <div class="av" style="background: var(--mk-pri);">
+                  {user_initials(@current_scope)}
+                </div>
+                <div class="meta">
+                  <div class="n">
+                    {user_display_name(@current_scope)}
+                    <span class="you">{gettext("share.people.you")}</span>
+                  </div>
+                  <div :if={@current_scope && @current_scope.user} class="e">
+                    {@current_scope.user.email}
+                  </div>
+                </div>
+                <div class="role-select small">{gettext("share.role.owner")}</div>
+              </div>
+              <div :for={c <- @share_collaborators} class="person-row">
+                <div class="av" style={"background: #{collab_color(c)}"}>
+                  {collab_initials(c)}
+                </div>
+                <div class="meta">
+                  <div class="n">{c.email}</div>
+                  <div class="e">{collab_status(c)}</div>
+                </div>
+                <span :if={c.status == :pending} class="pending">
+                  {gettext("share.people.pending")}
+                </span>
+                <button
+                  type="button"
+                  class="role-select small"
+                  phx-click="share_remove_collab"
+                  phx-value-id={c.id}
+                  aria-label={gettext("share.people.remove")}
+                >
+                  <.icon name="hero-trash" class="size-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Link --%>
+        <div :if={@share_tab == "link"}>
+          <div class="share-section">
+            <div class="label">{gettext("share.link.label")}</div>
+            <div class="link-box">
+              <div class="url">
+                <.icon name="hero-link" class="size-3.5" />
+                <span class="path">{share_url(@project, @share_link)}</span>
+              </div>
+              <button
+                type="button"
+                class="copy"
+                id="share-copy-link"
+                phx-hook="Clipboard"
+                data-clipboard={share_url(@project, @share_link)}
+              >
+                <.icon name="hero-clipboard-document" class="size-3" /> {gettext("common.copy")}
+              </button>
+            </div>
+            <div class="sub-label">
+              {gettext("share.link.rotate_hint")}
+              <button
+                type="button"
+                class="ts-btn ts-btn--ghost ts-btn--sm"
+                phx-click="share_rotate"
+              >
+                <.icon name="hero-arrow-path" class="size-3" /> {gettext("share.link.rotate")}
+              </button>
+            </div>
+          </div>
+
+          <div class="share-section">
+            <div class="label">{gettext("share.link.perm_label")}</div>
+            <div class="perm-cards">
+              <.perm_card
+                scope="read"
+                tone="read"
+                active={@share_link && @share_link.scope == :read}
+                icon="hero-eye"
+                title={gettext("share.perm.read")}
+                desc={gettext("share.perm.read_desc")}
+              />
+              <.perm_card
+                scope="output"
+                tone="output"
+                active={@share_link && @share_link.scope == :output}
+                icon="hero-play"
+                badge={gettext("share.perm.pdf_only")}
+                title={gettext("share.perm.output")}
+                desc={gettext("share.perm.output_desc")}
+              />
+              <div
+                class={[
+                  "perm-card",
+                  "tone-write",
+                  !Features.can?(@current_scope, :share_write_scoped) && "gated",
+                  @share_write_preview && "active"
+                ]}
+                phx-click="share_scope"
+                phx-value-scope="write"
+              >
+                <div class="ic">
+                  <.icon
+                    name={
+                      if(Features.can?(@current_scope, :share_write_scoped),
+                        do: "hero-pencil-square",
+                        else: "hero-lock-closed"
+                      )
+                    }
+                    class="size-4"
+                  />
+                </div>
+                <div class="body">
+                  <div class="h">
+                    {gettext("share.perm.write")}
+                    <span
+                      :if={!Features.can?(@current_scope, :share_write_scoped)}
+                      class="pro-badge"
+                    >
+                      PRO
+                    </span>
+                  </div>
+                  <div class="d">{gettext("share.perm.write_desc")}</div>
+                  <div
+                    :if={
+                      @share_write_preview && !Features.can?(@current_scope, :share_write_scoped)
+                    }
+                    style="margin-top: 10px;"
+                  >
+                    <.upgrade_banner
+                      compact
+                      title={gettext("share.upgrade.write_title")}
+                      desc={gettext("share.upgrade.write_desc")}
+                    />
+                  </div>
+                </div>
+                <div class="radio"></div>
+              </div>
+              <.perm_card
+                scope="full"
+                tone="full"
+                active={@share_link && @share_link.scope == :full}
+                icon="hero-bolt"
+                badge={gettext("share.perm.careful")}
+                title={gettext("share.perm.full")}
+                desc={gettext("share.perm.full_desc")}
+              />
+            </div>
+          </div>
+
+          <div class="share-section">
+            <div class="label">{gettext("share.link.advanced")}</div>
+            <div
+              class={["toggle-row", @share_link && @share_link.allow_download && "on"]}
+              phx-click="share_toggle_download"
+            >
+              <div class="meta">
+                <div class="h">{gettext("share.adv.download")}</div>
+                <div class="d">{gettext("share.adv.download_sub")}</div>
+              </div>
+              <div class="switch"></div>
+            </div>
+            <div :if={!Features.can?(@current_scope, :share_advanced_link)} class="locked-section">
+              <button type="button" class="lock-shield">
+                <.icon name="hero-lock-closed" class="size-3" /> {gettext("share.upgrade.unlock")}
+              </button>
+              <div class="locked-content">
+                <.toggle_row
+                  label={gettext("share.adv.signin")}
+                  sub={gettext("share.adv.signin_sub")}
+                  on
+                />
+                <.toggle_row
+                  label={gettext("share.adv.expires")}
+                  sub={gettext("share.adv.expires_sub")}
+                />
+                <.toggle_row
+                  label={gettext("share.adv.password")}
+                  sub={gettext("share.adv.password_sub")}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="share-section">
+            <div class="label">{gettext("share.link.activity")}</div>
+            <div class={[
+              "link-stats",
+              !Features.can?(@current_scope, :share_link_analytics) && "locked-stats"
+            ]}>
+              <div class="stat">
+                <div class="v">—</div>
+                <div class="l">{gettext("share.stats.opens")}</div>
+              </div>
+              <div class="stat">
+                <div class="v">—</div>
+                <div class="l">{gettext("share.stats.editors")}</div>
+              </div>
+              <div class="stat">
+                <div class="v">—</div>
+                <div class="l">{gettext("share.stats.created")}</div>
+              </div>
+            </div>
+            <div
+              :if={!Features.can?(@current_scope, :share_link_analytics)}
+              style="margin-top: 10px;"
+            >
+              <.upgrade_banner
+                compact
+                title={gettext("share.upgrade.stats_title")}
+                desc={gettext("share.upgrade.stats_desc")}
+              />
+            </div>
+          </div>
+        </div>
+
+        <%!-- Embed --%>
+        <div :if={@share_tab == "embed"}>
+          <div :if={!Features.pro?(@current_scope)} class="share-section">
+            <.upgrade_banner
+              compact
+              title={gettext("share.embed.free_title")}
+              desc={gettext("share.embed.free_desc")}
+            />
+          </div>
+
+          <% pro? = Features.pro?(@current_scope) %>
+
+          <div class="embed-controls">
+            <div class="cfg-group grow">
+              <div class="lbl">{gettext("share.embed.components")}</div>
+              <div class="row">
+                <.cfg_chip
+                  key="tree"
+                  label={gettext("share.embed.file_tree")}
+                  on={@embed_cfg.tree}
+                />
+                <.cfg_chip
+                  key="preview"
+                  label={gettext("share.embed.preview")}
+                  on={@embed_cfg.preview}
+                />
+                <.cfg_chip
+                  key="editable"
+                  label={gettext("share.embed.editable")}
+                  on={@embed_cfg.editable}
+                  locked={!pro?}
+                />
+                <.cfg_chip
+                  key="unbranded"
+                  label={gettext("share.embed.hide_footer")}
+                  on={@embed_cfg.unbranded}
+                  locked={!pro?}
+                />
+              </div>
+            </div>
+            <div class="cfg-group">
+              <div class="lbl">{gettext("share.embed.save_cta")}</div>
+              <div class="row">
+                <.cfg_seg
+                  key="cta"
+                  value={@embed_cfg.cta}
+                  opts={[
+                    %{v: "always", label: gettext("share.embed.cta_always")},
+                    %{v: "on-edit", label: gettext("share.embed.cta_onedit"), locked: !pro?},
+                    %{v: "never", label: gettext("share.embed.cta_hidden")}
+                  ]}
+                />
+              </div>
+            </div>
+            <div class="cfg-group">
+              <div class="lbl">{gettext("share.embed.theme")}</div>
+              <div class="row">
+                <.cfg_seg
+                  key="theme"
+                  value={@embed_cfg.theme}
+                  opts={[
+                    %{v: "auto", label: gettext("share.embed.theme_auto")},
+                    %{v: "light", label: gettext("share.embed.theme_light")},
+                    %{v: "dark", label: gettext("share.embed.theme_dark")}
+                  ]}
+                />
+              </div>
+            </div>
+            <div class="cfg-group">
+              <div class="lbl">{gettext("share.embed.width")}</div>
+              <div class="row">
+                <.cfg_seg
+                  key="width"
+                  value={@embed_cfg.width}
+                  opts={[
+                    %{v: "responsive", label: "100%"},
+                    %{v: "640", label: "640"},
+                    %{v: "800", label: "800"}
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="embed-preview-wrap">
+            <span class="preview-tag">{gettext("share.embed.live_preview")}</span>
+            <div
+              class="embed-width-frame"
+              style={"max-width: #{if(@embed_cfg.width == "responsive", do: "none", else: @embed_cfg.width <> "px")}"}
+            >
+              <%!-- A real, live iframe of the embed: real highlight, real compiled
+                    PDF and real theme — exactly what visitors will see. --%>
+              <iframe
+                class="embed-live-frame"
+                src={embed_src(@share_link, @current_file, @embed_cfg)}
+                title={gettext("share.embed.live_preview")}
+                loading="lazy"
+                allow="clipboard-write"
+              >
+              </iframe>
+            </div>
+          </div>
+
+          <div class="snippet-box">
+            <div class="head">
+              <div class="langs">
+                <div
+                  :for={lang <- ~w(iframe react npm)}
+                  class={[
+                    "lang",
+                    @embed_lang == lang && "active",
+                    lang != "iframe" && "lang--soon"
+                  ]}
+                  phx-click="embed_lang"
+                  phx-value-lang={lang}
+                >
+                  {if(lang == "react", do: "React", else: lang)}<span
+                    :if={lang != "iframe"}
+                    class="lang-soon"
+                  >soon</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="copy"
+                id="embed-copy"
+                phx-hook="Clipboard"
+                data-clipboard={
+                  embed_snippet(@share_link, @current_file, @embed_cfg, @embed_lang)
+                }
+              >
+                <.icon name="hero-clipboard-document" class="size-3" /> {gettext("common.copy")}
+              </button>
+            </div>
+            <pre>{embed_snippet(@share_link, @current_file, @embed_cfg, @embed_lang)}</pre>
+          </div>
+        </div>
+
+        <%!-- Export --%>
+        <div :if={@share_tab == "export"}>
+          <div class="share-section">
+            <div class="label">{gettext("share.export.label")}</div>
+            <div class="export-hero">
+              <div class="file-thumb">
+                <div class="lines"><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="ext">PDF</div>
+              </div>
+              <div class="info">
+                <div class="name">{share_slug(@project)}.pdf</div>
+                <div class="meta">{gettext("share.export.meta")}</div>
+              </div>
+              <div class="actions">
+                <button
+                  type="button"
+                  class="primary"
+                  phx-click={JS.dispatch("phx:editor-command", detail: %{cmd: "download"})}
+                >
+                  <.icon name="hero-arrow-down-tray" class="size-3.5" /> {gettext(
+                    "share.export.download"
+                  )}
+                </button>
+              </div>
+            </div>
+            <div class="sub-label">{gettext("share.export.hint")}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="share-foot">
+        <a class="learn">{gettext("share.learn")}</a>
+        <span class="spacer"></span>
+        <button type="button" class="done" phx-click="close_share">
+          {gettext("common.done")}
         </button>
       </div>
     </div>

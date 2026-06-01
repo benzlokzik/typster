@@ -27,6 +27,13 @@ defmodule Typster.FeaturesTest do
   end
 
   describe "can?/2 (open-core fallback)" do
+    # Force the Free impl so these assert the community-build contract even when
+    # the Pro submodule (Typster.Pro.Features) happens to be compiled in locally.
+    setup do
+      Application.put_env(:typster, :features_impl, Typster.Features.Free)
+      :ok
+    end
+
     test "denies every Pro feature when no Pro impl is loaded" do
       scope = %Scope{user: nil, plan: :free}
 
