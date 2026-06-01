@@ -479,7 +479,11 @@ export function initEditor(container, initialContent, socket, fileId, options = 
       basicSetup,
       lintGutter(),
       ...editorV3Extensions,
-      autocompletion(language === "typst" ? { override: [typstCompletionSource] } : {}),
+      autocompletion(
+        language === "typst"
+          ? { override: [(ctx) => typstCompletionSource(ctx, options.project)] }
+          : {}
+      ),
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
       ...(language === "typst" ? [typstCloseBrackets, ...typst()] : []),

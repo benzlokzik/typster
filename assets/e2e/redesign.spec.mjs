@@ -43,6 +43,7 @@ test.describe('Product UI redesign', () => {
     }
     await line('#let mylocalfn(x) = x')
     await line('#import "lib.typ": importedfn')
+    await line('#for myloopvar in xs [ ]')
 
     // The user's own local function is suggested.
     await page.keyboard.type('#mylo')
@@ -57,6 +58,52 @@ test.describe('Product UI redesign', () => {
     await expect(pop).toBeVisible({ timeout: 5_000 })
     await expect(
       pop.locator('.cm-completionLabel').filter({ hasText: 'importedfn' })
+    ).toBeVisible()
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+
+    // A `#for` loop variable is offered too.
+    await page.keyboard.type('#myloop')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(
+      pop.locator('.cm-completionLabel').filter({ hasText: 'myloopvar' })
+    ).toBeVisible()
+  })
+
+  test('autocomplete resolves a wildcard import from a project file', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Wildcard E2E')
+
+    const newFile = async (name) => {
+      await page.locator('#create-main-file-button').click()
+      const draft = page.locator('#new-file-form input[name="path"]')
+      await expect(draft).toBeVisible()
+      await draft.fill(name)
+      await draft.press('Enter')
+      await expect(page.locator('#editor-container .cm-content')).toBeVisible({ timeout: 10_000 })
+    }
+
+    const cm = page.locator('#editor-container .cm-content')
+    const pop = page.locator('.cm-tooltip-autocomplete')
+
+    // A sibling module with an exported function.
+    await newFile('lib.typ')
+    await cm.click()
+    await page.keyboard.type('#let libwildfn(a) = a')
+    await page.waitForTimeout(1200) // let it autosave into project sources
+
+    // Import everything from it and complete one of its exports.
+    await newFile('main.typ')
+    await cm.click()
+    await page.keyboard.type('#import "lib.typ": *')
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('#libwild')
+
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(
+      pop.locator('.cm-completionLabel').filter({ hasText: 'libwildfn' })
     ).toBeVisible()
   })
 

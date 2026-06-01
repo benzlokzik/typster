@@ -232,56 +232,110 @@ export const TYPST_COMPLETIONS = [
   ...MATH.map(plainOption("variable"))
 ]
 
-// Local `#let` definitions in the current buffer, surfaced as completions so a
-// user's own variables and functions are suggested alongside the built-ins.
-// `#let f(..) = ..` completes to a call; a bare `#let x = ..` to the name.
-// `boost: 50` ranks locals above the built-ins.
+// ── Dynamic completions scanned live from the document ───────────────────────
+// The user's own symbols, ranked above the built-ins: `#let` variables and
+// functions, their parameters, `#for` loop variables, and `#import`ed names.
 const LET_RE = /#let\s+([A-Za-z_][\w-]*)\s*(\([^)]*\))?\s*=/g
+const FOR_RE = /#for\s+(.+?)\s+in[\s([]/g
+
+function pushFn(out, seen, name, sig, info, boost) {
+  if (!name || seen.has(name)) return
+  seen.add(name)
+  out.push(
+    snippetCompletion("#" + name + "(${})", {
+      label: "#" + name,
+      type: "function",
+      detail: sig || "..",
+      info,
+      boost
+    })
+  )
+}
+
+function pushVar(out, seen, name, info, boost) {
+  if (!name || seen.has(name)) return
+  seen.add(name)
+  out.push({ label: "#" + name, type: "variable", detail: "local", info, boost })
+}
+
+function firstIdent(s) {
+  const m = s.match(/[A-Za-z_][\w-]*/)
+  return m ? m[0] : null
+}
+
+// Parameter names from a "(a, b, c: 1, ..rest)" list (drops defaults/spreads).
+function paramNames(parens) {
+  return parens
+    .slice(1, -1)
+    .split(",")
+    .map((p) => firstIdent(p.split(":")[0].replace(/\.\./g, " ")))
+    .filter(Boolean)
+}
+
+// Every top-level `#let` definition in a piece of source — used for both the
+// current buffer and any resolved imported module.
+function letDefs(text) {
+  const defs = []
+  LET_RE.lastIndex = 0
+  let m
+  while ((m = LET_RE.exec(text))) defs.push({ name: m[1], params: m[2] })
+  return defs
+}
 
 export function localCompletions(state) {
   const text = state.doc.toString()
   const seen = new Set()
   const out = []
-  LET_RE.lastIndex = 0
 
-  let m
-  while ((m = LET_RE.exec(text))) {
-    const name = m[1]
-    if (seen.has(name)) continue
-    seen.add(name)
-
-    if (m[2]) {
-      out.push(
-        snippetCompletion("#" + name + "(${})", {
-          label: "#" + name,
-          type: "function",
-          detail: m[2].slice(1, -1) || "..",
-          info: "Local function",
-          boost: 50
-        })
-      )
+  for (const { name, params } of letDefs(text)) {
+    if (params) {
+      pushFn(out, seen, name, params.slice(1, -1), "Local function", 50)
+      for (const p of paramNames(params)) pushVar(out, seen, p, "Parameter", 45)
     } else {
-      out.push({
-        label: "#" + name,
-        type: "variable",
-        detail: "local",
-        info: "Local variable",
-        boost: 50
-      })
+      pushVar(out, seen, name, "Local variable", 50)
+    }
+  }
+
+  // `#for x in ..` / `#for (a, b) in ..` loop bindings.
+  FOR_RE.lastIndex = 0
+  let m
+  while ((m = FOR_RE.exec(text))) {
+    for (const v of m[1].match(/[A-Za-z_][\w-]*/g) || []) {
+      pushVar(out, seen, v, "Loop variable", 45)
     }
   }
 
   return out
 }
 
-// Symbols pulled in by `#import` statements in the current buffer, e.g.
-// `#import "@preview/cetz:0.2.0": canvas, draw` or `#import "u.typ" as u`.
-// Explicit names complete to a call (most imports are functions); an `as` alias
-// is offered as a module handle. Wildcards (`: *`) can't be enumerated without
-// the module source, so they're skipped.
-const IMPORT_RE = /#import\s+(?:"[^"]*"|[\w@/.:-]+)\s*(?::\s*([^\n]+)|\bas\s+([A-Za-z_][\w-]*))/g
+// Symbols pulled in by `#import` statements, e.g.
+// `#import "@preview/cetz:0.2.0": canvas, draw`, `#import "u.typ": *`,
+// `#import "u.typ" as u`. Local-file imports (including `: *`) are resolved
+// against the project's other source files so the module's own `#let` exports
+// are offered and typed correctly; external `@preview/...` packages can't be
+// read client-side, so their explicit names fall back to a callable snippet
+// and their wildcards are skipped.
+const IMPORT_RE =
+  /#import\s+(?:"([^"]*)"|([\w@/.:-]+))\s*(?::\s*([^\n]+)|\bas\s+([A-Za-z_][\w-]*))/g
 
-export function importedCompletions(state) {
+// Resolve an import path to a sibling source file's content (init-time copy).
+// Lenient match: exact path, then path suffix, then basename. Packages skipped.
+function resolveModule(path, sources) {
+  if (!path || path[0] === "@" || !Array.isArray(sources)) return null
+  const base = path.split("/").pop()
+  const hit =
+    sources.find((s) => s.path === path) ||
+    sources.find((s) => s.path && s.path.endsWith("/" + path)) ||
+    sources.find((s) => s.path && s.path.split("/").pop() === base)
+  return hit ? hit.content || "" : null
+}
+
+function addImportedDef(out, seen, { name, params }, info) {
+  if (params) pushFn(out, seen, name, params.slice(1, -1), info + " function", 40)
+  else pushVar(out, seen, name, info + " value", 40)
+}
+
+export function importedCompletions(state, sources) {
   const text = state.doc.toString()
   const seen = new Set()
   const out = []
@@ -289,34 +343,33 @@ export function importedCompletions(state) {
 
   let m
   while ((m = IMPORT_RE.exec(text))) {
-    if (m[2]) {
-      const alias = m[2]
-      if (seen.has(alias)) continue
-      seen.add(alias)
-      out.push({
-        label: "#" + alias,
-        type: "namespace",
-        detail: "module",
-        info: "Imported module",
-        boost: 40
-      })
+    const path = m[1] || m[2]
+
+    // `#import "x" as alias` — the module handle.
+    if (m[4]) {
+      pushVar(out, seen, m[4], "Imported module", 40)
       continue
     }
 
-    for (const part of m[1].split(",")) {
+    const names = (m[3] || "").trim()
+    const mod = resolveModule(path, sources)
+
+    // `: *` — pull the module's own `#let` exports (local files only).
+    if (names === "*") {
+      if (mod) for (const def of letDefs(mod)) addImportedDef(out, seen, def, "Imported")
+      continue
+    }
+
+    // `: a, b, c` — explicit names, typed from the module when resolvable,
+    // otherwise assumed callable (most imports are functions).
+    const defs = mod ? letDefs(mod) : null
+    for (const part of names.split(",")) {
       const as = /\bas\s+([A-Za-z_][\w-]*)/.exec(part)
-      const name = as ? as[1] : part.trim().replace(/[^\w-].*$/, "")
-      if (!name || !/^[A-Za-z_]/.test(name) || seen.has(name)) continue
-      seen.add(name)
-      out.push(
-        snippetCompletion("#" + name + "(${})", {
-          label: "#" + name,
-          type: "function",
-          detail: "imported",
-          info: "Imported symbol",
-          boost: 40
-        })
-      )
+      const name = as ? as[1] : firstIdent(part)
+      if (!name) continue
+      const def = defs && defs.find((d) => d.name === name)
+      if (def) addImportedDef(out, seen, def, "Imported")
+      else pushFn(out, seen, name, "imported", "Imported symbol", 40)
     }
   }
 
@@ -327,8 +380,9 @@ export function importedCompletions(state) {
 // any leading #/@) so snippet labels like "#figure" match and replace cleanly,
 // adding the marker when it is missing. Auto-opens only after a #/@ marker —
 // Typst's escape into code — so it never pops while writing prose; everything
-// is still reachable on an explicit invoke (Ctrl-Space).
-export function typstCompletionSource(context) {
+// is still reachable on an explicit invoke (Ctrl-Space). `project` (wired from
+// the editor) supplies sibling source files so imports can be resolved.
+export function typstCompletionSource(context, project) {
   const word = context.matchBefore(/[#@]?[\w.-]*/)
   if (!word) return null
 
@@ -340,7 +394,7 @@ export function typstCompletionSource(context) {
     from: word.from,
     options: TYPST_COMPLETIONS.concat(
       localCompletions(context.state),
-      importedCompletions(context.state)
+      importedCompletions(context.state, project && project.sources)
     ),
     validFor: /^[#@]?[\w.-]*$/
   }
