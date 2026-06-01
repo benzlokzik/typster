@@ -12,6 +12,8 @@ defmodule TypsterWeb.Presence do
     otp_app: :typster,
     pubsub_server: Typster.PubSub
 
+  require Logger
+
   # A small, fixed palette of pleasant hex colors. A user is mapped to one of
   # these deterministically from their id, so the same user always renders with
   # the same color across sessions and clients.
@@ -52,12 +54,28 @@ defmodule TypsterWeb.Presence do
   def list_collaborators(project_id, exclude_user_id \\ nil) do
     project_id
     |> topic()
-    |> list()
+    |> safe_list()
     |> Enum.map(fn {_key, %{metas: [meta | _]}} ->
       %{user_id: meta.user_id, name: meta.name, initials: meta.initials, color: meta.color}
     end)
     |> Enum.reject(&(&1.user_id == exclude_user_id))
     |> Enum.sort_by(& &1.name)
+  end
+
+  # Presence is a supervised core process, but if it is ever unavailable —
+  # e.g. a dev server still running from before it was added to the supervision
+  # tree (its ETS table never started) — degrade to "no collaborators" rather
+  # than crashing the editor mount. A restart brings collaborators back.
+  defp safe_list(topic) do
+    list(topic)
+  rescue
+    ArgumentError ->
+      Logger.warning(
+        "TypsterWeb.Presence is not running — collaborators unavailable. " <>
+          "Restart the server (a newly-added supervision child needs a fresh boot)."
+      )
+
+      %{}
   end
 
   defp display_name(user) do
