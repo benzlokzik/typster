@@ -25,6 +25,23 @@ async function addMainFile(page) {
 }
 
 test.describe('Product UI redesign', () => {
+  test('brackets and Typst math auto-close their pairs', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Autoclose E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    await cm.click()
+    await page.keyboard.press('Control+End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('(') // -> ()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('$') // -> $$ (Typst math)
+
+    await expect(cm).toContainText('()')
+    await expect(cm).toContainText('$$')
+  })
+
   test('accent picker persists on the user record', async ({ page }) => {
     await page.goto('/users/settings')
     await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })

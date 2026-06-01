@@ -139,6 +139,14 @@ const basicSetup = [
   ])
 ]
 
+// Typst-aware auto-closing pairs for `closeBrackets()`: the usual brackets plus
+// `$ $` for math mode. Single-quote is intentionally dropped so apostrophes in
+// prose ("it's") aren't auto-paired. Provided as languageData so closeBrackets
+// picks it up only for Typst buffers.
+const typstCloseBrackets = EditorState.languageData.of(() => [
+  { closeBrackets: { brackets: ["(", "[", "{", "$", "\"", "`"] } }
+])
+
 // Auto-recompile debounce (ms from the last keystroke). Configurable via
 // localStorage so a single keystroke doesn't thrash the WASM compiler; a
 // negative value disables auto-compile (manual ⌘↵ / Compile only).
@@ -474,7 +482,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
       autocompletion(language === "typst" ? { override: [typstCompletionSource] } : {}),
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
-      ...(language === "typst" ? typst() : []),
+      ...(language === "typst" ? [typstCloseBrackets, ...typst()] : []),
       updateListener
     ]
   })
