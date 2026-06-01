@@ -847,6 +847,26 @@
           <span class="ts-statusbar__item">UTF-8</span>
           <span class="ts-statusbar__sep"></span>
           <span class="ts-statusbar__item">LF</span>
+          <span :if={@compile_history != []} class="ts-statusbar__sep"></span>
+          <span
+            :if={@compile_history != []}
+            class="ts-statusbar__item"
+            title={gettext("editor.status.compile_times")}
+          >
+            <span class="ts-spark">
+              <span
+                :for={c <- @compile_history}
+                class={[
+                  "ts-spark__bar",
+                  c.status == :error && "is-err",
+                  c.status == :warn && "is-warn"
+                ]}
+                style={"height: #{spark_height(c, @compile_history)}px"}
+              >
+              </span>
+            </span>
+            <span :if={@preview_stats && @preview_stats.ms}>{@preview_stats.ms}ms</span>
+          </span>
           <div class="ts-spacer" />
           <button
             type="button"

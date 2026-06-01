@@ -1,0 +1,244 @@
+/* ── Editor v3.1 assists — CM-scoped chrome ──────────────────────────────────
+   Inline diagnostic lens · selection quick-actions · scroll rail · autocomplete
+   popover · compile sparkline. Faithful port of the v3 design (styles-v3.css /
+   editor-v3.jsx) onto the real --mk-* token set so light/dark flip for free.
+
+   Token map: accent → --mk-pri · accent-soft → --mk-pri-50 · surface → --mk-bg ·
+   surface-2 → --mk-bg2 · border → --mk-bd · text → --mk-fg · text-dim → --mk-fg2 ·
+   text-mute → --mk-fg3 (faintest → --mk-fg4) · green → --mk-success ·
+   amber → --mk-warning · red → --mk-error · mono → --v3-mono.
+
+   These widgets are mounted by CodeMirror (block widgets, tooltips, an absolute
+   overlay) and a HEEx status bar — no class here overlaps the lint styling that
+   already lives in _codemirror.css (.cm-lintRange / .cm-tooltip-lint).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:where(.cm-editor) {
+  --v3-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* ── 1 · Inline diagnostic lens ───────────────────────────────────────────────
+   A block widget rendered under a code line. The ~46px left indent clears the
+   line-number gutter so the card aligns with the source text, not the gutter. */
+.cm-diag-lens {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 2px 0 4px 46px;
+  padding: 6px 10px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 6px;
+  background: var(--mk-bg);
+  color: var(--mk-fg);
+  font: 12px/1.45 "Inter", system-ui, sans-serif;
+}
+
+.cm-diag-lens.is-error {
+  background: var(--mk-error-50);
+  border-color: var(--mk-error-bd);
+  color: var(--mk-error-h);
+}
+.cm-diag-lens.is-warning {
+  background: var(--mk-warning-50);
+  border-color: var(--mk-warning-bd);
+  color: var(--mk-warning-h);
+}
+
+.cm-diag-lens__ico {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+}
+.cm-diag-lens.is-error .cm-diag-lens__ico { color: var(--mk-error); }
+.cm-diag-lens.is-warning .cm-diag-lens__ico { color: var(--mk-warning); }
+.cm-diag-lens__ico svg { width: 14px; height: 14px; stroke-width: 1.8; }
+
+.cm-diag-lens__body { min-width: 0; }
+.cm-diag-lens__title {
+  font-weight: 600;
+  color: var(--mk-fg);
+}
+.cm-diag-lens__code {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: var(--mk-pri-50);
+  color: var(--mk-fg3);
+  font: 500 11px var(--v3-mono);
+}
+.cm-diag-lens__msg {
+  margin-top: 2px;
+  color: var(--mk-fg2);
+  font-size: 11.5px;
+}
+
+/* ── 2 · Selection quick-action bubble (a CM tooltip) ─────────────────────────
+   Lives inside .cm-tooltip; the doubled class beats CM's runtime-injected
+   .cm-tooltip base theme regardless of stylesheet injection order. */
+.cm-tooltip.cm-tooltip .cm-qa,
+.cm-qa {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 8px;
+  background: var(--mk-bg);
+  box-shadow: var(--mk-sh-lg);
+}
+
+.cm-qa__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--mk-fg2);
+  font: 600 12px "Inter", system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s var(--mk-ease), color 0.15s var(--mk-ease);
+}
+.cm-qa__btn:hover { background: var(--mk-bg2); color: var(--mk-fg); }
+.cm-qa__btn.is-primary { background: var(--mk-pri-50); color: var(--mk-pri); }
+.cm-qa__btn.is-primary:hover { background: var(--mk-pri-100); color: var(--mk-pri); }
+
+.cm-qa__sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: var(--mk-bd);
+}
+
+/* ── 3 · Scroll rail (absolute overlay on the editor's right edge) ────────────
+   Non-interactive layer painting diagnostic / heading marks against the
+   scroll length. Sits above the scroller content but never eats clicks. */
+.cm-rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+.cm-rail__mark {
+  position: absolute;
+  right: 3px;
+  width: 6px;
+  height: 4px;
+  border-radius: 1px;
+}
+.cm-rail__mark.is-error { background: var(--mk-error); }
+.cm-rail__mark.is-warning { background: var(--mk-warning); }
+.cm-rail__mark.is-heading {
+  width: 4px;
+  background: var(--mk-fg4);
+}
+
+/* ── 4 · Autocomplete popover ─────────────────────────────────────────────────
+   Style CodeMirror's own .cm-tooltip-autocomplete to match the .ac-pop design.
+   Doubled classes beat CM's injected .cm-tooltip base theme on any order. */
+.cm-tooltip.cm-tooltip-autocomplete,
+.cm-tooltip.cm-tooltip-autocomplete.cm-tooltip-autocomplete {
+  border: 1px solid var(--mk-bd);
+  border-radius: 8px;
+  background: var(--mk-bg);
+  box-shadow: var(--mk-sh-lg);
+  overflow: hidden;
+  font-family: inherit;
+}
+.cm-tooltip-autocomplete > ul {
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  font-family: inherit;
+}
+.cm-tooltip-autocomplete > ul > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  color: var(--mk-fg);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: var(--mk-pri-50);
+  color: var(--mk-pri);
+}
+
+.cm-completionLabel { flex: 1; min-width: 0; }
+.cm-completionMatchedText {
+  text-decoration: none;
+  font-weight: 600;
+}
+.cm-completionDetail {
+  margin-left: auto;
+  color: var(--mk-fg4);
+  font: 11px var(--v3-mono);
+  font-style: normal;
+}
+.cm-tooltip-autocomplete > ul > li[aria-selected] .cm-completionDetail {
+  color: color-mix(in oklab, var(--mk-pri) 70%, var(--mk-fg4));
+}
+
+/* Completion type icons — CM emits .cm-completionIcon plus a kind modifier
+   (.cm-completionIcon-function etc). Keep them quiet and mono-aligned; map the
+   common Typst-relevant kinds to readable glyphs. */
+.cm-completionIcon {
+  width: 1em;
+  margin-right: 0;
+  opacity: 0.7;
+  font-size: 90%;
+}
+.cm-completionIcon-function::after,
+.cm-completionIcon-method::after { content: "ƒ"; }
+.cm-completionIcon-keyword::after { content: "◆"; }
+.cm-completionIcon-variable::after { content: "𝑥"; }
+.cm-completionIcon-property::after,
+.cm-completionIcon-field::after { content: "≡"; }
+.cm-completionIcon-type::after,
+.cm-completionIcon-class::after { content: "❖"; }
+.cm-completionIcon-constant::after,
+.cm-completionIcon-enum::after { content: "π"; }
+.cm-completionIcon-text::after,
+.cm-completionIcon-snippet::after { content: "✎"; }
+
+/* Side info panel for the focused completion. */
+.cm-tooltip.cm-completionInfo {
+  margin: 0;
+  padding: 8px 10px;
+  max-width: 260px;
+  border: 0;
+  border-left: 1px solid var(--mk-bd);
+  border-radius: 0;
+  background: var(--mk-bg);
+  color: var(--mk-fg2);
+  font: 12px/1.5 "Inter", system-ui, sans-serif;
+}
+
+/* ── 5 · Compile sparkline (rendered in the HEEx status bar) ──────────────────
+   Inline bar chart of recent compile durations; per-bar tone modifiers. */
+.ts-spark {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 12px;
+}
+.ts-spark__bar {
+  width: 2px;
+  min-height: 1px;
+  border-radius: 1px;
+  background: var(--mk-pri);
+  opacity: 0.85;
+}
+.ts-spark__bar.is-warn { background: var(--mk-warning); }
+.ts-spark__bar.is-err { background: var(--mk-error); }

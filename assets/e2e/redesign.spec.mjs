@@ -102,6 +102,40 @@ test.describe('Product UI redesign', () => {
     await expect(cm).toContainText('*')
   })
 
+  test('Typst autocomplete suggests functions after a # prefix', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Autocomplete E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    await cm.click()
+    await page.keyboard.type('#figu')
+
+    const pop = page.locator('.cm-tooltip-autocomplete')
+    await expect(pop).toBeVisible({ timeout: 5_000 })
+    await expect(pop.locator('.cm-completionLabel').first()).toContainText('figure')
+  })
+
+  test('selecting text shows the quick-action bubble and Bold wraps it', async ({ page }) => {
+    await createProjectAndOpenEditor(page, 'Bubble E2E')
+    await addMainFile(page)
+
+    const cm = page.locator('#editor-container .cm-content')
+    await cm.click()
+    // Put the prose on its own fresh line so the selection is exactly it.
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('Some prose to select.')
+    await page.keyboard.press('Home')
+    await page.keyboard.press('Shift+End')
+
+    const bubble = page.locator('.cm-qa')
+    await expect(bubble).toBeVisible({ timeout: 5_000 })
+    await expect(bubble.locator('.cm-qa__btn.is-primary')).toContainText('Heading')
+
+    await bubble.locator('button[title^="Bold"]').click()
+    await expect(cm).toContainText('*Some prose to select.*')
+  })
+
   test('download button exports the compiled document as a PDF', async ({ page }) => {
     await createProjectAndOpenEditor(page, 'Download E2E')
     await addMainFile(page)
