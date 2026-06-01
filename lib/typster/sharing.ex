@@ -162,6 +162,42 @@ defmodule Typster.Sharing do
     Collaborator.changeset(collaborator, attrs)
   end
 
+  @doc """
+  PUBLIC (bearer): accepts a pending invite for the authenticated user.
+
+  The invite `id` is the bearer credential — the invitee is not the project
+  owner, so authorization is the unguessable id itself, not project ownership.
+  Links the collaborator row to the current user and marks it `:accepted`.
+
+  Idempotent: re-accepting an already-accepted invite is a no-op success.
+  Returns `{:ok, collaborator}` with the project preloaded, or
+  `{:error, :not_found}` when the id is malformed or no invite exists.
+  """
+  def accept_invite(%Scope{user: %{id: user_id}}, invite_id) when is_binary(invite_id) do
+    case fetch_collaborator(invite_id) do
+      nil ->
+        {:error, :not_found}
+
+      %Collaborator{} = collaborator ->
+        collaborator
+        |> Collaborator.accept_changeset(user_id)
+        |> Repo.update()
+        |> case do
+          {:ok, accepted} -> {:ok, Repo.preload(accepted, :project)}
+          {:error, _changeset} = error -> error
+        end
+    end
+  end
+
+  def accept_invite(_scope, _invite_id), do: {:error, :not_found}
+
+  defp fetch_collaborator(id) do
+    case Ecto.UUID.cast(id) do
+      {:ok, uuid} -> Repo.get(Collaborator, uuid)
+      :error -> nil
+    end
+  end
+
   ## Internal
 
   defp deliver_invite_quietly(%Collaborator{} = collaborator, project) do

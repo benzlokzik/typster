@@ -2301,108 +2301,108 @@ msgstr "Ветка"
 msgid "editor.status.compile_times"
 msgstr "Время компиляции (последние 12)"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1022
+#: lib/typster_web/live/editor_live/index.html.heex:1026
 #, elixir-autogen, elixir-format
 msgid "common.close"
 msgstr "Закрыть"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1133
-#: lib/typster_web/live/editor_live/index.html.heex:1303
+#: lib/typster_web/live/editor_live/index.html.heex:1149
+#: lib/typster_web/live/editor_live/index.html.heex:1344
 #, elixir-autogen, elixir-format
 msgid "common.copy"
 msgstr "Копировать"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1341
+#: lib/typster_web/live/editor_live/index.html.heex:1385
 #, elixir-autogen, elixir-format
 msgid "common.done"
 msgstr "Готово"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1217
+#: lib/typster_web/live/editor_live/index.html.heex:1243
 #, elixir-autogen, elixir-format
 msgid "share.adv.download"
 msgstr "Разрешить скачивание"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1218
+#: lib/typster_web/live/editor_live/index.html.heex:1244
 #, elixir-autogen, elixir-format
 msgid "share.adv.download_sub"
 msgstr "Посетители могут скачать готовый PDF."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1228
+#: lib/typster_web/live/editor_live/index.html.heex:1259
 #, elixir-autogen, elixir-format
 msgid "share.adv.expires"
 msgstr "Истекает через 30 дней"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1228
+#: lib/typster_web/live/editor_live/index.html.heex:1260
 #, elixir-autogen, elixir-format
 msgid "share.adv.expires_sub"
 msgstr "Автоматически отзывает ссылку по сроку."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1229
+#: lib/typster_web/live/editor_live/index.html.heex:1263
 #, elixir-autogen, elixir-format
 msgid "share.adv.password"
 msgstr "Пароль"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1229
+#: lib/typster_web/live/editor_live/index.html.heex:1264
 #, elixir-autogen, elixir-format
 msgid "share.adv.password_sub"
 msgstr "Посетитель вводит пароль перед открытием."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1227
+#: lib/typster_web/live/editor_live/index.html.heex:1254
 #, elixir-autogen, elixir-format
 msgid "share.adv.signin"
 msgstr "Требовать вход"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1227
+#: lib/typster_web/live/editor_live/index.html.heex:1255
 #, elixir-autogen, elixir-format
 msgid "share.adv.signin_sub"
 msgstr "Нужен вход в аккаунт Typster."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1275
+#: lib/typster_web/live/editor_live/index.html.heex:1314
 #, elixir-autogen, elixir-format
 msgid "share.embed.components"
 msgstr "Компоненты"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1287
+#: lib/typster_web/live/editor_live/index.html.heex:1326
 #, elixir-autogen, elixir-format
 msgid "share.embed.editable"
 msgstr "Гость может править"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1279
+#: lib/typster_web/live/editor_live/index.html.heex:1318
 #, elixir-autogen, elixir-format
 msgid "share.embed.file_tree"
 msgstr "Дерево файлов"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1269
+#: lib/typster_web/live/editor_live/index.html.heex:1308
 #, elixir-autogen, elixir-format
 msgid "share.embed.free_desc"
 msgstr "Посетители могут читать и открывать проект на любом тарифе."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1268
+#: lib/typster_web/live/editor_live/index.html.heex:1307
 #, elixir-autogen, elixir-format
 msgid "share.embed.free_title"
 msgstr "Встраивание бесплатно — интерактивная песочница в Pro"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1283
+#: lib/typster_web/live/editor_live/index.html.heex:1322
 #, elixir-autogen, elixir-format
 msgid "share.embed.preview"
 msgstr "Превью"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1329
+#: lib/typster_web/live/editor_live/index.html.heex:1370
 #, elixir-autogen, elixir-format
 msgid "share.export.download"
 msgstr "Скачать PDF"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1333
+#: lib/typster_web/live/editor_live/index.html.heex:1376
 #, elixir-autogen, elixir-format
 msgid "share.export.hint"
 msgstr "Экспортирует документ, собранный в вашем браузере."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1313
+#: lib/typster_web/live/editor_live/index.html.heex:1354
 #, elixir-autogen, elixir-format
 msgid "share.export.label"
 msgstr "Последний успешный результат"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1321
+#: lib/typster_web/live/editor_live/index.html.heex:1362
 #, elixir-autogen, elixir-format
 msgid "share.export.meta"
 msgstr "Со встроенными шрифтами. Переэкспортируйте для обновления."
@@ -2417,52 +2417,52 @@ msgstr "Не удалось отправить приглашение."
 msgid "share.flash.invited"
 msgstr "Приглашён %{email}"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1339
+#: lib/typster_web/live/editor_live/index.html.heex:1382
 #, elixir-autogen, elixir-format
 msgid "share.learn"
 msgstr "О правах доступа →"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1235
+#: lib/typster_web/live/editor_live/index.html.heex:1271
 #, elixir-autogen, elixir-format
 msgid "share.link.activity"
 msgstr "Активность ссылки"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1211
+#: lib/typster_web/live/editor_live/index.html.heex:1237
 #, elixir-autogen, elixir-format
 msgid "share.link.advanced"
 msgstr "Дополнительно"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1120
+#: lib/typster_web/live/editor_live/index.html.heex:1136
 #, elixir-autogen, elixir-format
 msgid "share.link.label"
 msgstr "Ссылка"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1145
+#: lib/typster_web/live/editor_live/index.html.heex:1165
 #, elixir-autogen, elixir-format
 msgid "share.link.perm_label"
 msgstr "Любой по ссылке может…"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1139
+#: lib/typster_web/live/editor_live/index.html.heex:1159
 #, elixir-autogen, elixir-format
 msgid "share.link.rotate"
 msgstr "Сменить ключ"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1137
+#: lib/typster_web/live/editor_live/index.html.heex:1153
 #, elixir-autogen, elixir-format
 msgid "share.link.rotate_hint"
 msgstr "Смена ключа мгновенно отзывает текущую ссылку."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1062
+#: lib/typster_web/live/editor_live/index.html.heex:1072
 #, elixir-autogen, elixir-format
 msgid "share.people.add_placeholder"
 msgstr "Добавить по email…"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1054
+#: lib/typster_web/live/editor_live/index.html.heex:1059
 #, elixir-autogen, elixir-format
 msgid "share.people.invite"
 msgstr "Пригласить людей"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1075
+#: lib/typster_web/live/editor_live/index.html.heex:1085
 #, elixir-autogen, elixir-format
 msgid "share.people.invite_hint"
 msgstr "Приглашённые получат письмо со ссылкой и смогут редактировать после входа."
@@ -2472,77 +2472,77 @@ msgstr "Приглашённые получат письмо со ссылкой
 msgid "share.people.invite_sent"
 msgstr "Приглашение отправлено"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1102
+#: lib/typster_web/live/editor_live/index.html.heex:1117
 #, elixir-autogen, elixir-format
 msgid "share.people.pending"
 msgstr "Ожидает"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1108
+#: lib/typster_web/live/editor_live/index.html.heex:1124
 #, elixir-autogen, elixir-format
 msgid "share.people.remove"
 msgstr "Удалить"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1072
+#: lib/typster_web/live/editor_live/index.html.heex:1082
 #, elixir-autogen, elixir-format
 msgid "share.people.send"
 msgstr "Отправить"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1080
+#: lib/typster_web/live/editor_live/index.html.heex:1090
 #, elixir-autogen, elixir-format
 msgid "share.people.with_access"
 msgstr "Есть доступ"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1088
+#: lib/typster_web/live/editor_live/index.html.heex:1100
 #, elixir-autogen, elixir-format
 msgid "share.people.you"
 msgstr "вы"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1203
+#: lib/typster_web/live/editor_live/index.html.heex:1229
 #, elixir-autogen, elixir-format
 msgid "share.perm.careful"
 msgstr "осторожно"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1204
+#: lib/typster_web/live/editor_live/index.html.heex:1230
 #, elixir-autogen, elixir-format
 msgid "share.perm.full"
 msgstr "Полный доступ"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1205
+#: lib/typster_web/live/editor_live/index.html.heex:1231
 #, elixir-autogen, elixir-format
 msgid "share.perm.full_desc"
 msgstr "Чтение и запись всего, управление ссылкой. Как у владельца."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1161
+#: lib/typster_web/live/editor_live/index.html.heex:1181
 #, elixir-autogen, elixir-format
 msgid "share.perm.output"
 msgstr "Только результат"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1162
+#: lib/typster_web/live/editor_live/index.html.heex:1182
 #, elixir-autogen, elixir-format
 msgid "share.perm.output_desc"
 msgstr "Скрывает исходник. Показывает последний успешный результат."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1160
+#: lib/typster_web/live/editor_live/index.html.heex:1180
 #, elixir-autogen, elixir-format
 msgid "share.perm.pdf_only"
 msgstr "только PDF"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1152
+#: lib/typster_web/live/editor_live/index.html.heex:1172
 #, elixir-autogen, elixir-format
 msgid "share.perm.read"
 msgstr "Чтение"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1153
+#: lib/typster_web/live/editor_live/index.html.heex:1173
 #, elixir-autogen, elixir-format
 msgid "share.perm.read_desc"
 msgstr "Видит исходник и превью в реальном времени. Без правок."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1182
+#: lib/typster_web/live/editor_live/index.html.heex:1202
 #, elixir-autogen, elixir-format
 msgid "share.perm.write"
 msgstr "Запись — выбранные файлы"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1187
+#: lib/typster_web/live/editor_live/index.html.heex:1210
 #, elixir-autogen, elixir-format
 msgid "share.perm.write_desc"
 msgstr "Выберите, какие файлы можно редактировать."
@@ -2583,19 +2583,19 @@ msgid "share.public.open_in_typster"
 msgstr "Открыть в Typster ↗"
 
 #: lib/typster_web/live/editor_live/index.ex:1007
-#: lib/typster_web/live/editor_live/index.html.heex:1068
+#: lib/typster_web/live/editor_live/index.html.heex:1078
 #, elixir-autogen, elixir-format
 msgid "share.role.editor"
 msgstr "Редактор"
 
 #: lib/typster_web/live/editor_live/index.ex:1005
-#: lib/typster_web/live/editor_live/index.html.heex:1094
+#: lib/typster_web/live/editor_live/index.html.heex:1106
 #, elixir-autogen, elixir-format
 msgid "share.role.owner"
 msgstr "Владелец"
 
 #: lib/typster_web/live/editor_live/index.ex:1006
-#: lib/typster_web/live/editor_live/index.html.heex:1069
+#: lib/typster_web/live/editor_live/index.html.heex:1079
 #, elixir-autogen, elixir-format
 msgid "share.role.viewer"
 msgstr "Читатель"
@@ -2615,17 +2615,17 @@ msgstr "Только результат"
 msgid "share.scope.read"
 msgstr "Только чтение"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1250
+#: lib/typster_web/live/editor_live/index.html.heex:1286
 #, elixir-autogen, elixir-format
 msgid "share.stats.created"
 msgstr "Ссылка создана"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1246
+#: lib/typster_web/live/editor_live/index.html.heex:1282
 #, elixir-autogen, elixir-format
 msgid "share.stats.editors"
 msgstr "Сейчас редактируют"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1242
+#: lib/typster_web/live/editor_live/index.html.heex:1278
 #, elixir-autogen, elixir-format
 msgid "share.stats.opens"
 msgstr "Открытий за 7 дней"
@@ -2635,22 +2635,22 @@ msgstr "Открытий за 7 дней"
 msgid "share.subtitle"
 msgstr "Пригласите соавторов, поделитесь ссылкой, встройте проект или скачайте PDF."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1034
+#: lib/typster_web/live/editor_live/index.html.heex:1039
 #, elixir-autogen, elixir-format
 msgid "share.tab.embed"
 msgstr "Встроить"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1035
+#: lib/typster_web/live/editor_live/index.html.heex:1040
 #, elixir-autogen, elixir-format
 msgid "share.tab.export"
 msgstr "Экспорт PDF"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1033
+#: lib/typster_web/live/editor_live/index.html.heex:1038
 #, elixir-autogen, elixir-format
 msgid "share.tab.link"
 msgstr "Ссылка"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1032
+#: lib/typster_web/live/editor_live/index.html.heex:1037
 #, elixir-autogen, elixir-format
 msgid "share.tab.people"
 msgstr "Люди"
@@ -2665,27 +2665,37 @@ msgstr "Поделиться"
 msgid "share.upgrade.cta"
 msgstr "Перейти на Pro"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1257
+#: lib/typster_web/live/editor_live/index.html.heex:1296
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.stats_desc"
 msgstr "Открытия, активные редакторы и геолокация — в Pro."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1256
+#: lib/typster_web/live/editor_live/index.html.heex:1295
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.stats_title"
 msgstr "Кто открывает вашу ссылку"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1224
+#: lib/typster_web/live/editor_live/index.html.heex:1250
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.unlock"
 msgstr "Открыть в Pro"
 
-#: lib/typster_web/live/editor_live/index.html.heex:1192
+#: lib/typster_web/live/editor_live/index.html.heex:1218
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.write_desc"
 msgstr "Бесплатные ссылки — только чтение или полный доступ. Точечная запись — в Pro."
 
-#: lib/typster_web/live/editor_live/index.html.heex:1191
+#: lib/typster_web/live/editor_live/index.html.heex:1217
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.write_title"
 msgstr "Пофайловая запись — в Pro"
+
+#: lib/typster_web/controllers/invite_controller.ex:18
+#, elixir-autogen, elixir-format
+msgid "share.invite.accepted"
+msgstr "Готово — добро пожаловать в проект."
+
+#: lib/typster_web/controllers/invite_controller.ex:23
+#, elixir-autogen, elixir-format
+msgid "share.invite.invalid"
+msgstr "Эта ссылка-приглашение недействительна или истекла."

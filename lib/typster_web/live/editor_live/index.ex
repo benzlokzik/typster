@@ -15,7 +15,7 @@ defmodule TypsterWeb.EditorLive.Index do
   @impl true
   def mount(%{"id" => project_id}, _session, socket) do
     scope = socket.assigns.current_scope
-    project = Projects.get_project!(scope, project_id)
+    project = Projects.get_editable_project!(scope, project_id)
     file_tree = Files.get_file_tree(scope, project_id)
     assets = Assets.list_assets(scope, project_id)
     main_file = initial_file(file_tree)
@@ -28,6 +28,7 @@ defmodule TypsterWeb.EditorLive.Index do
     {:ok,
      socket
      |> assign(:project, project)
+     |> assign(:owner?, Projects.owner?(scope, project))
      |> assign(:collaborators, present_collaborators(scope, project.id))
      |> assign(:file_tree, file_tree)
      |> assign(:assets, assets)
@@ -231,9 +232,12 @@ defmodule TypsterWeb.EditorLive.Index do
   end
 
   @impl true
-  def handle_event("open_share", _params, socket) do
+  def handle_event("open_share", _params, %{assigns: %{owner?: true}} = socket) do
     {:noreply, socket |> load_share() |> assign(:show_share, true)}
   end
+
+  # Sharing is managed by the owner only; collaborators can edit but not invite.
+  def handle_event("open_share", _params, socket), do: {:noreply, socket}
 
   @impl true
   def handle_event("close_share", _params, socket) do

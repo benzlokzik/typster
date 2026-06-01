@@ -64,6 +64,7 @@
       </button>
 
       <button
+        :if={@owner?}
         type="button"
         class="ts-btn ts-btn--ghost ts-btn--sm ts-tb__share"
         phx-click="open_share"

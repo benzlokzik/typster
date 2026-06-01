@@ -152,4 +152,39 @@ defmodule Typster.FilesTest do
       refute unpinned.pinned
     end
   end
+
+  describe "accepted collaborators can read and write files" do
+    setup do
+      owner = Typster.AccountsFixtures.user_scope_fixture()
+      project = project_fixture(owner)
+      member = Typster.AccountsFixtures.user_scope_fixture()
+
+      {:ok, invite} =
+        Typster.Sharing.invite_collaborator(owner, project.id, "g@example.com", :editor)
+
+      %{owner: owner, project: project, member: member, invite: invite}
+    end
+
+    test "a pending invitee has no file access yet", %{member: member, project: project} do
+      assert_raise Ecto.NoResultsError, fn -> Files.get_file_tree(member, project.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Files.create_file(member, project.id, %{path: "main.typ"})
+      end
+    end
+
+    test "an accepted collaborator can create, read, and update files", ctx do
+      %{owner: owner, project: project, member: member, invite: invite} = ctx
+      {:ok, file} = Files.create_file(owner, project.id, %{path: "main.typ", content: "= Hi"})
+      {:ok, _} = Typster.Sharing.accept_invite(member, invite.id)
+
+      assert [_ | _] = Files.get_file_tree(member, project.id)
+      assert Files.get_file!(member, file.id).id == file.id
+      assert {:ok, saved} = Files.update_file_content(member, file, "= Edited by collaborator")
+      assert saved.content == "= Edited by collaborator"
+
+      assert {:ok, made} = Files.create_file(member, project.id, %{path: "chapter.typ"})
+      assert made.project_id == project.id
+    end
+  end
 end

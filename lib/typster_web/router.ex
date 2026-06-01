@@ -107,6 +107,11 @@ defmodule TypsterWeb.Router do
     end
 
     post "/users/update-password", UserSessionController, :update_password
+
+    # Collaboration invite acceptance. Behind :require_authenticated_user so an
+    # unregistered invitee is sent to log-in/registration first, then returned
+    # here (via :user_return_to) to link the invite to their account.
+    get "/invites/:id", InviteController, :show
   end
 
   scope "/", TypsterWeb do

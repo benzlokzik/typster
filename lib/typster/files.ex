@@ -5,8 +5,9 @@ defmodule Typster.Files do
 
   import Ecto.Query, warn: false
   alias Typster.Accounts.Scope
-  alias Typster.Repo
   alias Typster.Projects.File
+  alias Typster.Repo
+  alias Typster.Sharing.Collaborator
 
   @editable_extensions ~w(.typ .bib .md .yaml .yml .tex .latex .sty .cls .csv .tsv)
   @asset_extensions ~w(.pdf .png .jpg .jpeg .svg .webp .ttf .otf .woff .woff2)
@@ -14,7 +15,9 @@ defmodule Typster.Files do
   def get_file!(%Scope{user: user}, id) do
     from(f in File,
       join: p in assoc(f, :project),
-      where: f.id == ^id and p.user_id == ^user.id
+      left_join: c in Collaborator,
+      on: c.project_id == p.id and c.user_id == ^user.id and c.status == :accepted,
+      where: f.id == ^id and (p.user_id == ^user.id or not is_nil(c.id))
     )
     |> Repo.one!()
   end
@@ -22,13 +25,15 @@ defmodule Typster.Files do
   def get_file(%Scope{user: user}, id) do
     from(f in File,
       join: p in assoc(f, :project),
-      where: f.id == ^id and p.user_id == ^user.id
+      left_join: c in Collaborator,
+      on: c.project_id == p.id and c.user_id == ^user.id and c.status == :accepted,
+      where: f.id == ^id and (p.user_id == ^user.id or not is_nil(c.id))
     )
     |> Repo.one()
   end
 
   def create_file(%Scope{} = scope, project_id, attrs \\ %{}) do
-    _project = Typster.Projects.get_project!(scope, project_id)
+    _project = Typster.Projects.get_editable_project!(scope, project_id)
 
     %File{project_id: project_id}
     |> File.changeset(attrs)
@@ -65,7 +70,7 @@ defmodule Typster.Files do
   end
 
   def get_file_tree(%Scope{} = scope, project_id) do
-    _project = Typster.Projects.get_project!(scope, project_id)
+    _project = Typster.Projects.get_editable_project!(scope, project_id)
 
     from(f in File,
       where: f.project_id == ^project_id,

@@ -5,6 +5,7 @@ defmodule Typster.SharingTest do
   import Typster.AccountsFixtures, only: [user_scope_fixture: 0]
   import Typster.ProjectsFixtures, only: [project_fixture: 1]
 
+  alias Typster.Accounts.Scope
   alias Typster.Sharing
   alias Typster.Sharing.Collaborator
   alias Typster.Sharing.ShareLink
@@ -216,6 +217,40 @@ defmodule Typster.SharingTest do
       assert_raise Ecto.NoResultsError, fn ->
         Sharing.remove_collaborator(other, collab)
       end
+    end
+  end
+
+  describe "accept_invite/2 (bearer)" do
+    test "links the invitee, marks accepted, preloads project", %{scope: scope, project: project} do
+      {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "i@example.com", :editor)
+      invitee = user_scope_fixture()
+
+      assert {:ok, accepted} = Sharing.accept_invite(invitee, invite.id)
+      assert accepted.status == :accepted
+      assert accepted.user_id == invitee.user.id
+      assert accepted.project.id == project.id
+    end
+
+    test "is idempotent on re-accept", %{scope: scope, project: project} do
+      {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "j@example.com", :viewer)
+      invitee = user_scope_fixture()
+
+      assert {:ok, _} = Sharing.accept_invite(invitee, invite.id)
+      assert {:ok, again} = Sharing.accept_invite(invitee, invite.id)
+      assert again.status == :accepted
+    end
+
+    test "returns :not_found for an unknown id", %{scope: scope} do
+      assert {:error, :not_found} = Sharing.accept_invite(scope, Ecto.UUID.generate())
+    end
+
+    test "returns :not_found for a malformed id", %{scope: scope} do
+      assert {:error, :not_found} = Sharing.accept_invite(scope, "not-a-uuid")
+    end
+
+    test "returns :not_found when no user is in scope", %{scope: scope, project: project} do
+      {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "k@example.com", :viewer)
+      assert {:error, :not_found} = Sharing.accept_invite(%Scope{user: nil}, invite.id)
     end
   end
 

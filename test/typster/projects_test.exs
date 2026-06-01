@@ -6,6 +6,7 @@ defmodule Typster.ProjectsTest do
 
   alias Typster.Accounts.Scope
   alias Typster.Projects
+  alias Typster.Sharing
 
   describe "project scoping" do
     test "create_project/2 assigns ownership to the current scope user" do
@@ -36,6 +37,61 @@ defmodule Typster.ProjectsTest do
       assert_raise Ecto.NoResultsError, fn ->
         Projects.get_project!(Scope.for_user(user), project.id)
       end
+    end
+  end
+
+  describe "collaborator access (member-aware)" do
+    setup do
+      owner = user_scope_fixture()
+      project = project_fixture(owner)
+      member = user_scope_fixture()
+      stranger = user_scope_fixture()
+      {:ok, invite} = Sharing.invite_collaborator(owner, project.id, "guest@example.com", :editor)
+      %{owner: owner, project: project, member: member, stranger: stranger, invite: invite}
+    end
+
+    test "get_editable_project!/2 allows owner + accepted collaborator, rejects others", ctx do
+      %{owner: owner, project: project, member: member, stranger: stranger, invite: invite} = ctx
+
+      assert Projects.get_editable_project!(owner, project.id).id == project.id
+
+      # Pending invite is not yet access.
+      assert_raise Ecto.NoResultsError, fn ->
+        Projects.get_editable_project!(member, project.id)
+      end
+
+      {:ok, _} = Sharing.accept_invite(member, invite.id)
+      assert Projects.get_editable_project!(member, project.id).id == project.id
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Projects.get_editable_project!(stranger, project.id)
+      end
+    end
+
+    test "owner-only get_project!/2 still rejects accepted collaborators", ctx do
+      %{project: project, member: member, invite: invite} = ctx
+      {:ok, _} = Sharing.accept_invite(member, invite.id)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Projects.get_project!(member, project.id)
+      end
+    end
+
+    test "list_projects/1 includes projects shared as an accepted collaborator", ctx do
+      %{project: project, member: member, invite: invite} = ctx
+
+      assert Projects.list_projects(member) == []
+      {:ok, _} = Sharing.accept_invite(member, invite.id)
+      assert [shared] = Projects.list_projects(member)
+      assert shared.id == project.id
+    end
+
+    test "owner?/2 distinguishes owner from collaborator", ctx do
+      %{owner: owner, project: project, member: member, invite: invite} = ctx
+      {:ok, _} = Sharing.accept_invite(member, invite.id)
+
+      assert Projects.owner?(owner, project)
+      refute Projects.owner?(member, project)
     end
   end
 end

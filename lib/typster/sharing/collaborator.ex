@@ -52,4 +52,14 @@ defmodule Typster.Sharing.Collaborator do
       message: "is already a collaborator on this project"
     )
   end
+
+  @doc """
+  Changeset that links a pending invite to a user account and marks it accepted.
+
+  `user_id` and `status` are set programmatically here (never via user params),
+  which is why they are excluded from `changeset/2`'s `cast/3`.
+  """
+  def accept_changeset(collaborator, user_id) do
+    change(collaborator, user_id: user_id, status: :accepted)
+  end
 end
