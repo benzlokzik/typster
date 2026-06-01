@@ -9,13 +9,11 @@ defmodule TypsterWeb.Router do
     conn
   end
 
-  # Default browser hardening, but with `frame-ancestors *` so the embed can be
-  # iframed from any origin. `put_secure_browser_headers/2` merges the given map
-  # over its secure defaults, so only the CSP directive changes.
-  defp put_embeddable_browser_headers(conn, _opts) do
-    put_secure_browser_headers(conn, %{
-      "content-security-policy" => "base-uri 'self'; frame-ancestors *"
-    })
+  # The embed is meant to be iframed by any origin, so relax just the CSP
+  # `frame-ancestors` directive that `put_secure_browser_headers` pins to 'self'.
+  # All other secure browser headers (set by that plug above) stay in place.
+  defp allow_cross_origin_framing(conn, _opts) do
+    put_resp_header(conn, "content-security-policy", "base-uri 'self'; frame-ancestors *")
   end
 
   pipeline :browser do
@@ -39,7 +37,8 @@ defmodule TypsterWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {TypsterWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_embeddable_browser_headers
+    plug :put_secure_browser_headers
+    plug :allow_cross_origin_framing
     plug :fetch_current_scope_for_user
     plug :set_locale
   end
