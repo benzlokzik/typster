@@ -18,6 +18,11 @@ function editorOptions(element) {
   return {
     language: element.dataset.language || "typst",
     readonly: element.dataset.readonly === "true",
+    collab: element.dataset.collab === "true",
+    user: {
+      name: element.dataset.userName || "Anonymous",
+      color: element.dataset.userColor || ""
+    },
     project: {
       sources: parseJsonDataset(element.dataset.projectSources, []),
       assets: parseJsonDataset(element.dataset.projectAssets, [])
