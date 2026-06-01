@@ -27,7 +27,7 @@ defmodule Typster.MixProject do
   def application do
     [
       mod: {Typster.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :crypto]
     ]
   end
 
