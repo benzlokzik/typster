@@ -75,6 +75,10 @@ defmodule Typster.MixProject do
       {:bandit, "~> 1.5"},
       {:oban, "~> 2.17"},
       {:y_ex, "~> 0.10"},
+      # Lets y_ex's NIF build from Rust source where no precompiled binary
+      # exists for the target (e.g. CI's conda/Pixi triple) — see CI env
+      # RUSTLER_PRECOMPILED_FORCE_BUILD_ALL.
+      {:rustler, ">= 0.0.0", optional: true},
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
       {:hackney, "~> 1.20"},
