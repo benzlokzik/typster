@@ -29,6 +29,9 @@ defmodule TypsterWeb.EditorLive.Index do
      socket
      |> assign(:project, project)
      |> assign(:owner?, Projects.owner?(scope, project))
+     # Real-time Yjs co-editing — off by default until the editor content
+     # binding is finished. Enable per-env with `config :typster, collab_enabled: true`.
+     |> assign(:collab?, Application.get_env(:typster, :collab_enabled, false))
      |> assign(:collaborators, present_collaborators(scope, project.id))
      |> assign(:file_tree, file_tree)
      |> assign(:assets, assets)
