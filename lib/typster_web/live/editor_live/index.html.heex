@@ -63,12 +63,15 @@
         </span>
       </button>
 
+      <%!-- Shown to everyone for a consistent top bar, but inactive for
+            collaborators: only the owner can manage sharing (enforced server-side). --%>
       <button
-        :if={@owner?}
         type="button"
-        class="ts-btn ts-btn--ghost ts-btn--sm ts-tb__share"
-        phx-click="open_share"
-        title={gettext("editor.share")}
+        class={["ts-btn ts-btn--ghost ts-btn--sm ts-tb__share", !@owner? && "is-inactive"]}
+        phx-click={@owner? && "open_share"}
+        disabled={!@owner?}
+        aria-disabled={to_string(!@owner?)}
+        title={if(@owner?, do: gettext("editor.share"), else: gettext("editor.share_owner_only"))}
       >
         <i data-lucide="upload" aria-hidden="true"></i> {gettext("editor.share")}
       </button>
