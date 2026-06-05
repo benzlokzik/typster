@@ -29,6 +29,9 @@ defmodule TypsterWeb.EditorLive.Index do
      socket
      |> assign(:project, project)
      |> assign(:owner?, Projects.owner?(scope, project))
+     # Real-time Yjs co-editing — off by default until the editor content
+     # binding is finished. Enable per-env with `config :typster, collab_enabled: true`.
+     |> assign(:collab?, Application.get_env(:typster, :collab_enabled, false))
      |> assign(:collaborators, present_collaborators(scope, project.id))
      |> assign(:file_tree, file_tree)
      |> assign(:assets, assets)
@@ -1053,9 +1056,21 @@ defmodule TypsterWeb.EditorLive.Index do
     end
   end
 
-  # Role label + avatar colour for the People list.
+  # Role label + avatar colour for the People list. Accepted collaborators have a
+  # user id, so they share the exact colour of their presence avatar and cursor;
+  # a still-pending invite has only an email, so it falls back to an email hash.
   defp collab_initials(%{email: email}), do: email |> initials_from(2)
+  defp collab_color(%{user_id: id}) when is_binary(id), do: TypsterWeb.Presence.color_for(id)
   defp collab_color(%{email: email}), do: Enum.at(@collab_palette, :erlang.phash2(email, 6))
+
+  # The signed-in user's remote-cursor colour. Keyed on the user **id** via the
+  # same function the presence avatars use, so a person's caret and avatar are
+  # always the same colour — and two different users never collide (distinct
+  # emails can hash to the same slot; ids don't for our small user set).
+  defp current_user_color(%{user: %{id: id}}) when not is_nil(id),
+    do: TypsterWeb.Presence.color_for(id)
+
+  defp current_user_color(_), do: List.first(@collab_palette)
 
   defp initials_from(email, take) do
     email

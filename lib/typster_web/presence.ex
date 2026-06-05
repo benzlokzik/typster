@@ -106,7 +106,14 @@ defmodule TypsterWeb.Presence do
     end
   end
 
-  defp color_for(user_id) do
+  @doc """
+  The deterministic avatar/cursor colour for a user, keyed on their **id** so the
+  same person renders the same colour across every surface — presence avatar,
+  share-modal chip, and remote editing cursor. Public so those surfaces share one
+  source of truth (id, not email: distinct emails can hash to the same slot).
+  """
+  @spec color_for(term()) :: String.t()
+  def color_for(user_id) do
     index = :erlang.phash2(user_id, length(@palette))
     Enum.at(@palette, index)
   end

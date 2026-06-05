@@ -30,6 +30,9 @@ permissions:
 
 env:
   MIX_ENV: test
+  # Build the y_ex (Yjs) NIF from Rust source — the Pixi/conda target has no
+  # precompiled binary. (See ci.yml for the matching note.)
+  RUSTLER_PRECOMPILED_FORCE_BUILD_ALL: "true"
 
 jobs:
   security-scan:

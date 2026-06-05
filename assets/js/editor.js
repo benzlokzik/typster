@@ -41,6 +41,7 @@ import { stex } from "@codemirror/legacy-modes/mode/stex"
 import { compileTypst, downloadTypstPdf } from "./typst_worker"
 import { editorV3Extensions, setDiagData } from "./editor_v3"
 import { typstCompletionSource } from "./typst_completions"
+import { createCollab } from "./collab"
 
 // Native selection paints nothing visible for a selected trailing newline (an
 // empty line shows nothing, a text line ends right at the glyphs). VS Code draws
@@ -487,11 +488,19 @@ export function initEditor(container, initialContent, socket, fileId, options = 
         )
       ]
 
+  // Collaborative editing: bind to a shared Yjs document over a Phoenix channel.
+  // The doc's text arrives via sync, so the editor starts empty (no double-seed).
+  const collab =
+    options.collab && fileId && !options.readonly
+      ? createCollab(fileId, options.user || {})
+      : null
+
   const state = EditorState.create({
-    doc: initialContent || "",
+    doc: collab ? "" : initialContent || "",
     extensions: [
       basicSetup,
       ...editingExtensions,
+      ...(collab ? [collab.extension] : []),
       themeCompartment.of(getThemeExtension()),
       languageCompartment.of(getLanguageExtension(language)),
       ...(language === "typst" ? [typstCloseBrackets, ...typst()] : []),
@@ -557,6 +566,7 @@ export function initEditor(container, initialContent, socket, fileId, options = 
       if (autosaveTimer) clearTimeout(autosaveTimer)
       if (compileTimer) clearTimeout(compileTimer)
       if (outlineTimer) clearTimeout(outlineTimer)
+      if (collab) collab.destroy()
       editor.destroy()
     }
   }

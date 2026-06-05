@@ -68,6 +68,10 @@ config :typster, TypsterWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :typster, dev_routes: true
 
+# Real-time collaborative editing (Yjs over Phoenix channels). Enabled in dev so
+# live co-editing works locally; other environments opt in explicitly.
+config :typster, :collab_enabled, true
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
 

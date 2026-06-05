@@ -1,0 +1,51 @@
+/* ── Collaborative editing — remote cursors & selections ─────────────────────
+   y-codemirror.next paints remote carets/selections and sets each user's colour
+   inline (from awareness). These rules give the caret its shape and the hover
+   name-tag its layout; colours come from the inline `--user-color` style. */
+
+.cm-ySelection {
+  /* remote selection highlight (colour set inline by y-codemirror) */
+}
+
+.cm-ySelectionCaret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 1.5px solid;
+  border-right: 1.5px solid;
+  box-sizing: border-box;
+  display: inline;
+}
+
+.cm-ySelectionCaretDot {
+  border-radius: 50%;
+  position: absolute;
+  width: 0.4em;
+  height: 0.4em;
+  top: -0.2em;
+  left: -0.2em;
+  background-color: inherit;
+  transition: transform 0.15s ease-in-out;
+}
+
+.cm-ySelectionInfo {
+  position: absolute;
+  top: -1.4em;
+  left: -1px;
+  font: 600 11px/1 var(--font-sans, "Inter", system-ui, sans-serif);
+  padding: 2px 5px;
+  border-radius: 4px 4px 4px 0;
+  color: #fff;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+  user-select: none;
+  z-index: 5;
+}
+
+/* Reveal the name tag while the remote caret is fresh / on hover of its line. */
+.cm-ySelectionCaret:hover > .cm-ySelectionInfo,
+.cm-ySelectionInfo {
+  opacity: 1;
+}
