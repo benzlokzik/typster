@@ -35,6 +35,39 @@ async function addMainFile(page) {
   await expect(page.locator('#editor-container .cm-content')).toBeVisible({ timeout: 10_000 })
 }
 
+// A fresh browser context logged in as `email` (separate session = separate
+// user), mirroring auth.setup's dev test-login form submission.
+async function loginAs(browser, email) {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  await page.goto('/')
+  const csrf = await page.evaluate(
+    () => document.querySelector('meta[name="csrf-token"]')?.content ?? ''
+  )
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'load', timeout: 15_000 }),
+    page.evaluate(({ email, csrf }) => {
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/dev/test-login'
+      const add = (n, v) => {
+        const i = document.createElement('input')
+        i.type = 'hidden'
+        i.name = n
+        i.value = v
+        form.appendChild(i)
+      }
+      add('email', email)
+      add('_csrf_token', csrf)
+      document.body.appendChild(form)
+      form.submit()
+    }, { email, csrf }),
+  ])
+  if (!page.url().includes('/projects')) await page.goto('/projects')
+  await page.waitForFunction(() => window.liveSocket?.isConnected?.(), null, { timeout: 10_000 })
+  return { context, page }
+}
+
 test('live co-editing syncs both ways and renders remote cursors', async ({ context }) => {
   test.setTimeout(120_000)
 
@@ -68,4 +101,57 @@ test('live co-editing syncs both ways and renders remote cursors', async ({ cont
   // Remote presence: each editor paints the other client's caret.
   await expect(a.locator('.cm-ySelectionCaret').first()).toBeVisible({ timeout: 10_000 })
   await expect(b.locator('.cm-ySelectionCaret').first()).toBeVisible({ timeout: 10_000 })
+})
+
+// The real-world scenario: two *different* accounts (separate sessions) on one
+// shared file — the owner and an invited collaborator. Exercises cross-user
+// channel authorization (Files.get_file! must admit the collaborator) on top of
+// the binding itself.
+test('two different users co-edit a shared file in real time', async ({ browser }) => {
+  test.setTimeout(120_000)
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  const emailA = `collab-a-${stamp}@typster.test`
+  const emailB = `collab-b-${stamp}@typster.test`
+
+  // Owner A creates a project + file.
+  const A = await loginAs(browser, emailA)
+  await createProjectAndOpenEditor(A.page, `shared-${stamp}`)
+  await addMainFile(A.page)
+  await expect(A.page.locator('#editor-container')).toHaveAttribute('data-collab', 'true')
+
+  // A invites B as an editor; read B's invite id off the People list.
+  await A.page.locator('.ts-tb__share').click()
+  await expect(A.page.locator('.share-shell')).toBeVisible()
+  await A.page.locator('.share-tabs button[phx-value-tab="people"]').click()
+  await A.page.locator('#invite-form input[name="invite[email]"]').fill(emailB)
+  await A.page.locator('#invite-form button[type="submit"]').click()
+  const removeBtn = A.page.locator('.people-list button[phx-value-id]').first()
+  await expect(removeBtn).toBeVisible({ timeout: 10_000 })
+  const collabId = await removeBtn.getAttribute('phx-value-id')
+  await A.page.locator('.share-head .x').click() // close the modal
+
+  // B accepts the invite (links the account), landing in the same editor.
+  const B = await loginAs(browser, emailB)
+  await B.page.goto(`/invites/${collabId}`)
+  await expect(B.page).toHaveURL(/\/projects\/.+\/edit/, { timeout: 15_000 })
+  await expect(B.page.locator('#editor-container')).toHaveAttribute('data-collab', 'true')
+  await expect(B.page.locator('#editor-container .cm-content')).toBeVisible({ timeout: 15_000 })
+
+  const aContent = A.page.locator('#editor-container .cm-content')
+  const bContent = B.page.locator('#editor-container .cm-content')
+
+  // Owner → collaborator.
+  await aContent.click()
+  await A.page.keyboard.type('OWNER_EDIT')
+  await expect(bContent).toContainText('OWNER_EDIT', { timeout: 15_000 })
+
+  // Collaborator → owner.
+  await bContent.click()
+  await B.page.keyboard.press('Control+End')
+  await B.page.keyboard.type(' COLLAB_EDIT')
+  await expect(aContent).toContainText('COLLAB_EDIT', { timeout: 15_000 })
+
+  // Each sees the other's caret, in the other user's colour.
+  await expect(A.page.locator('.cm-ySelectionCaret').first()).toBeVisible({ timeout: 10_000 })
+  await expect(B.page.locator('.cm-ySelectionCaret').first()).toBeVisible({ timeout: 10_000 })
 })

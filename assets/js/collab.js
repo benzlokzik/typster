@@ -16,7 +16,14 @@ import { Socket } from "phoenix"
 let collabSocket = null
 function getSocket() {
   if (!collabSocket) {
-    collabSocket = new Socket("/socket", {})
+    // The CSRF token is required for the endpoint to expose the session to the
+    // socket (CSWSH protection); without it `connect_info[:session]` is nil and
+    // every channel join comes through unauthenticated. Same token the
+    // LiveSocket uses, read from the `<meta name="csrf-token">` tag.
+    const csrfToken = document
+      .querySelector("meta[name='csrf-token']")
+      ?.getAttribute("content")
+    collabSocket = new Socket("/socket", { params: { _csrf_token: csrfToken } })
     collabSocket.connect()
   }
   return collabSocket
