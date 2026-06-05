@@ -1047,14 +1047,19 @@ defmodule TypsterWeb.EditorLive.Index do
     end
   end
 
-  # Role label + avatar colour for the People list.
+  # Role label + avatar colour for the People list. Accepted collaborators have a
+  # user id, so they share the exact colour of their presence avatar and cursor;
+  # a still-pending invite has only an email, so it falls back to an email hash.
   defp collab_initials(%{email: email}), do: email |> initials_from(2)
+  defp collab_color(%{user_id: id}) when is_binary(id), do: TypsterWeb.Presence.color_for(id)
   defp collab_color(%{email: email}), do: Enum.at(@collab_palette, :erlang.phash2(email, 6))
 
-  # The signed-in user's remote-cursor colour — same palette as their presence
-  # avatar, so a person's caret and avatar read as one identity across the UI.
-  defp current_user_color(%{user: %{email: email}}) when is_binary(email),
-    do: collab_color(%{email: email})
+  # The signed-in user's remote-cursor colour. Keyed on the user **id** via the
+  # same function the presence avatars use, so a person's caret and avatar are
+  # always the same colour — and two different users never collide (distinct
+  # emails can hash to the same slot; ids don't for our small user set).
+  defp current_user_color(%{user: %{id: id}}) when not is_nil(id),
+    do: TypsterWeb.Presence.color_for(id)
 
   defp current_user_color(_), do: List.first(@collab_palette)
 
