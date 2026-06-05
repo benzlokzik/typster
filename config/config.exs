@@ -85,7 +85,18 @@ config :phoenix, :json_library, Jason
 config :typster, Oban,
   engine: Oban.Engines.Basic,
   queues: [default: 10],
-  repo: Typster.Repo
+  repo: Typster.Repo,
+  plugins: [
+    # Schedule the previously-orphaned background jobs. `config/test.exs` sets
+    # `plugins: false`, so Cron never fires during tests.
+    {Oban.Plugins.Cron,
+     crontab: [
+       # Checkpoint each file's content into a revision every 5 minutes.
+       {"*/5 * * * *", Typster.Jobs.PeriodicSnapshot},
+       # Sweep assets whose project was deleted, daily at 03:00.
+       {"0 3 * * *", Typster.Jobs.AssetCleanup}
+     ]}
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
