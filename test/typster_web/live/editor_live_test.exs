@@ -462,7 +462,7 @@ defmodule TypsterWeb.EditorLiveTest do
       {:ok, invite} =
         Typster.Sharing.invite_collaborator(owner_scope, project.id, "c@x.com", :editor)
 
-      collaborator = Typster.AccountsFixtures.user_fixture()
+      collaborator = Typster.AccountsFixtures.user_fixture(%{email: "c@x.com"})
 
       {:ok, _} =
         Typster.Sharing.accept_invite(Typster.Accounts.Scope.for_user(collaborator), invite.id)
@@ -480,10 +480,32 @@ defmodule TypsterWeb.EditorLiveTest do
       assert has_element?(view, "#create-main-file-button")
     end
 
-    test "the Share button is owner-only",
+    test "the Share button shows for all but is inactive for collaborators",
          %{conn: owner_conn, collab_conn: collab_conn, project: project} do
-      assert has_element?(open_editor(owner_conn, project), ".ts-tb__share")
-      refute has_element?(open_editor(collab_conn, project), ".ts-tb__share")
+      owner_view = open_editor(owner_conn, project)
+      collab_view = open_editor(collab_conn, project)
+
+      # Owner: an active Share button.
+      assert has_element?(owner_view, ".ts-tb__share")
+      refute has_element?(owner_view, ".ts-tb__share.is-inactive")
+
+      # Collaborator: the button is present (consistent top bar) but inert.
+      assert has_element?(collab_view, ".ts-tb__share.is-inactive")
+      assert has_element?(collab_view, ".ts-tb__share[disabled]")
+    end
+
+    test "a non-owner's share mutation is a no-op server-side",
+         %{collab_conn: conn, user: owner, project: project} do
+      view = open_editor(conn, project)
+      owner_scope = Typster.Accounts.Scope.for_user(owner)
+      before = Typster.Sharing.list_collaborators(owner_scope, project.id)
+
+      # A crafted event the disabled button can't send must no-op, not invite.
+      render_hook(view, "share_invite", %{
+        "invite" => %{"email" => "intruder@example.com", "role" => "editor"}
+      })
+
+      assert Typster.Sharing.list_collaborators(owner_scope, project.id) == before
     end
   end
 end

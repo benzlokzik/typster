@@ -195,6 +195,13 @@
 
 /* ── Share button — pin the action cluster to the right edge ──────────────── */
 .ts-tb__share { margin-left: auto; flex-shrink: 0; }
+/* Collaborators see the Share button for a consistent top bar, but it's inert:
+   only the owner can manage sharing. */
+.ts-tb__share.is-inactive {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 /* ── Compile button (single element + state modifiers) ────────────────────── */
 .ts-tb__compile {

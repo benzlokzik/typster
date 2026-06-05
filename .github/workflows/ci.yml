@@ -32,6 +32,10 @@ permissions:
 
 env:
   MIX_ENV: test
+  # The Pixi/conda toolchain reports an `x86_64-conda-linux-gnu` target, which
+  # has no precompiled y_ex (Yjs) NIF — build it from Rust source instead (the
+  # `rust` Pixi dep + the optional `rustler` dep make this work).
+  RUSTLER_PRECOMPILED_FORCE_BUILD_ALL: "true"
 
 jobs:
   static:

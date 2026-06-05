@@ -44,7 +44,10 @@
     "phoenix_live_view": "workspace:*",
     "shiki": "^4.1.0",
     "simple-icons": "^16.18.0",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "y-codemirror.next": "^0.3.5",
+    "y-phoenix-channel": "^0.3.0",
+    "yjs": "^13.6.31"
   },
   "overrides": {
     "@codemirror/state": "6.6.0",

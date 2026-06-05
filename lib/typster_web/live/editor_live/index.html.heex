@@ -63,12 +63,15 @@
         </span>
       </button>
 
+      <%!-- Shown to everyone for a consistent top bar, but inactive for
+            collaborators: only the owner can manage sharing (enforced server-side). --%>
       <button
-        :if={@owner?}
         type="button"
-        class="ts-btn ts-btn--ghost ts-btn--sm ts-tb__share"
-        phx-click="open_share"
-        title={gettext("editor.share")}
+        class={["ts-btn ts-btn--ghost ts-btn--sm ts-tb__share", !@owner? && "is-inactive"]}
+        phx-click={@owner? && "open_share"}
+        disabled={!@owner?}
+        aria-disabled={to_string(!@owner?)}
+        title={if(@owner?, do: gettext("editor.share"), else: gettext("editor.share_owner_only"))}
       >
         <i data-lucide="upload" aria-hidden="true"></i> {gettext("editor.share")}
       </button>
@@ -634,6 +637,9 @@
             data-file-id={if @current_file, do: @current_file.id, else: ""}
             data-file-name={if @current_file, do: @current_file.path, else: ""}
             data-language={@editor_language}
+            data-collab={to_string(@collab?)}
+            data-user-name={user_display_name(@current_scope)}
+            data-user-color={current_user_color(@current_scope)}
             data-project-sources={Jason.encode!(@project_sources)}
             data-project-assets={Jason.encode!(@project_assets)}
             class="ts-source__editor"

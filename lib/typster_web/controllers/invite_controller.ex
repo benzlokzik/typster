@@ -18,6 +18,11 @@ defmodule TypsterWeb.InviteController do
         |> put_flash(:info, gettext("share.invite.accepted"))
         |> redirect(to: ~p"/projects/#{collaborator.project_id}/edit")
 
+      {:error, :forbidden} ->
+        conn
+        |> put_flash(:error, gettext("share.invite.wrong_account"))
+        |> redirect(to: ~p"/projects")
+
       {:error, :not_found} ->
         conn
         |> put_flash(:error, gettext("share.invite.invalid"))

@@ -14,6 +14,10 @@ defmodule Typster.Application do
       {DNSCluster, query: Application.get_env(:typster, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Typster.PubSub},
       TypsterWeb.Presence,
+      # Real-time collaborative editing: one Yjs SharedDoc process per open file,
+      # registered by file id and supervised dynamically.
+      {Registry, keys: :unique, name: Typster.Collab.Registry},
+      {DynamicSupervisor, strategy: :one_for_one, name: Typster.Collab.DocSupervisor},
       {Oban, Application.get_env(:typster, Oban)},
       # Start to serve requests, typically the last entry
       TypsterWeb.Endpoint
