@@ -10,6 +10,7 @@ defmodule Typster.Sharing do
   import Ecto.Query, warn: false
 
   alias Typster.Accounts.Scope
+  alias Typster.Accounts.User
   alias Typster.Projects
   alias Typster.Repo
   alias Typster.Sharing.Collaborator
@@ -77,6 +78,22 @@ defmodule Typster.Sharing do
   end
 
   def get_link_by_token(_token), do: nil
+
+  @doc """
+  PUBLIC: the link owner's `Scope`, for entitlement checks on the public/embed
+  views (e.g. whether an embed may be an editable sandbox).
+
+  This is strictly the **sharer's** plan, never the anonymous visitor's — the
+  embed inherits the capabilities the owner pays for. Returns `nil` when the
+  owner can't be resolved.
+  """
+  @spec owner_scope(ShareLink.t()) :: Scope.t() | nil
+  def owner_scope(%ShareLink{} = link) do
+    case Repo.preload(link, project: :user) do
+      %{project: %{user: %User{} = user}} -> Scope.for_user(user)
+      _ -> nil
+    end
+  end
 
   @doc """
   Returns a changeset for a share link, for use in forms.

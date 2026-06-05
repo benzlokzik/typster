@@ -204,7 +204,7 @@ msgid "editor.preview"
 msgstr "Preview"
 
 #: lib/typster_web/live/editor_live/index.html.heex:732
-#: lib/typster_web/live/shared_project_live.ex:132
+#: lib/typster_web/live/shared_project_live.ex:144
 #, elixir-autogen, elixir-format
 msgid "editor.preview_placeholder"
 msgstr "Preview appears here after Typst does the math"
@@ -2150,7 +2150,7 @@ msgstr "Start a file from this template"
 msgid "editor.flash.dropped_added"
 msgstr "Added to the project."
 
-#: lib/typster_web/live/editor_live/index.ex:1308
+#: lib/typster_web/live/editor_live/index.ex:1307
 #: lib/typster_web/live/editor_live/index.html.heex:675
 #: lib/typster_web/live/editor_live/index.html.heex:883
 #, elixir-autogen, elixir-format
@@ -2159,14 +2159,14 @@ msgid_plural "%{count} errors"
 msgstr[0] "%{count} error"
 msgstr[1] "%{count} errors"
 
-#: lib/typster_web/live/editor_live/index.ex:1310
+#: lib/typster_web/live/editor_live/index.ex:1309
 #, elixir-autogen, elixir-format
 msgid "%{count} warning"
 msgid_plural "%{count} warnings"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/typster_web/live/editor_live/index.ex:1314
+#: lib/typster_web/live/editor_live/index.ex:1313
 #, elixir-autogen, elixir-format
 msgid "editor.compile_failed"
 msgstr "Compile failed"
@@ -2548,27 +2548,27 @@ msgstr "Free"
 msgid "share.plan.pro"
 msgstr "Pro"
 
-#: lib/typster_web/live/shared_project_live.ex:66
+#: lib/typster_web/live/shared_project_live.ex:75
 #, elixir-autogen, elixir-format
 msgid "share.public.home"
 msgstr "Go to Typster"
 
-#: lib/typster_web/live/shared_project_live.ex:25
+#: lib/typster_web/live/shared_project_live.ex:26
 #, elixir-autogen, elixir-format
 msgid "share.public.invalid"
 msgstr "Invalid link"
 
-#: lib/typster_web/live/shared_project_live.ex:65
+#: lib/typster_web/live/shared_project_live.ex:74
 #, elixir-autogen, elixir-format
 msgid "share.public.invalid_sub"
 msgstr "The share link may have been rotated or revoked."
 
-#: lib/typster_web/live/shared_project_live.ex:64
+#: lib/typster_web/live/shared_project_live.ex:73
 #, elixir-autogen, elixir-format
 msgid "share.public.invalid_title"
 msgstr "This link isn't valid"
 
-#: lib/typster_web/live/shared_project_live.ex:143
+#: lib/typster_web/live/shared_project_live.ex:166
 #, elixir-autogen, elixir-format
 msgid "share.public.open_in_typster"
 msgstr "Open in Typster ↗"
@@ -2591,17 +2591,17 @@ msgstr "Owner"
 msgid "share.role.viewer"
 msgstr "Viewer"
 
-#: lib/typster_web/live/shared_project_live.ex:164
+#: lib/typster_web/live/shared_project_live.ex:188
 #, elixir-autogen, elixir-format
 msgid "share.scope.full"
 msgstr "Full access"
 
-#: lib/typster_web/live/shared_project_live.ex:163
+#: lib/typster_web/live/shared_project_live.ex:187
 #, elixir-autogen, elixir-format
 msgid "share.scope.output"
 msgstr "Compiled output"
 
-#: lib/typster_web/live/shared_project_live.ex:165
+#: lib/typster_web/live/shared_project_live.ex:189
 #, elixir-autogen, elixir-format
 msgid "share.scope.read"
 msgstr "Read-only"
@@ -2651,7 +2651,7 @@ msgstr "People"
 msgid "share.title"
 msgstr "Share"
 
-#: lib/typster_web/live/editor_live/index.ex:1169
+#: lib/typster_web/live/editor_live/index.ex:1168
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.cta"
 msgstr "Upgrade"
@@ -2691,7 +2691,7 @@ msgstr "You're in — welcome to the project."
 msgid "share.invite.invalid"
 msgstr "That invite link is invalid or has expired."
 
-#: lib/typster_web/live/shared_project_live.ex:139
+#: lib/typster_web/live/shared_project_live.ex:151
 #, elixir-autogen, elixir-format
 msgid "share.public.powered_by"
 msgstr "Powered by"
@@ -2756,3 +2756,18 @@ msgstr "Width"
 #, elixir-autogen, elixir-format
 msgid "share.embed.coming_soon"
 msgstr "// soon™ — still cooking 🍳  grab the iframe for now"
+
+#: lib/typster_web/live/shared_project_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "share.embed.cta_fork"
+msgstr "Fork in Typster"
+
+#: lib/typster_web/live/shared_project_live.ex:158
+#, elixir-autogen, elixir-format
+msgid "share.embed.cta_signup"
+msgstr "Make your own"
+
+#: lib/typster_web/live/shared_project_live.ex:102
+#, elixir-autogen, elixir-format
+msgid "share.scope.sandbox"
+msgstr "Sandbox"

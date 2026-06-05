@@ -1740,6 +1740,13 @@
   white-space: nowrap;
 }
 
+/* Pro sandbox: the embedded editor is writable, so flag it with a solid,
+   higher-contrast pill (the read-only pill is a subtle tint by comparison). */
+.share-public .embed-bar .ro-pill--edit {
+  background: var(--accent);
+  color: var(--accent-contrast, #fff);
+}
+
 /* real source + preview panes fill the middle (1fr) grid row */
 .share-public .embed-source,
 .share-public .embed-preview {

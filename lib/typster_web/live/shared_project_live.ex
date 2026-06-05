@@ -12,6 +12,7 @@ defmodule TypsterWeb.SharedProjectLive do
   """
   use TypsterWeb, :live_view
 
+  alias Typster.Embed
   alias Typster.Files
   alias Typster.Sharing
 
@@ -27,15 +28,23 @@ defmodule TypsterWeb.SharedProjectLive do
       link ->
         files = Sharing.files_for_link(link)
         entry = pick_entry(files, params["file"])
+        embed? = socket.assigns.live_action == :embed
+        # The owner's plan — not the visitor's — decides the embed capabilities.
+        # Only resolve it for the embed (the `/p/:slug` page is always read-only).
+        owner_scope = if embed?, do: Sharing.owner_scope(link), else: nil
+        policy = Embed.policy(owner_scope, params)
 
         {:ok,
          socket
          |> assign(:link, link)
          |> assign(:project, link.project)
          |> assign(:scope_kind, link.scope)
-         |> assign(:embed?, socket.assigns.live_action == :embed)
+         |> assign(:embed?, embed?)
          |> assign(:embed_theme, embed_theme(params["theme"]))
          |> assign(:show_preview?, params["preview"] != "0")
+         |> assign(:editable?, policy.editable)
+         |> assign(:unbranded?, policy.unbranded)
+         |> assign(:cta_mode, policy.cta.mode)
          |> assign(:entry, entry)
          |> assign(:content, (entry && entry.content) || "")
          |> assign(:language, entry_language(entry))
@@ -86,8 +95,11 @@ defmodule TypsterWeb.SharedProjectLive do
           <span class="slug truncate">{@project.name}</span>
           <span :if={@entry} class="file truncate">· {@entry.path}</span>
           <span class="spacer"></span>
-          <span class="ro-pill">
-            <.icon name="hero-eye" class="size-3" /> {scope_label(@scope_kind)}
+          <span class={["ro-pill", @editable? && "ro-pill--edit"]}>
+            <.icon
+              name={if(@editable?, do: "hero-pencil-square", else: "hero-eye")}
+              class="size-3"
+            /> {if(@editable?, do: gettext("share.scope.sandbox"), else: scope_label(@scope_kind))}
           </span>
         </div>
 
@@ -98,7 +110,7 @@ defmodule TypsterWeb.SharedProjectLive do
             phx-update="ignore"
             data-content={@content}
             data-file-id={@entry && @entry.id}
-            data-readonly="true"
+            data-readonly={to_string(!@editable?)}
             data-language={@language}
             data-project-sources={Jason.encode!(@project_sources)}
             data-project-assets="[]"
@@ -134,14 +146,26 @@ defmodule TypsterWeb.SharedProjectLive do
           </div>
         </section>
 
-        <div class="embed-foot">
-          <span class="powered">
+        <div :if={!@unbranded? or @cta_mode != :none} class="embed-foot">
+          <span :if={!@unbranded?} class="powered">
             {gettext("share.public.powered_by")} <strong class="ts-serif">Typster</strong>
           </span>
           <span class="spacer"></span>
-          <.link navigate={~p"/projects/#{@project.id}/edit"} class="embed-foot__cta">
-            {gettext("share.public.open_in_typster")}
-          </.link>
+          <%= case @cta_mode do %>
+            <% :none -> %>
+            <% :signup -> %>
+              <.link navigate={~p"/users/register"} class="embed-foot__cta">
+                {gettext("share.embed.cta_signup")}
+              </.link>
+            <% :fork -> %>
+              <.link navigate={~p"/projects/#{@project.id}/edit"} class="embed-foot__cta">
+                {gettext("share.embed.cta_fork")}
+              </.link>
+            <% _ -> %>
+              <.link navigate={~p"/projects/#{@project.id}/edit"} class="embed-foot__cta">
+                {gettext("share.public.open_in_typster")}
+              </.link>
+          <% end %>
         </div>
       </div>
     </div>
