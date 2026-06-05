@@ -252,6 +252,15 @@ defmodule TypsterWeb.EditorLive.Index do
   # Sharing is managed by the owner only; collaborators can edit but not invite.
   def handle_event("open_share", _params, socket), do: {:noreply, socket}
 
+  # Owner-only guard for every share mutation. The UI already disables these for
+  # collaborators, but this makes the backend authoritative: a crafted event from
+  # a non-owner no-ops here instead of reaching `Sharing.*` (which would raise on
+  # the owner-only `Projects.get_project!`). Must precede the specific handlers.
+  def handle_event(event, _params, %{assigns: %{owner?: false}} = socket)
+      when event in ~w(share_scope share_rotate share_toggle_download share_invite share_remove_collab) do
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_event("close_share", _params, socket) do
     {:noreply, assign(socket, :show_share, false)}

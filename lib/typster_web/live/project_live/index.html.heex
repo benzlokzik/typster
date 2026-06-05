@@ -69,7 +69,12 @@
             {project_initial(project.name)}
           </div>
           <div class="ts-list__main">
-            <div class="ts-list__title">{project.name}</div>
+            <div class="ts-list__title">
+              {project.name}
+              <span :if={!owned?(@current_scope, project)} class="ts-shared-badge">
+                <.icon name="hero-user-group" class="size-4" /> {gettext("projects.row.shared")}
+              </span>
+            </div>
             <div class="ts-list__sub">
               {gettext("projects.row.edited")} {relative_time(project.updated_at)} · {ngettext(
                 "1 file",
@@ -89,6 +94,7 @@
               <.icon name="hero-star" class="size-3.5" />
             </button>
             <button
+              :if={owned?(@current_scope, project)}
               id={"delete-project-#{project.id}"}
               phx-click="delete"
               phx-value-id={project.id}

@@ -6,10 +6,14 @@ defmodule TypsterWeb.InviteControllerTest do
 
   alias Typster.Sharing
 
-  defp invite(_context) do
+  defp invite(context) do
     owner = user_scope_fixture()
     project = project_fixture(owner)
-    {:ok, collab} = Sharing.invite_collaborator(owner, project.id, "guest@example.com", :viewer)
+    # Invites are now bound to the invited email, so address it to the logged-in
+    # user when there is one (authenticated cases); fall back to a guest address
+    # for the unauthenticated case, which never reaches acceptance anyway.
+    email = (context[:user] && context.user.email) || "guest@example.com"
+    {:ok, collab} = Sharing.invite_collaborator(owner, project.id, email, :viewer)
     %{project: project, collab: collab}
   end
 
