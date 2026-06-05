@@ -1168,6 +1168,12 @@
             </div>
           </div>
 
+          <%!-- Pro-only block: markup lives in Typster.Pro.Analytics.Components
+                (the closed repo); the host just passes data + translated labels. --%>
+          <%= if @share_analytics do %>
+            {pro_analytics_panel(%{summary: @share_analytics, labels: analytics_labels()})}
+          <% end %>
+
           <div class="share-section">
             <div class="label">{gettext("share.link.perm_label")}</div>
             <div class="perm-cards">

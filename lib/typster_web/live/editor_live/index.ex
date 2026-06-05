@@ -66,6 +66,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:show_share, false)
      |> assign(:share_tab, "link")
      |> assign(:share_link, nil)
+     |> assign(:share_analytics, nil)
      |> assign(:share_write_preview, false)
      |> assign(:embed_cfg, default_embed_cfg())
      |> assign(:embed_lang, "iframe")
@@ -1020,10 +1021,41 @@ defmodule TypsterWeb.EditorLive.Index do
   defp load_share(socket) do
     scope = socket.assigns.current_scope
     project = socket.assigns.project
+    link = Sharing.get_or_create_link(scope, project.id)
 
     socket
-    |> assign(:share_link, Sharing.get_or_create_link(scope, project.id))
+    |> assign(:share_link, link)
     |> assign(:share_collaborators, Sharing.list_collaborators(scope, project.id))
+    |> assign(:share_analytics, share_analytics(scope, link))
+  end
+
+  # Open-count stats for the owner's link — a Pro capability. On Free (or the
+  # open-core build) `Typster.Analytics` is a no-op returning zeros, so we only
+  # surface the panel when the owner is entitled.
+  defp share_analytics(scope, link) do
+    if Features.can?(scope, :share_link_analytics), do: Typster.Analytics.summary(link.token)
+  end
+
+  # The analytics panel's markup is a Pro-only HEEx block that lives in the Pro
+  # repo (`Typster.Pro.Analytics.Components`). The host invokes it at runtime and
+  # passes the host-resolved summary + translated labels (the Pro component can't
+  # call the host's `~p`/`gettext`). Open core has no component → renders nothing
+  # (the panel is only ever shown to entitled owners anyway).
+  defp pro_analytics_panel(assigns) do
+    case Typster.Analytics.components() do
+      nil -> ~H""
+      # `apply/3` keeps this a pure runtime call — no compile-time reference to
+      # the Pro component, so the open-core build stays warning-clean.
+      mod -> apply(mod, :panel, [assigns])
+    end
+  end
+
+  defp analytics_labels do
+    %{
+      title: gettext("share.analytics.label"),
+      total: gettext("share.analytics.total"),
+      last_7d: gettext("share.analytics.last_7d")
+    }
   end
 
   defp update_share_link(socket, attrs) do

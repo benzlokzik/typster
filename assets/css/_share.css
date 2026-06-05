@@ -185,6 +185,47 @@
   margin-top: 4px;
 }
 
+/* ---------- analytics panel (Pro) ---------- */
+.share-analytics__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.share-analytics__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.share-analytics__stat .n {
+  font: 700 22px var(--font-sans);
+  color: var(--text);
+  line-height: 1;
+}
+.share-analytics__stat .k {
+  font: 500 10.5px var(--font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.share-analytics__spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 34px;
+  margin-left: auto;
+}
+.share-analytics__spark .bar {
+  width: 7px;
+  min-height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+
 /* ---------- people tab ---------- */
 .invite-row {
   display: grid;

@@ -115,9 +115,9 @@ defmodule Typster.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", &migrate_pro/1, "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", &migrate_pro/1, "test"],
       "assets.setup": [
         "bun.install --if-missing",
         "bun assets install",
@@ -144,5 +144,17 @@ defmodule Typster.MixProject do
         "test"
       ]
     ]
+  end
+
+  # The Pro app (`vendor/pro`) ships its own Ecto migrations for its feature
+  # tables (e.g. `pro_share_opens`). They run against the host repo, right after
+  # the host's own migrations. No-op for a plain open-core checkout where the
+  # submodule is absent — so the community build never gains Pro tables.
+  defp migrate_pro(_args) do
+    path = "vendor/pro/priv/repo/migrations"
+
+    if File.dir?(path) do
+      Mix.Task.rerun("ecto.migrate", ["--quiet", "--migrations-path", path])
+    end
   end
 end
