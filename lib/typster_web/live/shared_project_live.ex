@@ -34,6 +34,11 @@ defmodule TypsterWeb.SharedProjectLive do
         owner_scope = if embed?, do: Sharing.owner_scope(link), else: nil
         policy = Embed.policy(owner_scope, params)
 
+        # Count this open once per page load — on the dead render, which happens
+        # exactly once for both the embed (socket-less) and the `/p` view (whose
+        # connected mount we skip). No-op unless the Pro analytics code is present.
+        if not connected?(socket), do: Typster.Analytics.record(link.token)
+
         {:ok,
          socket
          |> assign(:link, link)
