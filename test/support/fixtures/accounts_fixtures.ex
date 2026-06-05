@@ -41,6 +41,18 @@ defmodule Typster.AccountsFixtures do
     user
   end
 
+  @doc "A confirmed user on the `:pro` billing plan (for entitlement tests)."
+  def pro_user_fixture(attrs \\ %{}) do
+    attrs |> user_fixture() |> set_plan(:pro)
+  end
+
+  @doc "Persists a billing plan change (`:free` | `:pro`) on `user`."
+  def set_plan(user, plan) do
+    user
+    |> Typster.Accounts.User.plan_changeset(plan)
+    |> Typster.Repo.update!()
+  end
+
   def user_scope_fixture do
     user = user_fixture()
     user_scope_fixture(user)
