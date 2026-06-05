@@ -73,8 +73,16 @@ jobs:
         run: pixi run mix credo
 
   tests:
-    name: Elixir tests
+    name: Elixir tests (${{ matrix.edition }})
     runs-on: ubuntu-latest
+
+    # Run the suite twice: the open-core build (no `vendor/pro`) and the Pro
+    # build (the private modules mounted in), so a change can't pass community
+    # while silently breaking the paid paths — or vice versa.
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: [community, pro]
 
     services:
       postgres:
@@ -92,31 +100,73 @@ jobs:
           --health-retries 5
 
     steps:
+      # The Pro edition needs the private `typster-pro` repo. Without a token
+      # (forks, Dependabot) it can't be fetched, so that matrix leg no-ops with a
+      # warning rather than failing — the community leg always runs.
+      - name: Resolve Pro edition access
+        id: edition
+        env:
+          PRO_TOKEN: ${{ secrets.PRO_REPO_TOKEN }}
+        run: |
+          if [ "${{ matrix.edition }}" = "pro" ] && [ -z "$PRO_TOKEN" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Pro edition skipped::Set the PRO_REPO_TOKEN secret to run the Pro-edition test leg."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v6
+        if: steps.edition.outputs.run == 'true'
+
+      # Mount the closed-source Pro modules so `Typster.Pro.*` compiles in and the
+      # `:pro`-tagged suite exercises the paid paths. `PRO_REF` (a repo variable)
+      # can target a matching Pro feature branch; it defaults to `main`.
+      - name: Mount Pro modules
+        if: matrix.edition == 'pro' && steps.edition.outputs.run == 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: typster-io/typster-pro
+          ref: ${{ vars.PRO_REF || 'main' }}
+          token: ${{ secrets.PRO_REPO_TOKEN }}
+          path: vendor/pro
 
       - uses: prefix-dev/setup-pixi@v0.9.6
+        if: steps.edition.outputs.run == 'true'
         with:
           cache: true
 
       - name: Cache deps
+        if: steps.edition.outputs.run == 'true'
         uses: actions/cache@v5
         with:
           path: deps
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-
+          key: ${{ runner.os }}-mix-${{ matrix.edition }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-${{ matrix.edition }}-
 
       - name: Cache build
+        if: steps.edition.outputs.run == 'true'
         uses: actions/cache@v5
         with:
           path: _build
-          key: ${{ runner.os }}-build-${{ hashFiles('pixi.lock', '**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-build-
+          key: ${{ runner.os }}-build-${{ matrix.edition }}-${{ hashFiles('pixi.lock', '**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-build-${{ matrix.edition }}-
 
       - name: Install deps
+        if: steps.edition.outputs.run == 'true'
         run: pixi run mix deps.get
 
+      - name: Compile (warnings as errors)
+        if: steps.edition.outputs.run == 'true'
+        run: pixi run mix compile --warnings-as-errors
+
       - name: Run tests
-        run: pixi run mix test
+        if: steps.edition.outputs.run == 'true'
+        run: |
+          if [ "${{ matrix.edition }}" = "pro" ]; then
+            pixi run mix test --include pro
+          else
+            pixi run mix test
+          fi
 
   browser:
     name: Browser tests
