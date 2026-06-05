@@ -157,7 +157,11 @@ defmodule Typster.FilesTest do
     setup do
       owner = Typster.AccountsFixtures.user_scope_fixture()
       project = project_fixture(owner)
-      member = Typster.AccountsFixtures.user_scope_fixture()
+
+      member =
+        Typster.Accounts.Scope.for_user(
+          Typster.AccountsFixtures.user_fixture(%{email: "g@example.com"})
+        )
 
       {:ok, invite} =
         Typster.Sharing.invite_collaborator(owner, project.id, "g@example.com", :editor)

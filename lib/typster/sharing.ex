@@ -10,6 +10,7 @@ defmodule Typster.Sharing do
   import Ecto.Query, warn: false
 
   alias Typster.Accounts.Scope
+  alias Typster.Accounts.User
   alias Typster.Projects
   alias Typster.Repo
   alias Typster.Sharing.Collaborator
@@ -165,31 +166,63 @@ defmodule Typster.Sharing do
   @doc """
   PUBLIC (bearer): accepts a pending invite for the authenticated user.
 
-  The invite `id` is the bearer credential — the invitee is not the project
-  owner, so authorization is the unguessable id itself, not project ownership.
-  Links the collaborator row to the current user and marks it `:accepted`.
+  The invite `id` is the bearer credential, but it is **not** sufficient on its
+  own: the invite is addressed to a specific email, so we only link it to a user
+  whose account email matches that address (case-insensitive). Otherwise anyone
+  authenticated — including the project owner clicking the link to "preview" it —
+  would silently claim the invite and bind it to the wrong account, leaving the
+  real invitee unable to see the project.
 
-  Idempotent: re-accepting an already-accepted invite is a no-op success.
-  Returns `{:ok, collaborator}` with the project preloaded, or
+  Idempotent: re-accepting an already-accepted invite by the same user is a
+  no-op success. Returns `{:ok, collaborator}` with the project preloaded,
+  `{:error, :forbidden}` when the invite is for a different email, or
   `{:error, :not_found}` when the id is malformed or no invite exists.
   """
-  def accept_invite(%Scope{user: %{id: user_id}}, invite_id) when is_binary(invite_id) do
-    case fetch_collaborator(invite_id) do
-      nil ->
-        {:error, :not_found}
-
-      %Collaborator{} = collaborator ->
-        collaborator
-        |> Collaborator.accept_changeset(user_id)
-        |> Repo.update()
-        |> case do
-          {:ok, accepted} -> {:ok, Repo.preload(accepted, :project)}
-          {:error, _changeset} = error -> error
-        end
+  def accept_invite(%Scope{user: %{id: user_id, email: email}}, invite_id)
+      when is_binary(invite_id) do
+    with %Collaborator{} = collaborator <- fetch_collaborator(invite_id),
+         true <- same_email?(collaborator.email, email),
+         {:ok, accepted} <-
+           collaborator |> Collaborator.accept_changeset(user_id) |> Repo.update() do
+      {:ok, Repo.preload(accepted, :project)}
+    else
+      nil -> {:error, :not_found}
+      false -> {:error, :forbidden}
+      {:error, _changeset} = error -> error
     end
   end
 
   def accept_invite(_scope, _invite_id), do: {:error, :not_found}
+
+  @doc """
+  Links every invite addressed to this user's email to their account and marks
+  it `:accepted`, so projects shared with them appear in their list **without**
+  having to click the email accept-link. The invite *email* is the source of
+  truth for who an invite belongs to, so this also self-heals rows that were
+  mis-linked to another account. Idempotent; returns the number of rows touched.
+  """
+  @spec link_invites_for_user(Scope.t()) :: non_neg_integer()
+  def link_invites_for_user(%Scope{user: %User{id: user_id, email: email}})
+      when is_binary(email) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    {count, _} =
+      from(c in Collaborator,
+        where:
+          fragment("lower(?)", c.email) == ^String.downcase(email) and
+            (is_nil(c.user_id) or c.user_id != ^user_id or c.status != :accepted)
+      )
+      |> Repo.update_all(set: [user_id: user_id, status: :accepted, updated_at: now])
+
+    count
+  end
+
+  def link_invites_for_user(_scope), do: 0
+
+  defp same_email?(a, b) when is_binary(a) and is_binary(b),
+    do: String.downcase(a) == String.downcase(b)
+
+  defp same_email?(_a, _b), do: false
 
   defp fetch_collaborator(id) do
     case Ecto.UUID.cast(id) do

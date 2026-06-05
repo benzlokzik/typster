@@ -53,7 +53,7 @@ msgstr "Logging in…"
 msgid "auth.sign_up"
 msgstr "Sign up"
 
-#: lib/typster_web/live/project_live/index.html.heex:157
+#: lib/typster_web/live/project_live/index.html.heex:163
 #, elixir-autogen, elixir-format
 msgid "common.cancel"
 msgstr "Not now"
@@ -72,7 +72,7 @@ msgstr "Created %{date}"
 msgid "common.email"
 msgstr "Email"
 
-#: lib/typster_web/live/project_live/index.html.heex:106
+#: lib/typster_web/live/project_live/index.html.heex:112
 #, elixir-autogen, elixir-format
 msgid "common.open"
 msgstr "Open"
@@ -361,22 +361,22 @@ msgid_plural "projects.count.other"
 msgstr[0] "%{count} project"
 msgstr[1] "%{count} projects"
 
-#: lib/typster_web/live/project_live/index.html.heex:160
+#: lib/typster_web/live/project_live/index.html.heex:166
 #, elixir-autogen, elixir-format
 msgid "projects.create"
 msgstr "Create project"
 
-#: lib/typster_web/live/project_live/index.html.heex:95
+#: lib/typster_web/live/project_live/index.html.heex:101
 #, elixir-autogen, elixir-format
 msgid "projects.delete.confirm"
 msgstr "Delete this project? There is no undo."
 
-#: lib/typster_web/live/project_live/index.html.heex:97
+#: lib/typster_web/live/project_live/index.html.heex:103
 #, elixir-autogen, elixir-format
 msgid "projects.delete.label"
 msgstr "Delete project"
 
-#: lib/typster_web/live/project_live/index.html.heex:141
+#: lib/typster_web/live/project_live/index.html.heex:147
 #, elixir-autogen, elixir-format
 msgid "projects.dialog.description"
 msgstr "Give it a short name future-you can parse."
@@ -391,23 +391,23 @@ msgstr "No projects yet. Clean slate, mildly suspicious. Time to start one? 🤔
 msgid "projects.index.subtitle"
 msgstr "Open an existing project or start a new one. The document will not typeset itself."
 
-#: lib/typster_web/live/project_live/index.ex:18
+#: lib/typster_web/live/project_live/index.ex:24
 #, elixir-autogen, elixir-format
 msgid "projects.index.title"
 msgstr "Projects"
 
-#: lib/typster_web/live/project_live/index.html.heex:146
+#: lib/typster_web/live/project_live/index.html.heex:152
 #, elixir-autogen, elixir-format
 msgid "projects.name.label"
 msgstr "Project name"
 
-#: lib/typster_web/live/project_live/index.html.heex:151
+#: lib/typster_web/live/project_live/index.html.heex:157
 #, elixir-autogen, elixir-format
 msgid "projects.name.placeholder"
 msgstr "Thesis, under control"
 
 #: lib/typster_web/live/project_live/index.html.heex:17
-#: lib/typster_web/live/project_live/index.html.heex:140
+#: lib/typster_web/live/project_live/index.html.heex:146
 #, elixir-autogen, elixir-format
 msgid "projects.new"
 msgstr "New project"
@@ -707,28 +707,28 @@ msgstr "Light, dark, or follow your system."
 msgid "settings.appearance.title"
 msgstr "Appearance"
 
-#: lib/typster_web/live/project_live/index.ex:127
+#: lib/typster_web/live/project_live/index.ex:144
 #, elixir-autogen, elixir-format
 msgid "1 day ago"
 msgid_plural "%{count} days ago"
 msgstr[0] "1 day ago"
 msgstr[1] "%{count} days ago"
 
-#: lib/typster_web/live/project_live/index.html.heex:74
+#: lib/typster_web/live/project_live/index.html.heex:79
 #, elixir-autogen, elixir-format
 msgid "1 file"
 msgid_plural "%{count} files"
 msgstr[0] "1 file"
 msgstr[1] "%{count} files"
 
-#: lib/typster_web/live/project_live/index.ex:126
+#: lib/typster_web/live/project_live/index.ex:143
 #, elixir-autogen, elixir-format
 msgid "1 hour ago"
 msgid_plural "%{count} hours ago"
 msgstr[0] "1 hour ago"
 msgstr[1] "%{count} hours ago"
 
-#: lib/typster_web/live/project_live/index.ex:125
+#: lib/typster_web/live/project_live/index.ex:142
 #, elixir-autogen, elixir-format
 msgid "1 minute ago"
 msgid_plural "%{count} minutes ago"
@@ -765,43 +765,43 @@ msgstr "projects"
 msgid "projects.heading_lead"
 msgstr "Your"
 
-#: lib/typster_web/live/project_live/index.html.heex:122
+#: lib/typster_web/live/project_live/index.html.heex:128
 #, elixir-autogen, elixir-format
 msgid "projects.import.soon"
 msgstr "Import is coming soon"
 
-#: lib/typster_web/live/project_live/index.html.heex:128
+#: lib/typster_web/live/project_live/index.html.heex:134
 #, elixir-autogen, elixir-format
 msgid "projects.import.sub"
 msgstr "Drag-drop or paste a GitHub URL"
 
-#: lib/typster_web/live/project_live/index.html.heex:127
+#: lib/typster_web/live/project_live/index.html.heex:133
 #, elixir-autogen, elixir-format
 msgid "projects.import.title"
 msgstr "Import .zip or git repo"
 
-#: lib/typster_web/live/project_live/index.html.heex:74
+#: lib/typster_web/live/project_live/index.html.heex:79
 #, elixir-autogen, elixir-format
 msgid "projects.row.edited"
 msgstr "Edited"
 
-#: lib/typster_web/live/project_live/index.html.heex:86
-#: lib/typster_web/live/project_live/index.html.heex:87
+#: lib/typster_web/live/project_live/index.html.heex:91
+#: lib/typster_web/live/project_live/index.html.heex:92
 #, elixir-autogen, elixir-format
 msgid "projects.star_soon"
 msgstr "Starring is coming soon"
 
-#: lib/typster_web/live/project_live/index.html.heex:118
+#: lib/typster_web/live/project_live/index.html.heex:124
 #, elixir-autogen, elixir-format
 msgid "projects.template.sub"
 msgstr "IEEE, thesis, résumé, invoice, slides"
 
-#: lib/typster_web/live/project_live/index.html.heex:117
+#: lib/typster_web/live/project_live/index.html.heex:123
 #, elixir-autogen, elixir-format
 msgid "projects.template.title"
 msgstr "Start from a template"
 
-#: lib/typster_web/live/project_live/index.ex:124
+#: lib/typster_web/live/project_live/index.ex:141
 #, elixir-autogen, elixir-format
 msgid "time.just_now"
 msgstr "just now"
@@ -2150,7 +2150,7 @@ msgstr "Start a file from this template"
 msgid "editor.flash.dropped_added"
 msgstr "Added to the project."
 
-#: lib/typster_web/live/editor_live/index.ex:1308
+#: lib/typster_web/live/editor_live/index.ex:1307
 #: lib/typster_web/live/editor_live/index.html.heex:675
 #: lib/typster_web/live/editor_live/index.html.heex:883
 #, elixir-autogen, elixir-format
@@ -2159,14 +2159,14 @@ msgid_plural "%{count} errors"
 msgstr[0] "%{count} error"
 msgstr[1] "%{count} errors"
 
-#: lib/typster_web/live/editor_live/index.ex:1310
+#: lib/typster_web/live/editor_live/index.ex:1309
 #, elixir-autogen, elixir-format
 msgid "%{count} warning"
 msgid_plural "%{count} warnings"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/typster_web/live/editor_live/index.ex:1314
+#: lib/typster_web/live/editor_live/index.ex:1313
 #, elixir-autogen, elixir-format
 msgid "editor.compile_failed"
 msgstr "Compile failed"
@@ -2651,7 +2651,7 @@ msgstr "People"
 msgid "share.title"
 msgstr "Share"
 
-#: lib/typster_web/live/editor_live/index.ex:1169
+#: lib/typster_web/live/editor_live/index.ex:1168
 #, elixir-autogen, elixir-format
 msgid "share.upgrade.cta"
 msgstr "Upgrade"
@@ -2686,7 +2686,7 @@ msgstr "Per-file write access is Pro"
 msgid "share.invite.accepted"
 msgstr "You're in — welcome to the project."
 
-#: lib/typster_web/controllers/invite_controller.ex:23
+#: lib/typster_web/controllers/invite_controller.ex:28
 #, elixir-autogen, elixir-format
 msgid "share.invite.invalid"
 msgstr "That invite link is invalid or has expired."
@@ -2756,3 +2756,13 @@ msgstr "Width"
 #, elixir-autogen, elixir-format
 msgid "share.embed.coming_soon"
 msgstr "// soon™ — still cooking 🍳  grab the iframe for now"
+
+#: lib/typster_web/live/project_live/index.html.heex:75
+#, elixir-autogen, elixir-format
+msgid "projects.row.shared"
+msgstr "Shared"
+
+#: lib/typster_web/controllers/invite_controller.ex:23
+#, elixir-autogen, elixir-format
+msgid "share.invite.wrong_account"
+msgstr "Plot twist — this invite's addressed to a different email. Log in as the invited account to claim it."

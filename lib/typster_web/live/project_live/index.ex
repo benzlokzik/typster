@@ -2,6 +2,7 @@ defmodule TypsterWeb.ProjectLive.Index do
   use TypsterWeb, :live_view
 
   alias Typster.Projects
+  alias Typster.Sharing
 
   @accent_hexes %{
     "indigo" => "#4f46e5",
@@ -13,6 +14,11 @@ defmodule TypsterWeb.ProjectLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Claim any invites addressed to this user's email (and heal mis-linked
+    # ones) so projects shared with them show up here. Connected mount only, to
+    # keep the write off the dead render — the connected mount re-fetches below.
+    if connected?(socket), do: Sharing.link_invites_for_user(socket.assigns.current_scope)
+
     {:ok,
      socket
      |> assign(:page_title, gettext("projects.index.title"))
@@ -30,13 +36,20 @@ defmodule TypsterWeb.ProjectLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    project = Projects.get_project!(socket.assigns.current_scope, id)
-    {:ok, _} = Projects.delete_project(socket.assigns.current_scope, project)
+    # Owner-only and crash-proof: collaborators don't get a delete button, but a
+    # crafted event must still no-op rather than raise on the ownership check.
+    case Projects.get_project(socket.assigns.current_scope, id) do
+      nil ->
+        {:noreply, socket}
 
-    {:noreply,
-     socket
-     |> assign(:project_count, max(socket.assigns.project_count - 1, 0))
-     |> stream_delete(:projects, project)}
+      project ->
+        {:ok, _} = Projects.delete_project(socket.assigns.current_scope, project)
+
+        {:noreply,
+         socket
+         |> assign(:project_count, max(socket.assigns.project_count - 1, 0))
+         |> stream_delete(:projects, project)}
+    end
   end
 
   @impl true
@@ -105,6 +118,10 @@ defmodule TypsterWeb.ProjectLive.Index do
   defp listed_projects(scope, _all), do: Projects.list_projects(scope)
 
   defp file_count(counts, project_id), do: Map.get(counts, project_id, 0)
+
+  # The current user owns this project (vs. reaching it as a collaborator).
+  # Drives the "Shared" badge and gates owner-only actions like delete.
+  defp owned?(scope, project), do: project.user_id == scope.user.id
 
   # Deterministic accent hue per project name, so initials stay stable.
   defp project_hue(name) do

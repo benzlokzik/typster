@@ -130,6 +130,20 @@
 .ts-list__icon { color: var(--fg3); flex-shrink: 0; }
 .ts-list__main { flex: 1; min-width: 0; }
 .ts-list__title { font: 500 14px 'Inter', system-ui, sans-serif; color: var(--fg); }
+.ts-shared-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  vertical-align: middle;
+  font: 600 11.5px 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 16%, transparent);
+}
+.ts-shared-badge svg { width: 14px; height: 14px; }
 .ts-list__sub { font: 400 12px 'Inter', system-ui, sans-serif; color: var(--fg3); margin-top: 2px; }
 .ts-list__actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity 120ms var(--ease); }
 .ts-list__row:hover .ts-list__actions, .ts-list__row:focus-within .ts-list__actions { opacity: 1; }

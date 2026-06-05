@@ -44,7 +44,7 @@ defmodule Typster.ProjectsTest do
     setup do
       owner = user_scope_fixture()
       project = project_fixture(owner)
-      member = user_scope_fixture()
+      member = Scope.for_user(user_fixture(%{email: "guest@example.com"}))
       stranger = user_scope_fixture()
       {:ok, invite} = Sharing.invite_collaborator(owner, project.id, "guest@example.com", :editor)
       %{owner: owner, project: project, member: member, stranger: stranger, invite: invite}

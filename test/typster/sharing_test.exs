@@ -2,7 +2,7 @@ defmodule Typster.SharingTest do
   use Typster.DataCase, async: true
 
   import Swoosh.TestAssertions
-  import Typster.AccountsFixtures, only: [user_scope_fixture: 0]
+  import Typster.AccountsFixtures, only: [user_scope_fixture: 0, user_fixture: 1]
   import Typster.ProjectsFixtures, only: [project_fixture: 1]
 
   alias Typster.Accounts.Scope
@@ -27,6 +27,10 @@ defmodule Typster.SharingTest do
       0 -> :ok
     end
   end
+
+  # A confirmed user on `email`, wrapped in a scope — for invite-acceptance
+  # tests where the invitee's account email must match the invited address.
+  defp scope_for_email(email), do: Scope.for_user(user_fixture(%{email: email}))
 
   describe "get_or_create_link/2" do
     test "creates a link with a token and default read scope", %{scope: scope, project: project} do
@@ -223,7 +227,7 @@ defmodule Typster.SharingTest do
   describe "accept_invite/2 (bearer)" do
     test "links the invitee, marks accepted, preloads project", %{scope: scope, project: project} do
       {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "i@example.com", :editor)
-      invitee = user_scope_fixture()
+      invitee = scope_for_email("i@example.com")
 
       assert {:ok, accepted} = Sharing.accept_invite(invitee, invite.id)
       assert accepted.status == :accepted
@@ -231,13 +235,38 @@ defmodule Typster.SharingTest do
       assert accepted.project.id == project.id
     end
 
-    test "is idempotent on re-accept", %{scope: scope, project: project} do
+    test "is idempotent on re-accept by the same user", %{scope: scope, project: project} do
       {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "j@example.com", :viewer)
-      invitee = user_scope_fixture()
+      invitee = scope_for_email("j@example.com")
 
       assert {:ok, _} = Sharing.accept_invite(invitee, invite.id)
       assert {:ok, again} = Sharing.accept_invite(invitee, invite.id)
       assert again.status == :accepted
+    end
+
+    test "rejects a user whose email differs from the invite (incl. the owner)", %{
+      scope: scope,
+      project: project
+    } do
+      {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "real@example.com", :editor)
+      intruder = scope_for_email("someone-else@example.com")
+
+      assert {:error, :forbidden} = Sharing.accept_invite(intruder, invite.id)
+      # The owner clicking their own invite link must not claim it either.
+      assert {:error, :forbidden} = Sharing.accept_invite(scope, invite.id)
+
+      # The row is untouched: still pending, still unlinked.
+      reloaded = Typster.Repo.get(Collaborator, invite.id)
+      assert reloaded.status == :pending
+      assert is_nil(reloaded.user_id)
+    end
+
+    test "matches the invite email case-insensitively", %{scope: scope, project: project} do
+      {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "Mixed@Example.com", :editor)
+      invitee = scope_for_email("mixed@example.com")
+
+      assert {:ok, accepted} = Sharing.accept_invite(invitee, invite.id)
+      assert accepted.user_id == invitee.user.id
     end
 
     test "returns :not_found for an unknown id", %{scope: scope} do
@@ -251,6 +280,60 @@ defmodule Typster.SharingTest do
     test "returns :not_found when no user is in scope", %{scope: scope, project: project} do
       {:ok, invite} = Sharing.invite_collaborator(scope, project.id, "k@example.com", :viewer)
       assert {:error, :not_found} = Sharing.accept_invite(%Scope{user: nil}, invite.id)
+    end
+  end
+
+  describe "link_invites_for_user/1" do
+    test "links a pending email invite to the matching user and accepts it", %{
+      scope: scope,
+      project: project
+    } do
+      {:ok, invite} =
+        Sharing.invite_collaborator(scope, project.id, "pending@example.com", :editor)
+
+      invitee = scope_for_email("pending@example.com")
+
+      assert Sharing.link_invites_for_user(invitee) == 1
+
+      linked = Typster.Repo.get(Collaborator, invite.id)
+      assert linked.user_id == invitee.user.id
+      assert linked.status == :accepted
+    end
+
+    test "self-heals a row mis-linked to another account", %{scope: scope, project: project} do
+      {:ok, invite} =
+        Sharing.invite_collaborator(scope, project.id, "victim@example.com", :editor)
+
+      # Simulate the bug: the invite got bound to the wrong account (the owner).
+      Collaborator
+      |> Typster.Repo.get(invite.id)
+      |> Collaborator.accept_changeset(scope.user.id)
+      |> Typster.Repo.update!()
+
+      invitee = scope_for_email("victim@example.com")
+      assert Sharing.link_invites_for_user(invitee) == 1
+
+      healed = Typster.Repo.get(Collaborator, invite.id)
+      assert healed.user_id == invitee.user.id
+    end
+
+    test "ignores invites addressed to other emails", %{scope: scope, project: project} do
+      {:ok, _} = Sharing.invite_collaborator(scope, project.id, "theirs@example.com", :editor)
+      stranger = scope_for_email("mine@example.com")
+
+      assert Sharing.link_invites_for_user(stranger) == 0
+    end
+
+    test "is idempotent (no-op once already linked)", %{scope: scope, project: project} do
+      {:ok, _} = Sharing.invite_collaborator(scope, project.id, "again@example.com", :viewer)
+      invitee = scope_for_email("again@example.com")
+
+      assert Sharing.link_invites_for_user(invitee) == 1
+      assert Sharing.link_invites_for_user(invitee) == 0
+    end
+
+    test "returns 0 for a scope with no user" do
+      assert Sharing.link_invites_for_user(%Scope{user: nil}) == 0
     end
   end
 

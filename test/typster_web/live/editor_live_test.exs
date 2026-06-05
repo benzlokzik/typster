@@ -462,7 +462,7 @@ defmodule TypsterWeb.EditorLiveTest do
       {:ok, invite} =
         Typster.Sharing.invite_collaborator(owner_scope, project.id, "c@x.com", :editor)
 
-      collaborator = Typster.AccountsFixtures.user_fixture()
+      collaborator = Typster.AccountsFixtures.user_fixture(%{email: "c@x.com"})
 
       {:ok, _} =
         Typster.Sharing.accept_invite(Typster.Accounts.Scope.for_user(collaborator), invite.id)
