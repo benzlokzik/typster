@@ -1051,6 +1051,13 @@ defmodule TypsterWeb.EditorLive.Index do
   defp collab_initials(%{email: email}), do: email |> initials_from(2)
   defp collab_color(%{email: email}), do: Enum.at(@collab_palette, :erlang.phash2(email, 6))
 
+  # The signed-in user's remote-cursor colour — same palette as their presence
+  # avatar, so a person's caret and avatar read as one identity across the UI.
+  defp current_user_color(%{user: %{email: email}}) when is_binary(email),
+    do: collab_color(%{email: email})
+
+  defp current_user_color(_), do: List.first(@collab_palette)
+
   defp initials_from(email, take) do
     email
     |> String.split("@")

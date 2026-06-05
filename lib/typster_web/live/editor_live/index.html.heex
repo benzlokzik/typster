@@ -634,8 +634,9 @@
             data-file-id={if @current_file, do: @current_file.id, else: ""}
             data-file-name={if @current_file, do: @current_file.path, else: ""}
             data-language={@editor_language}
-            data-collab={@collab?}
+            data-collab={to_string(@collab?)}
             data-user-name={user_display_name(@current_scope)}
+            data-user-color={current_user_color(@current_scope)}
             data-project-sources={Jason.encode!(@project_sources)}
             data-project-assets={Jason.encode!(@project_assets)}
             class="ts-source__editor"

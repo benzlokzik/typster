@@ -47,3 +47,8 @@ config :typster, Oban,
   plugins: false,
   queues: false,
   repo: Typster.Repo
+
+# Collaboration is off in tests by default — it makes the shared Y.Text the
+# editor's source of truth, which the content-focused editor specs don't expect.
+# The collaboration E2E opts in with `TYPSTER_COLLAB=1`.
+config :typster, :collab_enabled, System.get_env("TYPSTER_COLLAB") == "1"
