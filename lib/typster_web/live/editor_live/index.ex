@@ -406,6 +406,7 @@ defmodule TypsterWeb.EditorLive.Index do
        |> assign(:save_status, "saved")
        |> push_event("file_changed", %{
          file_id: file_id,
+         path: file.path,
          content: file.content || "",
          language: editor_language(file)
        })
@@ -441,6 +442,7 @@ defmodule TypsterWeb.EditorLive.Index do
            |> assign(:editor_language, editor_language(file))
            |> push_event("file_changed", %{
              file_id: file.id,
+             path: file.path,
              content: file.content || "",
              language: editor_language(file)
            })
@@ -657,6 +659,7 @@ defmodule TypsterWeb.EditorLive.Index do
        |> assign(:editor_language, editor_language(next_file))
        |> push_event("file_changed", %{
          file_id: next_file && next_file.id,
+         path: next_file && next_file.path,
          content: content,
          language: editor_language(next_file)
        })
@@ -732,6 +735,7 @@ defmodule TypsterWeb.EditorLive.Index do
          |> assign(:editor_language, editor_language(file))
          |> push_event("file_changed", %{
            file_id: file.id,
+           path: file.path,
            content: content,
            language: editor_language(file)
          })

@@ -23,6 +23,8 @@ function editorOptions(el) {
     language: el.dataset.language || "typst",
     readonly: el.dataset.readonly === "true",
     project: {
+      // Real path of the entry file so subdirectory imports resolve (see hooks.js).
+      mainPath: el.dataset.fileName || "",
       sources: parseJsonDataset(el.dataset.projectSources, []),
       assets: parseJsonDataset(el.dataset.projectAssets, []),
     },

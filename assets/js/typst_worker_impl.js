@@ -80,17 +80,34 @@ async function ensureInitialized() {
   await $typst.svg({ mainContent: "" }).catch(() => {})
 }
 
+// Map a project-relative path ("chapters/ch1.typ") to the compiler's rooted VFS
+// path. Collapsing leading slashes keeps "/x.typ" and "x.typ" in agreement, and
+// the fallback is the conventional entrypoint when no path is supplied.
+function vfsPath(path) {
+  const clean = String(path || "").replace(/^\/+/, "").trim()
+  return `/${clean || "main.typ"}`
+}
+
+// Mirror the project into the compiler's virtual filesystem and return the VFS
+// path of the entrypoint. The active buffer is mapped at its *real* path rather
+// than a flattened "/main.typ", so files in subdirectories keep their directory
+// and relative `#import`s resolve. The buffer's twin in `sources` (the persisted
+// copy) is skipped so the live, possibly-unsaved buffer wins.
 async function loadSources(content, project) {
-  $typst.setMainFilePath("/main.typ")
-  await $typst.addSource("/main.typ", content || "")
+  const main = vfsPath(project?.mainPath)
+  $typst.setMainFilePath(main)
+  await $typst.addSource(main, content || "")
 
   if (project?.sources) {
     for (const source of project.sources) {
-      if (source.path !== "/main.typ" && source.path !== "main.typ") {
-        await $typst.addSource(`/${source.path}`, source.content || "")
+      const path = vfsPath(source.path)
+      if (path !== main) {
+        await $typst.addSource(path, source.content || "")
       }
     }
   }
+
+  return main
 }
 
 self.onmessage = async function (event) {
@@ -102,10 +119,10 @@ self.onmessage = async function (event) {
       await ensureInitialized()
       if (myId !== latestCompileId) return
 
-      await loadSources(content, project)
+      const main = await loadSources(content, project)
       if (myId !== latestCompileId) return
 
-      const svg = await $typst.svg({ mainFilePath: "/main.typ" })
+      const svg = await $typst.svg({ mainFilePath: main })
       if (myId !== latestCompileId) return
 
       self.postMessage({ type: "render", data: { svg } })
@@ -118,10 +135,10 @@ self.onmessage = async function (event) {
       // error text (sources are re-mapped first in case state was reset).
       let structured = null
       try {
-        await loadSources(content, project)
+        const main = await loadSources(content, project)
         const compiler = await $typst.getCompiler()
         const { diagnostics } = await compiler.compile({
-          mainFilePath: "/main.typ",
+          mainFilePath: main,
           diagnostics: "full"
         })
         structured = structureDiagnostics(diagnostics)
@@ -137,9 +154,9 @@ self.onmessage = async function (event) {
     // not be cancelled by a concurrent live-preview compile.
     try {
       await ensureInitialized()
-      await loadSources(content, project)
+      const main = await loadSources(content, project)
 
-      const pdf = await $typst.pdf({ mainFilePath: "/main.typ" })
+      const pdf = await $typst.pdf({ mainFilePath: main })
       self.postMessage({ type: "pdf", data: { pdf, requestId } }, [pdf.buffer])
     } catch (error) {
       self.postMessage({ type: "pdf-error", data: { message: formatError(error), requestId } })

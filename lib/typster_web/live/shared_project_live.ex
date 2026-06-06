@@ -115,6 +115,7 @@ defmodule TypsterWeb.SharedProjectLive do
             phx-update="ignore"
             data-content={@content}
             data-file-id={@entry && @entry.id}
+            data-file-name={@entry && @entry.path}
             data-readonly={to_string(!@editable?)}
             data-language={@language}
             data-project-sources={Jason.encode!(@project_sources)}
@@ -131,6 +132,7 @@ defmodule TypsterWeb.SharedProjectLive do
               phx-update="ignore"
               data-content={@content}
               data-file-id=""
+              data-file-name={@entry && @entry.path}
               data-readonly="true"
               data-language={@language}
               data-project-sources={Jason.encode!(@project_sources)}
