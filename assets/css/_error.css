@@ -1,0 +1,105 @@
+/* ── Error pages (404, …) ────────────────────────────────────────────────────
+   Standalone, layout-free pages, so they style themselves from the global
+   --mk-* tokens. Serif (Instrument Serif) for the big numerals + headline keeps
+   it academic; the Typst-style compile-error block ties it to the product. */
+
+.ts-404 {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background:
+    radial-gradient(120% 80% at 50% -10%, color-mix(in oklab, var(--mk-pri) 12%, transparent), transparent 60%),
+    var(--mk-bg);
+  color: var(--mk-fg);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.ts-404__panel {
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
+.ts-404__glyph {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--mk-pri) 0%, var(--mk-pri-h) 100%);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 8px 24px -8px color-mix(in oklab, var(--mk-pri) 60%, transparent);
+}
+
+.ts-404__kicker {
+  margin: 0;
+  font: 600 11px "Inter", system-ui, sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mk-fg3);
+}
+
+.ts-404__code {
+  font-size: clamp(96px, 22vw, 168px);
+  line-height: 0.9;
+  margin: 6px 0 2px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  /* Solid (not gradient-clipped text): `background-clip: text` needs a
+     vendor prefix the linter forbids + the build doesn't add, so it'd vanish
+     in Safari. A slightly-receded tone keeps the numeral elegant, not heavy. */
+  color: color-mix(in oklab, var(--mk-fg) 82%, var(--mk-bg));
+}
+
+.ts-404__title {
+  margin: 0 0 12px;
+  font-size: clamp(28px, 6vw, 38px);
+  font-weight: 400;
+  color: var(--mk-fg);
+}
+
+.ts-404__lead {
+  margin: 0 auto 22px;
+  max-width: 44ch;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--mk-fg2);
+}
+.ts-404__lead code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.92em;
+  color: var(--mk-fg);
+}
+
+.ts-404__err {
+  margin: 0 auto 26px;
+  max-width: 420px;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid var(--mk-bd);
+  border-radius: 10px;
+  background: var(--mk-bg2);
+  overflow-x: auto;
+}
+.ts-404__err code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--mk-fg2);
+  white-space: pre;
+}
+.ts-404__err .e { color: var(--mk-error); font-weight: 600; }
+.ts-404__err .m { color: var(--mk-fg4); }
+.ts-404__err .h { color: var(--mk-info); font-weight: 600; }
+
+.ts-404__cta {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}

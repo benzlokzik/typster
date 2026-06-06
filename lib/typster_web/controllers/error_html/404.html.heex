@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>404 · Typster</title>
+    <%!-- Theme bootstrap, mirroring root.html.heex: apply the saved theme before
+          paint so the error page doesn't flash the wrong palette. --%>
+    <script>
+      (() => {
+        try {
+          const t = localStorage.getItem("phx:theme");
+          if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        } catch (_e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href={~p"/assets/css/app.css"} />
+  </head>
+  <body>
+    <main class="ts-404" data-theme-scope>
+      <div class="ts-404__panel">
+        <div class="ts-404__glyph ts-serif">T</div>
+        <p class="ts-404__kicker">page not found</p>
+        <div class="ts-404__code ts-serif">404</div>
+        <h1 class="ts-404__title ts-serif">Undefined reference.</h1>
+        <p class="ts-404__lead">
+          We searched the whole corpus and this page isn't cited anywhere — no
+          source, no forwarding address, not even a footnote. The link resolves to <code>∅</code>, respectfully.
+        </p>
+
+        <pre class="ts-404__err"><code><span class="e">error[E404]</span>: this page is not defined
+  <span class="m">=</span> <span class="h">help</span>: double-check the URL, or head back to base</code></pre>
+
+        <div class="ts-404__cta">
+          <a href={~p"/"} class="ts-btn ts-btn--primary ts-btn--sm">Back to base</a>
+          <a href={~p"/projects"} class="ts-btn ts-btn--ghost ts-btn--sm">Your projects</a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
