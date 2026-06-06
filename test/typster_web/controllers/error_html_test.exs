@@ -31,7 +31,7 @@ defmodule TypsterWeb.ErrorHTMLTest do
       |> get("/no-such-route-xyz")
       |> response(404)
 
-    assert body =~ "Неопределённая ссылка."
+    assert body =~ "Висячая ссылка."
     assert body =~ "страница не найдена"
   end
 

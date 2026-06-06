@@ -2814,7 +2814,7 @@ msgstr "открытий"
 #: lib/typster_web/controllers/error_html/not_found.html.heex:29
 #, elixir-autogen, elixir-format
 msgid "error.not_found.code"
-msgstr "эта страница не определена"
+msgstr "данная страница не определена"
 
 #: lib/typster_web/controllers/error_html/not_found.html.heex:34
 #, elixir-autogen, elixir-format
@@ -2824,12 +2824,12 @@ msgstr "На базу"
 #: lib/typster_web/controllers/error_html/not_found.html.heex:37
 #, elixir-autogen, elixir-format
 msgid "error.not_found.cta_projects"
-msgstr "Ваши проекты"
+msgstr "Мои проекты"
 
 #: lib/typster_web/controllers/error_html/not_found.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "error.not_found.help"
-msgstr "перепроверьте адрес или вернитесь на базу"
+msgstr "проверьте адрес — или возвращайтесь на базу"
 
 #: lib/typster_web/controllers/error_html/not_found.html.heex:24
 #, elixir-autogen, elixir-format
@@ -2840,10 +2840,10 @@ msgstr "страница не найдена"
 #, elixir-autogen, elixir-format
 msgid "error.not_found.lead"
 msgstr ""
-"Мы прочесали весь корпус — эта страница нигде не цитируется: ни источника, ни "
-"пересылки, ни даже сноски. Ссылка резолвится в ∅, при всём уважении."
+"Прочесали весь корпус — эта страница нигде не цитируется: ни источника, ни "
+"отсылки, ни даже сноски. Ссылка резолвится в ∅, с уважением."
 
 #: lib/typster_web/controllers/error_html/not_found.html.heex:26
 #, elixir-autogen, elixir-format
 msgid "error.not_found.title"
-msgstr "Неопределённая ссылка."
+msgstr "Висячая ссылка."
