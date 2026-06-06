@@ -21,20 +21,21 @@
     <main class="ts-404" data-theme-scope>
       <div class="ts-404__panel">
         <div class="ts-404__glyph ts-serif">T</div>
-        <p class="ts-404__kicker">page not found</p>
+        <p class="ts-404__kicker">{gettext("error.not_found.kicker")}</p>
         <div class="ts-404__code ts-serif">404</div>
-        <h1 class="ts-404__title ts-serif">Undefined reference.</h1>
-        <p class="ts-404__lead">
-          We searched the whole corpus and this page isn't cited anywhere — no
-          source, no forwarding address, not even a footnote. The link resolves to <code>∅</code>, respectfully.
-        </p>
+        <h1 class="ts-404__title ts-serif">{gettext("error.not_found.title")}</h1>
+        <p class="ts-404__lead">{gettext("error.not_found.lead")}</p>
 
-        <pre class="ts-404__err"><code><span class="e">error[E404]</span>: this page is not defined
-  <span class="m">=</span> <span class="h">help</span>: double-check the URL, or head back to base</code></pre>
+        <pre class="ts-404__err"><code><span class="e">error[E404]</span>: {gettext("error.not_found.code")}
+  <span class="m">=</span> <span class="h">help</span>: {gettext("error.not_found.help")}</code></pre>
 
         <div class="ts-404__cta">
-          <a href={~p"/"} class="ts-btn ts-btn--primary ts-btn--sm">Back to base</a>
-          <a href={~p"/projects"} class="ts-btn ts-btn--ghost ts-btn--sm">Your projects</a>
+          <a href={~p"/"} class="ts-btn ts-btn--primary ts-btn--sm">
+            {gettext("error.not_found.cta_home")}
+          </a>
+          <a href={~p"/projects"} class="ts-btn ts-btn--ghost ts-btn--sm">
+            {gettext("error.not_found.cta_projects")}
+          </a>
         </div>
       </div>
     </main>
