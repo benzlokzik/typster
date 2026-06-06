@@ -2801,3 +2801,38 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "share.analytics.total"
 msgstr ""
+
+#: lib/typster_web/controllers/error_html/not_found.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "error.not_found.code"
+msgstr ""
+
+#: lib/typster_web/controllers/error_html/not_found.html.heex:34
+#, elixir-autogen, elixir-format
+msgid "error.not_found.cta_home"
+msgstr ""
+
+#: lib/typster_web/controllers/error_html/not_found.html.heex:37
+#, elixir-autogen, elixir-format
+msgid "error.not_found.cta_projects"
+msgstr ""
+
+#: lib/typster_web/controllers/error_html/not_found.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "error.not_found.help"
+msgstr ""
+
+#: lib/typster_web/controllers/error_html/not_found.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "error.not_found.kicker"
+msgstr ""
+
+#: lib/typster_web/controllers/error_html/not_found.html.heex:27
+#, elixir-autogen, elixir-format
+msgid "error.not_found.lead"
+msgstr ""
+
+#: lib/typster_web/controllers/error_html/not_found.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "error.not_found.title"
+msgstr ""

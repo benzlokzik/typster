@@ -11,6 +11,7 @@
 @import "./_editor_v3.css";
 @import "./_share.css";
 @import "./_collab.css";
+@import "./_error.css";
 @source "../css";
 @source "../js";
 @source "../../lib/typster_web";
