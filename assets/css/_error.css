@@ -78,7 +78,7 @@
 
 .ts-404__err {
   margin: 0 auto 26px;
-  max-width: 420px;
+  max-width: 480px;
   text-align: left;
   padding: 14px 16px;
   border: 1px solid var(--mk-bd);
@@ -91,7 +91,10 @@
   font-size: 12.5px;
   line-height: 1.6;
   color: var(--mk-fg2);
-  white-space: pre;
+  /* Wrap long lines (locale copy varies in length) instead of forcing a
+     horizontal scrollbar; `pre-wrap` keeps the leading-space indent that
+     makes the `= help:` line read like real compiler output. */
+  white-space: pre-wrap;
 }
 .ts-404__err .e { color: var(--mk-error); font-weight: 600; }
 .ts-404__err .m { color: var(--mk-fg4); }
