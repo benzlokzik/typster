@@ -24,6 +24,9 @@ function editorOptions(element) {
       color: element.dataset.userColor || ""
     },
     project: {
+      // The active file's real project path — the compiler maps the buffer here
+      // so files in subdirectories keep their directory and relative imports resolve.
+      mainPath: element.dataset.fileName || "",
       sources: parseJsonDataset(element.dataset.projectSources, []),
       assets: parseJsonDataset(element.dataset.projectAssets, [])
     }
@@ -64,9 +67,13 @@ export const CodeMirror = {
     this.diagnosticsHandler = (event) => {
       if (!this.editorInstance) return
       const all = (event.detail && event.detail.diagnostics) || []
+      // Only surface diagnostics for the file open in *this* editor. The worker
+      // labels them by real path now, so match the active path (falling back to
+      // the historical "main.typ" sentinel).
+      const active = (this.mainPath || "main.typ").replace(/^\/+/, "")
       const own = all.filter((d) => {
         const file = d.location && d.location.file
-        return !file || file === "main.typ"
+        return !file || file.replace(/^\/+/, "") === active
       })
       this.editorInstance.setDiagnostics(own)
     }
@@ -79,6 +86,9 @@ export const CodeMirror = {
     const content = parseContent(rawContent)
     const fileId = this.el.dataset.fileId || null
     const options = { ...editorOptions(this.el), ...this.editorCallbacks() }
+    // Track the open file's path so worker diagnostics (now labelled by real
+    // path) can be matched back to this editor.
+    this.mainPath = options.project.mainPath || "main.typ"
 
     if (!container) return
 
@@ -101,11 +111,15 @@ export const CodeMirror = {
       }
     })
 
-    this.handleEvent("file_changed", ({ file_id, content, language }) => {
+    this.handleEvent("file_changed", ({ file_id, content, language, path }) => {
       const newFileId = file_id || null
       const newContent = parseContent(content || "")
       const options = { ...editorOptions(this.el), ...this.editorCallbacks() }
       options.language = language || options.language
+      // The editor element is `phx-update="ignore"`, so its `data-file-name` is
+      // frozen at mount — take the switched-to file's path from the event instead.
+      options.project.mainPath = path || options.project.mainPath
+      this.mainPath = options.project.mainPath || "main.typ"
 
       this.el.style.display = newFileId ? "" : "none"
 

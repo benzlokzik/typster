@@ -406,6 +406,7 @@ defmodule TypsterWeb.EditorLive.Index do
        |> assign(:save_status, "saved")
        |> push_event("file_changed", %{
          file_id: file_id,
+         path: file.path,
          content: file.content || "",
          language: editor_language(file)
        })
@@ -441,6 +442,7 @@ defmodule TypsterWeb.EditorLive.Index do
            |> assign(:editor_language, editor_language(file))
            |> push_event("file_changed", %{
              file_id: file.id,
+             path: file.path,
              content: file.content || "",
              language: editor_language(file)
            })
@@ -655,11 +657,7 @@ defmodule TypsterWeb.EditorLive.Index do
        socket
        |> assign(:content, content)
        |> assign(:editor_language, editor_language(next_file))
-       |> push_event("file_changed", %{
-         file_id: next_file && next_file.id,
-         content: content,
-         language: editor_language(next_file)
-       })
+       |> push_event("file_changed", file_changed_event(next_file, content))
        |> push_event("content_updated", %{content: content})}
     else
       {:noreply, socket}
@@ -732,6 +730,7 @@ defmodule TypsterWeb.EditorLive.Index do
          |> assign(:editor_language, editor_language(file))
          |> push_event("file_changed", %{
            file_id: file.id,
+           path: file.path,
            content: content,
            language: editor_language(file)
          })
@@ -1387,6 +1386,17 @@ defmodule TypsterWeb.EditorLive.Index do
 
     num = Enum.map_join(2..level, ".", &Map.get(counters, &1, 1))
     {num, counters}
+  end
+
+  # Build the `file_changed` payload, tolerating a nil file (e.g. the last open
+  # tab was just closed) so the nil-guards stay out of the calling handler.
+  defp file_changed_event(file, content) do
+    %{
+      file_id: file && file.id,
+      path: file && file.path,
+      content: content,
+      language: editor_language(file)
+    }
   end
 
   defp project_sources(file_tree) do
