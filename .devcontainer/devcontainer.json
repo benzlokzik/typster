@@ -45,7 +45,7 @@
       }
     }
   },
-  "postCreateCommand": "mix deps.get && mix assets.setup && mix ecto.setup",
+  "postCreateCommand": "mix setup",
   "remoteUser": "root",
   "remoteEnv": {
     "MIX_ENV": "dev",

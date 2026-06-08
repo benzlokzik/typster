@@ -114,7 +114,7 @@ defmodule Typster.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      setup: ["deps.get", "assets.setup", "ecto.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", &migrate_pro/1, "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", &migrate_pro/1, "test"],
