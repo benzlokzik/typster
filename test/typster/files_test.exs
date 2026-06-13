@@ -134,6 +134,89 @@ defmodule Typster.FilesTest do
     end
   end
 
+  describe "create_file/3 path validation" do
+    setup do
+      user = Typster.AccountsFixtures.user_fixture()
+      %{scope: Typster.Accounts.Scope.for_user(user), project: project_fixture(user)}
+    end
+
+    test "rejects traversal, absolute, backslash, and empty-segment paths", %{
+      scope: scope,
+      project: project
+    } do
+      bad_paths = [
+        "../evil.typ",
+        "a/../b.typ",
+        "./x.typ",
+        "/etc/x.typ",
+        "a\\b.typ",
+        "a//b.typ",
+        "a/ /b.typ"
+      ]
+
+      for bad <- bad_paths do
+        assert {:error, changeset} = Files.create_file(scope, project.id, %{path: bad})
+        assert %{path: [_ | _]} = errors_on(changeset)
+      end
+    end
+
+    test "accepts normal nested relative paths", %{scope: scope, project: project} do
+      assert {:ok, _} = Files.create_file(scope, project.id, %{path: "chapters/01-intro.typ"})
+      assert {:ok, _} = Files.create_file(scope, project.id, %{path: "refs.bib"})
+    end
+
+    test "update_file/3 enforces the same path rules", %{scope: scope, project: project} do
+      {:ok, file} = Files.create_file(scope, project.id, %{path: "ok.typ"})
+      assert {:error, changeset} = Files.update_file(scope, file, %{path: "../../etc/evil.typ"})
+      assert %{path: [_ | _]} = errors_on(changeset)
+    end
+  end
+
+  describe "create_file/3 parent scoping" do
+    setup do
+      user = Typster.AccountsFixtures.user_fixture()
+      %{scope: Typster.Accounts.Scope.for_user(user), project: project_fixture(user)}
+    end
+
+    test "accepts a parent from the same project", %{scope: scope, project: project} do
+      {:ok, parent} = Files.create_file(scope, project.id, %{path: "sections/intro.typ"})
+
+      assert {:ok, _} =
+               Files.create_file(scope, project.id, %{
+                 path: "sections/body.typ",
+                 parent_id: parent.id
+               })
+    end
+
+    test "rejects a parent from another project (cross-project linking)", %{
+      scope: scope,
+      project: project
+    } do
+      other = project_fixture(scope)
+      {:ok, foreign_parent} = Files.create_file(scope, other.id, %{path: "main.typ"})
+
+      assert {:error, changeset} =
+               Files.create_file(scope, project.id, %{path: "x.typ", parent_id: foreign_parent.id})
+
+      assert %{parent_id: ["does not belong to this project"]} = errors_on(changeset)
+    end
+
+    test "rejects a parent owned by a different user (cross-tenant linking)", %{
+      scope: scope,
+      project: project
+    } do
+      other_user = Typster.AccountsFixtures.user_fixture()
+      other_scope = Typster.Accounts.Scope.for_user(other_user)
+      other_project = project_fixture(other_user)
+      {:ok, foreign} = Files.create_file(other_scope, other_project.id, %{path: "main.typ"})
+
+      assert {:error, changeset} =
+               Files.create_file(scope, project.id, %{path: "x.typ", parent_id: foreign.id})
+
+      assert %{parent_id: ["does not belong to this project"]} = errors_on(changeset)
+    end
+  end
+
   describe "set_pinned/3" do
     setup do
       user = Typster.AccountsFixtures.user_fixture()
