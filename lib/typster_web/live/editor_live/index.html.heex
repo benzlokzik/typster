@@ -36,6 +36,11 @@
           <span class={["ts-tb__seg", seg.last && "is-active"]}>{seg.name}</span>
           <span :if={!seg.last} class="ts-tb__sep">/</span>
         </span>
+        <%!-- Current symbol (nearest heading above the cursor) — populated
+              client-side by the CodeMirror hook, so it tracks every cursor
+              move without a server round-trip. --%>
+        <span id="topbar-symbol-sep" class="ts-tb__sep" hidden>›</span>
+        <span id="topbar-symbol" class="ts-tb__seg ts-tb__seg--sym" hidden></span>
         <div
           id="save-status"
           phx-hook="SaveStatus"
@@ -969,6 +974,26 @@
         >
           <.icon name="hero-document" class="size-4" />
           <span>{file.path}</span>
+        </button>
+
+        <div
+          :if={palette_headings(@outline_items, @palette_query) != []}
+          class="ts-palette__group"
+        >
+          {gettext("editor.palette.headings")}
+        </div>
+        <button
+          :for={heading <- palette_headings(@outline_items, @palette_query)}
+          type="button"
+          class="ts-palette__item"
+          phx-click={
+            JS.dispatch("phx:editor-command", detail: %{cmd: "goto", line: heading.line})
+            |> JS.push("close_palette")
+          }
+        >
+          <.icon name="hero-hashtag" class="size-4" />
+          <span :if={heading.num != ""} class="ts-palette__dim">{heading.num}</span>
+          <span>{heading.text}</span>
         </button>
 
         <div

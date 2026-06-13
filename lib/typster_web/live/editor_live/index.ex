@@ -73,6 +73,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:share_collaborators, [])
      |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
      |> stream(:outline, [])
+     |> assign(:outline_items, [])
      |> assign(:outline_count, 0)
      |> assign(:page_title, project.name)
      |> allow_upload(:asset,
@@ -224,6 +225,9 @@ defmodule TypsterWeb.EditorLive.Index do
     {:noreply,
      socket
      |> assign(:outline_count, length(outline))
+     # Plain copy of the stream: the ⌘K palette needs an enumerable to filter
+     # headings (streams aren't), and a document's outline is small.
+     |> assign(:outline_items, outline)
      |> stream(:outline, outline, reset: true)}
   end
 
@@ -813,6 +817,10 @@ defmodule TypsterWeb.EditorLive.Index do
 
   defp palette_files(file_tree, query) do
     Enum.filter(file_tree, &(Files.editable_file?(&1) and palette_match?(query, &1.path)))
+  end
+
+  defp palette_headings(outline_items, query) do
+    Enum.filter(outline_items, &palette_match?(query, &1.text))
   end
 
   defp save_status_label("saved"), do: gettext("editor.status.saved")

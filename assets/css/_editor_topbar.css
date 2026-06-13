@@ -108,6 +108,16 @@
 .ts-tb__seg.is-active { color: var(--mk-fg); font: 600 12.5px var(--tb-mono); }
 .ts-tb__sep { color: var(--mk-fg3); }
 
+/* Symbol crumb (nearest heading above the cursor) — informational, not a link */
+.ts-tb__seg--sym {
+  color: var(--mk-fg3);
+  cursor: default;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ts-tb__seg--sym:hover { background: none; color: var(--mk-fg3); }
+
 /* ── Save dot (reuses the SaveStatus hook element) ────────────────────────── */
 .ts-tb .ts-savestat {
   display: inline-flex;
