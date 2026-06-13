@@ -5,11 +5,11 @@ defmodule TypsterWeb.UserSessionController do
   alias TypsterWeb.UserAuth
 
   def create(conn, %{"_action" => "confirmed"} = params) do
-    create(conn, params, "User confirmed successfully.")
+    create(conn, params, gettext("auth.flash.confirmed"))
   end
 
   def create(conn, params) do
-    create(conn, params, "Welcome back!")
+    create(conn, params, gettext("auth.flash.welcome_back"))
   end
 
   # magic link login
@@ -24,7 +24,7 @@ defmodule TypsterWeb.UserSessionController do
 
       _ ->
         conn
-        |> put_flash(:error, "The link is invalid or it has expired.")
+        |> put_flash(:error, gettext("auth.flash.link_invalid"))
         |> redirect(to: ~p"/users/log-in")
     end
   end
@@ -42,7 +42,7 @@ defmodule TypsterWeb.UserSessionController do
     conn
     |> put_flash(
       :info,
-      "If your email is in our system, you will receive instructions for logging in shortly."
+      gettext("auth.flash.magic_link_sent")
     )
     |> redirect(to: ~p"/users/log-in")
   end
@@ -58,7 +58,7 @@ defmodule TypsterWeb.UserSessionController do
     else
       # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
       conn
-      |> put_flash(:error, "Invalid email or password")
+      |> put_flash(:error, gettext("auth.flash.invalid_credentials"))
       |> put_flash(:email, String.slice(email, 0, 160))
       |> redirect(to: ~p"/users/log-in")
     end
@@ -74,12 +74,12 @@ defmodule TypsterWeb.UserSessionController do
 
     conn
     |> put_session(:user_return_to, ~p"/users/settings")
-    |> create(params, "Password updated successfully!")
+    |> create(params, gettext("auth.flash.password_updated"))
   end
 
   def delete(conn, _params) do
     conn
-    |> put_flash(:info, "Logged out successfully.")
+    |> put_flash(:info, gettext("auth.flash.logged_out"))
     |> UserAuth.log_out_user()
   end
 end
