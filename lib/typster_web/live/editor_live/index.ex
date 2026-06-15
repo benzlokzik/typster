@@ -549,7 +549,7 @@ defmodule TypsterWeb.EditorLive.Index do
 
         socket
         |> assign(creating?: false, new_kind: :file, new_file_name: "", new_file_suggestions: [])
-        |> create_text_file(path, default_file_content(path))
+        |> create_text_file(path, default_file_content(path, socket.assigns.file_tree))
     end
   end
 
@@ -588,7 +588,9 @@ defmodule TypsterWeb.EditorLive.Index do
          |> put_flash(:error, gettext("editor.flash.file_exists"))}
 
       true ->
-        content = socket.assigns.template_content || default_file_content(path)
+        content =
+          socket.assigns.template_content || default_file_content(path, socket.assigns.file_tree)
+
         create_text_file(assign(socket, :template_content, nil), path, content)
     end
   end
@@ -759,27 +761,30 @@ defmodule TypsterWeb.EditorLive.Index do
     Enum.any?(changeset.errors, fn {field, _} -> field == :path end)
   end
 
-  defp default_file_content(path) do
-    case path |> Path.extname() |> String.downcase() do
-      ".typ" ->
-        """
-        = Introduction
-
-        Welcome to Typster. Start writing — the preview updates as you type.
-
-        You can mix *bold*, _italic_, and `raw` text, drop into math like
-        $E = m c^2$, or add a list:
-
-        - First point
-        - Second point
-        """
-
-      ".md" ->
-        "# Introduction\n\nStart writing in Markdown.\n"
-
-      _ ->
-        ""
+  # Starter content for a brand-new file. The welcome blurb is reserved for the
+  # project's very first Typst file — every later file (more .typ, .md, .bib …)
+  # opens empty, so we never prepend "welcome" boilerplate to chapter two.
+  defp default_file_content(path, file_tree) do
+    if Files.typst_file?(path) and not Enum.any?(file_tree, &Files.typst_file?/1) do
+      starter_typ()
+    else
+      ""
     end
+  end
+
+  # First-run document. Localized and lightly playful (the zoomer-academic house
+  # voice); the Typst markup stays put while the prose is translated.
+  defp starter_typ do
+    """
+    = #{gettext("editor.starter.heading")}
+
+    #{gettext("editor.starter.intro")}
+
+    #{gettext("editor.starter.body")}
+
+    - #{gettext("editor.starter.point1")}
+    - #{gettext("editor.starter.point2")}
+    """
   end
 
   # Glyph + color bucket for the live file-type chip in the inline create row.
