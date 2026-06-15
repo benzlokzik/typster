@@ -761,30 +761,13 @@ defmodule TypsterWeb.EditorLive.Index do
     Enum.any?(changeset.errors, fn {field, _} -> field == :path end)
   end
 
-  # Starter content for a brand-new file. The welcome blurb is reserved for the
-  # project's very first Typst file — every later file (more .typ, .md, .bib …)
-  # opens empty, so we never prepend "welcome" boilerplate to chapter two.
+  # Welcome doc for the project's first Typst file only; later files open empty
   defp default_file_content(path, file_tree) do
     if Files.typst_file?(path) and not Enum.any?(file_tree, &Files.typst_file?/1) do
-      starter_typ()
+      gettext("editor.starter.doc")
     else
       ""
     end
-  end
-
-  # First-run document. Localized and lightly playful (the zoomer-academic house
-  # voice); the Typst markup stays put while the prose is translated.
-  defp starter_typ do
-    """
-    = #{gettext("editor.starter.heading")}
-
-    #{gettext("editor.starter.intro")}
-
-    #{gettext("editor.starter.body")}
-
-    - #{gettext("editor.starter.point1")}
-    - #{gettext("editor.starter.point2")}
-    """
   end
 
   # Glyph + color bucket for the live file-type chip in the inline create row.
