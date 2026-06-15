@@ -100,7 +100,7 @@ defmodule TypsterWeb.SharedProjectLive do
           <span class="slug truncate">{@project.name}</span>
           <span :if={@entry} class="file truncate">· {@entry.path}</span>
           <span class="spacer"></span>
-          <span class={["ro-pill", @editable? && "ro-pill--edit"]}>
+          <span class={["ro-pill", scope_pill_tone(@scope_kind), @editable? && "ro-pill--edit"]}>
             <.icon
               name={if(@editable?, do: "hero-pencil-square", else: "hero-eye")}
               class="size-3"
@@ -194,6 +194,11 @@ defmodule TypsterWeb.SharedProjectLive do
   defp scope_label(:output), do: gettext("share.scope.output")
   defp scope_label(:full), do: gettext("share.scope.full")
   defp scope_label(_), do: gettext("share.scope.read")
+
+  # The "compiled output only" scope gets its own success tone in the bar pill;
+  # read/full share the neutral baseline. (Overridden by --edit on Pro sandboxes.)
+  defp scope_pill_tone(:output), do: "ro-pill--output"
+  defp scope_pill_tone(_), do: nil
 
   defp entry_file(files) do
     Enum.find(files, &(&1.path == "main.typ")) ||
