@@ -13,6 +13,8 @@ defmodule Typster.Analytics do
   query logic at all. No compile-time reference to `Typster.Pro.*`.
   """
 
+  require Logger
+
   @type summary :: %{
           total: non_neg_integer(),
           last_7d: non_neg_integer(),
@@ -22,12 +24,27 @@ defmodule Typster.Analytics do
 
   @doc "Records one open of the share link `token`. Best-effort; no-op on community."
   @spec record(String.t(), keyword()) :: term()
-  def record(token, opts \\ []) when is_binary(token),
-    do: impl().record(Typster.Repo, token, opts)
+  def record(token, opts \\ []) when is_binary(token) do
+    impl().record(Typster.Repo, token, opts)
+  rescue
+    # Analytics must never take down a public share/embed page — e.g. a Pro
+    # build whose `pro_share_opens` migration hasn't run yet would otherwise
+    # 500 every open. Log and move on; the page is the product, the count isn't.
+    error ->
+      Logger.error("share-open analytics record failed: #{Exception.message(error)}")
+      :error
+  end
 
   @doc "Aggregated open stats for `token` (all zeros on the community build)."
   @spec summary(String.t()) :: summary()
-  def summary(token) when is_binary(token), do: impl().summary(Typster.Repo, token)
+  def summary(token) when is_binary(token) do
+    impl().summary(Typster.Repo, token)
+  rescue
+    # Same guard for the owner-facing Share modal: degrade to zeros, don't crash.
+    error ->
+      Logger.error("share analytics summary failed: #{Exception.message(error)}")
+      %{total: 0, last_7d: 0, last_at: nil, daily: List.duplicate(0, 14)}
+  end
 
   # Runtime dispatch only — mirrors Typster.Features / Typster.Embed.
   @doc false
