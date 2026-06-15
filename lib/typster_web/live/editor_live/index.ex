@@ -762,10 +762,20 @@ defmodule TypsterWeb.EditorLive.Index do
   defp default_file_content(path) do
     case path |> Path.extname() |> String.downcase() do
       ".typ" ->
-        "#set page(margin: 2cm)\n\n= Introduction\n\nHello from Typster!"
+        """
+        = Introduction
 
-      ".tex" ->
-        "\\documentclass{article}\n\n\\begin{document}\n\n\\section{Introduction}\n\n\\end{document}\n"
+        Welcome to Typster. Start writing — the preview updates as you type.
+
+        You can mix *bold*, _italic_, and `raw` text, drop into math like
+        $E = m c^2$, or add a list:
+
+        - First point
+        - Second point
+        """
+
+      ".md" ->
+        "# Introduction\n\nStart writing in Markdown.\n"
 
       _ ->
         ""
