@@ -1830,7 +1830,7 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: safe center;
   gap: 16px;
 }
 .share-public .ts-preview__placeholder {
