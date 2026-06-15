@@ -111,6 +111,7 @@ export const CodeMirror = {
     // Track the open file's path so worker diagnostics (now labelled by real
     // path) can be matched back to this editor.
     this.mainPath = options.project.mainPath || "main.typ"
+    this.collab = options.collab
 
     if (!container) return
 
@@ -128,7 +129,9 @@ export const CodeMirror = {
     }
 
     this.handleEvent("content_updated", ({ content }) => {
-      if (this.editorInstance) {
+      // When collab is on, the Yjs doc owns the buffer; writing here too
+      // double-inserts (and compounds across reloads).
+      if (this.editorInstance && !this.collab) {
         updateEditorContent(this.editorInstance, content)
       }
     })
