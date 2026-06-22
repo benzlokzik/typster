@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: prefix-dev/setup-pixi@v0.9.6
         with:
@@ -119,7 +119,7 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: steps.edition.outputs.run == 'true'
 
       # Mount the closed-source Pro modules so `Typster.Pro.*` compiles in and the
@@ -127,7 +127,7 @@ jobs:
       # can target a matching Pro feature branch; it defaults to `main`.
       - name: Mount Pro modules
         if: matrix.edition == 'pro' && steps.edition.outputs.run == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: typster-io/typster-pro
           ref: ${{ vars.PRO_REF || 'main' }}
@@ -192,7 +192,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: prefix-dev/setup-pixi@v0.9.6
         with:
