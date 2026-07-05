@@ -1746,13 +1746,18 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* read/full: source | preview */
 }
 
-/* /embed/:token — flush, full-viewport, no outer chrome */
+/* /embed/:token — flush, full-viewport, no outer chrome. Pinned with
+   `fixed; inset: 0` rather than `100dvh`: viewport units are unreliable inside
+   an iframe (Firefox leaves dead space below), fixed positioning fills it. */
 .share-public--embed {
   padding: 0;
+  min-height: 0;
+  position: fixed;
+  inset: 0;
 }
 .share-public--embed .embed-comp {
   max-width: none;
-  height: 100dvh;
+  height: 100%;
   border: 0;
   border-radius: 0;
   box-shadow: none;
