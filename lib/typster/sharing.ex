@@ -117,6 +117,21 @@ defmodule Typster.Sharing do
   end
 
   @doc """
+  URL slug for a project's public share page (`/p/:slug`). Cosmetic only —
+  the `key` query param is what authorizes the view.
+  """
+  def slug(%{name: name}) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
+    |> String.trim("-")
+    |> case do
+      "" -> "project"
+      slug -> slug
+    end
+  end
+
+  @doc """
   PUBLIC: what a fork of the link's project would copy — file and asset counts
   plus total asset bytes. Powers the copy modal's "what you get" meta line.
   """

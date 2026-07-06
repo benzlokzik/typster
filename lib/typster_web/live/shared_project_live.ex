@@ -344,23 +344,23 @@ defmodule TypsterWeb.SharedProjectLive do
               >
                 {gettext("share.embed.cta_signup")}
               </a>
-            <% :fork -> %>
-              <a
-                href={~p"/projects/#{@project.id}/edit"}
-                target={@embed? && "_blank"}
-                rel={@embed? && "noopener"}
-                class="embed-foot__cta"
-              >
-                {gettext("share.embed.cta_fork")}
-              </a>
             <% _ -> %>
+              <%!-- :open / :fork land on the public share page, where the
+                    copy/join actions live — NOT the editor, which bounces
+                    everyone but the owner/collaborators with "project
+                    unavailable". Embed-only: the /p page has nothing to
+                    open (its actions are already in the top bar). --%>
               <a
-                href={~p"/projects/#{@project.id}/edit"}
-                target={@embed? && "_blank"}
-                rel={@embed? && "noopener"}
+                :if={@embed?}
+                href={~p"/p/#{Sharing.slug(@project)}?#{[key: @link.token]}"}
+                target="_blank"
+                rel="noopener"
                 class="embed-foot__cta"
               >
-                {gettext("share.public.open_in_typster")}
+                {if(@cta_mode == :fork,
+                  do: gettext("share.embed.cta_fork"),
+                  else: gettext("share.public.open_in_typster")
+                )}
               </a>
           <% end %>
         </div>
