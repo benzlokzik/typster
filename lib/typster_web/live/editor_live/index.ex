@@ -15,7 +15,24 @@ defmodule TypsterWeb.EditorLive.Index do
   @impl true
   def mount(%{"id" => project_id}, _session, socket) do
     scope = socket.assigns.current_scope
-    project = Projects.get_editable_project!(scope, project_id)
+
+    # Non-bang lookup: strangers hitting a project URL they can't edit get a
+    # friendly redirect, not a 500. One generic message for "doesn't exist"
+    # and "no access" — the response must not leak which one it was.
+    case Projects.get_editable_project(scope, project_id) do
+      nil ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("editor.project_unavailable"))
+         |> push_navigate(to: ~p"/projects")}
+
+      project ->
+        mount_project(socket, scope, project)
+    end
+  end
+
+  defp mount_project(socket, scope, project) do
+    project_id = project.id
     file_tree = Files.get_file_tree(scope, project_id)
     assets = Assets.list_assets(scope, project_id)
     main_file = initial_file(file_tree)
@@ -73,6 +90,7 @@ defmodule TypsterWeb.EditorLive.Index do
      |> assign(:share_collaborators, [])
      |> assign(:invite_form, to_form(%{"email" => "", "role" => "editor"}, as: :invite))
      |> stream(:outline, [])
+     |> assign(:outline_items, [])
      |> assign(:outline_count, 0)
      |> assign(:page_title, project.name)
      |> allow_upload(:asset,
@@ -224,6 +242,9 @@ defmodule TypsterWeb.EditorLive.Index do
     {:noreply,
      socket
      |> assign(:outline_count, length(outline))
+     # Plain copy of the stream: the ⌘K palette needs an enumerable to filter
+     # headings (streams aren't), and a document's outline is small.
+     |> assign(:outline_items, outline)
      |> stream(:outline, outline, reset: true)}
   end
 
@@ -261,7 +282,7 @@ defmodule TypsterWeb.EditorLive.Index do
   # a non-owner no-ops here instead of reaching `Sharing.*` (which would raise on
   # the owner-only `Projects.get_project!`). Must precede the specific handlers.
   def handle_event(event, _params, %{assigns: %{owner?: false}} = socket)
-      when event in ~w(share_scope share_rotate share_toggle_download share_invite share_remove_collab) do
+      when event in ~w(share_scope share_rotate share_toggle_download share_toggle_fork share_toggle_open_edit share_invite share_remove_collab) do
     {:noreply, socket}
   end
 
@@ -314,6 +335,27 @@ defmodule TypsterWeb.EditorLive.Index do
     case socket.assigns.share_link do
       nil -> {:noreply, socket}
       link -> {:noreply, update_share_link(socket, %{allow_download: !link.allow_download})}
+    end
+  end
+
+  @impl true
+  def handle_event("share_toggle_fork", _params, socket) do
+    case socket.assigns.share_link do
+      nil -> {:noreply, socket}
+      link -> {:noreply, update_share_link(socket, %{allow_fork: !link.allow_fork})}
+    end
+  end
+
+  # The flag can be flipped by any owner, but it only has effect when the
+  # owner's plan carries :share_open_collaboration (the join path re-checks via
+  # Typster.Sharing.Collaboration) — so Free owners just see the locked row.
+  @impl true
+  def handle_event("share_toggle_open_edit", _params, socket) do
+    with link when not is_nil(link) <- socket.assigns.share_link,
+         true <- Features.can?(socket.assigns.current_scope, :share_open_collaboration) do
+      {:noreply, update_share_link(socket, %{open_edit: !link.open_edit})}
+    else
+      _ -> {:noreply, socket}
     end
   end
 
@@ -545,7 +587,7 @@ defmodule TypsterWeb.EditorLive.Index do
 
         socket
         |> assign(creating?: false, new_kind: :file, new_file_name: "", new_file_suggestions: [])
-        |> create_text_file(path, default_file_content(path))
+        |> create_text_file(path, default_file_content(path, socket.assigns.file_tree))
     end
   end
 
@@ -584,7 +626,9 @@ defmodule TypsterWeb.EditorLive.Index do
          |> put_flash(:error, gettext("editor.flash.file_exists"))}
 
       true ->
-        content = socket.assigns.template_content || default_file_content(path)
+        content =
+          socket.assigns.template_content || default_file_content(path, socket.assigns.file_tree)
+
         create_text_file(assign(socket, :template_content, nil), path, content)
     end
   end
@@ -755,16 +799,12 @@ defmodule TypsterWeb.EditorLive.Index do
     Enum.any?(changeset.errors, fn {field, _} -> field == :path end)
   end
 
-  defp default_file_content(path) do
-    case path |> Path.extname() |> String.downcase() do
-      ".typ" ->
-        "#set page(margin: 2cm)\n\n= Introduction\n\nHello from Typster!"
-
-      ".tex" ->
-        "\\documentclass{article}\n\n\\begin{document}\n\n\\section{Introduction}\n\n\\end{document}\n"
-
-      _ ->
-        ""
+  # Welcome doc for the project's first Typst file only; later files open empty
+  defp default_file_content(path, file_tree) do
+    if Files.typst_file?(path) and not Enum.any?(file_tree, &Files.typst_file?/1) do
+      gettext("editor.starter.doc")
+    else
+      ""
     end
   end
 
@@ -813,6 +853,10 @@ defmodule TypsterWeb.EditorLive.Index do
 
   defp palette_files(file_tree, query) do
     Enum.filter(file_tree, &(Files.editable_file?(&1) and palette_match?(query, &1.path)))
+  end
+
+  defp palette_headings(outline_items, query) do
+    Enum.filter(outline_items, &palette_match?(query, &1.text))
   end
 
   defp save_status_label("saved"), do: gettext("editor.status.saved")

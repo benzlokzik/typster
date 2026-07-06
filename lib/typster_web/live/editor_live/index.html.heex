@@ -36,6 +36,11 @@
           <span class={["ts-tb__seg", seg.last && "is-active"]}>{seg.name}</span>
           <span :if={!seg.last} class="ts-tb__sep">/</span>
         </span>
+        <%!-- Current symbol (nearest heading above the cursor) — populated
+              client-side by the CodeMirror hook, so it tracks every cursor
+              move without a server round-trip. --%>
+        <span id="topbar-symbol-sep" class="ts-tb__sep" hidden>›</span>
+        <span id="topbar-symbol" class="ts-tb__seg ts-tb__seg--sym" hidden></span>
         <div
           id="save-status"
           phx-hook="SaveStatus"
@@ -972,6 +977,26 @@
         </button>
 
         <div
+          :if={palette_headings(@outline_items, @palette_query) != []}
+          class="ts-palette__group"
+        >
+          {gettext("editor.palette.headings")}
+        </div>
+        <button
+          :for={heading <- palette_headings(@outline_items, @palette_query)}
+          type="button"
+          class="ts-palette__item"
+          phx-click={
+            JS.dispatch("phx:editor-command", detail: %{cmd: "goto", line: heading.line})
+            |> JS.push("close_palette")
+          }
+        >
+          <.icon name="hero-hashtag" class="size-4" />
+          <span :if={heading.num != ""} class="ts-palette__dim">{heading.num}</span>
+          <span>{heading.text}</span>
+        </button>
+
+        <div
           :if={
             palette_match?(@palette_query, gettext("editor.palette.equation")) or
               palette_match?(@palette_query, gettext("editor.palette.table"))
@@ -1265,6 +1290,40 @@
               </div>
               <div class="switch"></div>
             </div>
+            <div
+              id="share-toggle-fork"
+              class={["toggle-row", @share_link && @share_link.allow_fork && "on"]}
+              phx-click="share_toggle_fork"
+            >
+              <div class="meta">
+                <div class="h">{gettext("share.adv.fork")}</div>
+                <div class="d">{gettext("share.adv.fork_sub")}</div>
+              </div>
+              <div class="switch"></div>
+            </div>
+            <%= if Features.can?(@current_scope, :share_open_collaboration) do %>
+              <div
+                id="share-toggle-open-edit"
+                class={["toggle-row", @share_link && @share_link.open_edit && "on"]}
+                phx-click="share_toggle_open_edit"
+              >
+                <div class="meta">
+                  <div class="h">{gettext("share.adv.open_edit")}</div>
+                  <div class="d">{gettext("share.adv.open_edit_sub")}</div>
+                </div>
+                <div class="switch"></div>
+              </div>
+            <% else %>
+              <div class="toggle-row" id="share-toggle-open-edit-locked">
+                <div class="meta">
+                  <div class="h">
+                    {gettext("share.adv.open_edit")} <span class="pro-badge">PRO</span>
+                  </div>
+                  <div class="d">{gettext("share.adv.open_edit_sub")}</div>
+                </div>
+                <div class="ic"><.icon name="hero-lock-closed" class="size-3.5" /></div>
+              </div>
+            <% end %>
             <div :if={!Features.can?(@current_scope, :share_advanced_link)} class="locked-section">
               <button type="button" class="lock-shield">
                 <.icon name="hero-lock-closed" class="size-3" /> {gettext("share.upgrade.unlock")}

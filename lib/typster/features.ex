@@ -27,6 +27,7 @@ defmodule Typster.Features do
           | :share_embed_sandbox
           | :share_embed_smart_cta
           | :share_embed_unbranded
+          | :share_open_collaboration
 
   @features ~w(
     share_write_scoped
@@ -35,6 +36,7 @@ defmodule Typster.Features do
     share_embed_sandbox
     share_embed_smart_cta
     share_embed_unbranded
+    share_open_collaboration
   )a
 
   @doc "The full catalog of gateable Pro features."

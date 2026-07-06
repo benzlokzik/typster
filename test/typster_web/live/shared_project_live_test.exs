@@ -34,8 +34,10 @@ defmodule TypsterWeb.SharedProjectLiveTest do
       # Top bar shows the project name and the read-only pill.
       assert has_element?(view, ".embed-bar .slug", project.name)
       assert has_element?(view, ".ro-pill")
-      # Open-in-Typster CTA in the footer.
+      # Open-in-Typster CTA in the footer. On the top-level /p page it
+      # navigates in place (no target).
       assert has_element?(view, ".embed-foot__cta")
+      refute has_element?(view, ~s|.embed-foot__cta[target="_blank"]|)
     end
   end
 
@@ -73,6 +75,12 @@ defmodule TypsterWeb.SharedProjectLiveTest do
 
       assert has_element?(view, ".share-public--embed")
       assert has_element?(view, ".embed-comp")
+
+      # The CTA must escape the host iframe: new top-level window on our site.
+      assert has_element?(
+               view,
+               ~s|a.embed-foot__cta[target="_blank"][rel="noopener"][href="/projects/#{link.project_id}/edit"]|
+             )
     end
   end
 
@@ -88,6 +96,53 @@ defmodule TypsterWeb.SharedProjectLiveTest do
       # If the catch-all clause were missing, the pushes above would have
       # crashed the LiveView and this assertion would fail.
       assert has_element?(view, ".embed-comp")
+    end
+  end
+
+  describe "fork via /p" do
+    test "a signed-in visitor copies the project into their account", %{
+      conn: conn,
+      scope: scope,
+      link: link
+    } do
+      {:ok, link} = Sharing.update_link(scope, link, %{allow_fork: true})
+      visitor = Typster.AccountsFixtures.user_fixture()
+      conn = log_in_user(conn, visitor)
+
+      {:ok, view, _html} = live(conn, ~p"/p/shared?#{[key: link.token]}")
+
+      assert has_element?(view, "#shared-fork-open")
+      view |> element("#shared-fork-open") |> render_click()
+
+      view
+      |> form("#shared-fork-form", fork: %{name: "Fork of the century"})
+      |> render_submit()
+
+      {path, _flash} = assert_redirect(view)
+      assert path =~ ~r"^/projects/[0-9a-f-]+/edit$"
+    end
+
+    test "anonymous visitors are pointed at log-in instead", %{
+      conn: conn,
+      scope: scope,
+      link: link
+    } do
+      {:ok, link} = Sharing.update_link(scope, link, %{allow_fork: true})
+
+      {:ok, view, _html} = live(conn, ~p"/p/shared?#{[key: link.token]}")
+
+      assert has_element?(view, "#shared-fork-login")
+      refute has_element?(view, "#shared-fork-open")
+    end
+
+    test "no copy affordance while allow_fork is off (the default)", %{
+      conn: conn,
+      link: link
+    } do
+      {:ok, view, _html} = live(conn, ~p"/p/shared?#{[key: link.token]}")
+
+      refute has_element?(view, "#shared-fork-open")
+      refute has_element?(view, "#shared-fork-login")
     end
   end
 end

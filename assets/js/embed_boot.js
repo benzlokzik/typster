@@ -38,7 +38,17 @@ const NOOP_HOOK = { pushEvent() {}, pushEventTo() {}, handleEvent() {}, el: null
 
 // Returns true when it booted an embed page (so the caller skips liveSocket).
 export function bootEmbed() {
-  if (!document.getElementById("typster-embed")) return false
+  const embed = document.getElementById("typster-embed")
+  if (!embed) return false
+
+  // `?theme=light|dark` is rendered onto the embed wrapper, but CodeMirror's
+  // theme extension keys off the document root (which the layout bootstrap
+  // derives from this origin's localStorage — empty inside a visitor's
+  // iframe). Mirror the forced theme up so the editor matches the chrome.
+  const forcedTheme = embed.dataset.theme
+  if (forcedTheme === "light" || forcedTheme === "dark") {
+    document.documentElement.setAttribute("data-theme", forcedTheme)
+  }
 
   const ec = document.getElementById("editor-container")
   let content = ""

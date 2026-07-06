@@ -163,7 +163,11 @@ export function initTypstWorker(hook) {
             if (!svgContainer) {
               svgContainer = document.createElement("div")
               svgContainer.id = "typst-svg-output"
-              svgContainer.style.cssText = "width:100%;overflow:auto;"
+              // No own overflow: the page stack must scroll in its parent
+              // (`.ts-preview__scroll`), which owns the padding + centering.
+              // A second scroll container here put the scrollbar inside the
+              // padding and split it from the pane edge.
+              svgContainer.style.cssText = "width:100%;"
               previewContainer.appendChild(svgContainer)
             }
             svgContainer.style.display = ""

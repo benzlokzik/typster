@@ -4,6 +4,7 @@ defmodule TypsterWeb.UserAuth do
   """
 
   use TypsterWeb, :verified_routes
+  use Gettext, backend: TypsterWeb.Gettext
 
   import Plug.Conn
   import Phoenix.Controller
@@ -257,7 +258,7 @@ defmodule TypsterWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+        |> Phoenix.LiveView.put_flash(:error, gettext("auth.flash.login_required"))
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
 
       {:halt, socket}
@@ -272,7 +273,7 @@ defmodule TypsterWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must re-authenticate to access this page.")
+        |> Phoenix.LiveView.put_flash(:error, gettext("auth.flash.reauth_required"))
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
 
       {:halt, socket}
@@ -306,7 +307,7 @@ defmodule TypsterWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You must log in to access this page.")
+      |> put_flash(:error, gettext("auth.flash.login_required"))
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log-in")
       |> halt()

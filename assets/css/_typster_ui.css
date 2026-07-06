@@ -384,7 +384,7 @@
 /* ── Preview pane ─────────────────────────────────────────────────────────── */
 .ts-preview { display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: var(--bg2); }
 .ts-preview__bar { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--bd); background: var(--bg); font: 500 12px 'Inter', system-ui, sans-serif; color: var(--fg2); flex-shrink: 0; }
-.ts-preview__scroll { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.ts-preview__scroll { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; align-items: safe center; gap: 12px; }
 .ts-preview__placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--fg3); font: 13px 'Inter', system-ui, sans-serif; }
 .ts-preview__ms { font: 11px 'JetBrains Mono', ui-monospace, monospace; color: var(--fg4); }
 
@@ -411,6 +411,7 @@
 .ts-palette__item .ts-kbd { margin-left: auto; }
 .ts-palette__list button.ts-palette__item { width: 100%; background: transparent; border: 0; text-align: left; font-family: inherit; }
 .ts-palette__item .size-4 { flex-shrink: 0; }
+.ts-palette__dim { color: var(--fg4); font: 500 12px var(--mono, ui-monospace, monospace); }
 .ts-outline__empty { padding: 4px 14px 10px; color: var(--fg4); font: 12px 'Inter', system-ui, sans-serif; }
 
 /* ── Keyboard hints ───────────────────────────────────────────────────────── */

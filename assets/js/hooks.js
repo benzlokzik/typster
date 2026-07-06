@@ -33,15 +33,37 @@ function editorOptions(element) {
   }
 }
 
+// Breadcrumb symbol segment: show the nearest heading above the cursor as the
+// final crumb (`folder / file.typ › Heading`). Pure DOM — tracks every cursor
+// move without a server round-trip.
+function updateCrumbSymbol(outline, line) {
+  const sym = document.getElementById("topbar-symbol")
+  const sep = document.getElementById("topbar-symbol-sep")
+  if (!sym || !sep) return
+
+  let current = null
+  for (const item of outline || []) {
+    if (item.line <= line) current = item
+    else break
+  }
+
+  sym.hidden = sep.hidden = !current
+  if (current) sym.textContent = current.text
+}
+
 export const CodeMirror = {
   editorCallbacks() {
     return {
       onCursor: (line, col) => {
         const el = document.getElementById("status-cursor")
         if (el) el.textContent = `Ln ${line}, Col ${col}`
+        this.lastCursorLine = line
+        updateCrumbSymbol(this.lastOutline, line)
       },
       onOutline: (items) => {
+        this.lastOutline = items
         this.pushEvent("outline_parsed", { items })
+        updateCrumbSymbol(items, this.lastCursorLine || 1)
       }
     }
   },
@@ -89,6 +111,7 @@ export const CodeMirror = {
     // Track the open file's path so worker diagnostics (now labelled by real
     // path) can be matched back to this editor.
     this.mainPath = options.project.mainPath || "main.typ"
+    this.collab = options.collab
 
     if (!container) return
 
@@ -106,7 +129,9 @@ export const CodeMirror = {
     }
 
     this.handleEvent("content_updated", ({ content }) => {
-      if (this.editorInstance) {
+      // When collab is on, the Yjs doc owns the buffer; writing here too
+      // double-inserts (and compounds across reloads).
+      if (this.editorInstance && !this.collab) {
         updateEditorContent(this.editorInstance, content)
       }
     })

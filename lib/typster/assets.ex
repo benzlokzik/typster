@@ -95,6 +95,43 @@ defmodule Typster.Assets do
     Asset.changeset(asset, attrs)
   end
 
+  @doc """
+  Copies every asset of `source_project_id` into `target_project_id`,
+  duplicating each S3 object under a fresh key (forks must not share objects —
+  deleting the original would break the copy).
+
+  No scope: authorization is the caller's job (`Typster.Projects.fork_project/3`
+  runs this inside its transaction). Returns `:ok`, or `{:error, reason}` on
+  the first failed S3 copy so the caller can roll the fork back.
+  """
+  def copy_project_assets(source_project_id, target_project_id) do
+    bucket = Application.get_env(:typster, :s3_bucket, "typster-assets")
+
+    from(a in Asset, where: a.project_id == ^source_project_id)
+    |> Repo.all()
+    |> Enum.reduce_while(:ok, fn asset, :ok ->
+      new_key = object_key(target_project_id, asset.filename)
+
+      case ExAws.S3.put_object_copy(bucket, new_key, bucket, asset.object_key)
+           |> ExAws.request() do
+        {:ok, _} ->
+          Repo.insert!(%Asset{
+            project_id: target_project_id,
+            object_key: new_key,
+            content_type: asset.content_type,
+            size: asset.size,
+            filename: asset.filename,
+            inserted_at: DateTime.utc_now(:second)
+          })
+
+          {:cont, :ok}
+
+        {:error, reason} ->
+          {:halt, {:error, reason}}
+      end
+    end)
+  end
+
   def reference_path(%Asset{} = asset), do: "assets/#{asset.filename}"
 
   defp safe_upload_path!(path) do

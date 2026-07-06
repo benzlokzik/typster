@@ -16,6 +16,17 @@ defmodule TypsterWeb.EditorLiveTest do
     view
   end
 
+  test "a stranger's project URL redirects to /projects instead of a 500", %{conn: conn} do
+    stranger_project = project_fixture(Typster.AccountsFixtures.user_fixture())
+
+    # Same response for "no access" and "doesn't exist" — no existence leak.
+    assert {:error, {:live_redirect, %{to: "/projects"}}} =
+             live(conn, ~p"/projects/#{stranger_project.id}/edit")
+
+    assert {:error, {:live_redirect, %{to: "/projects"}}} =
+             live(conn, ~p"/projects/#{Ecto.UUID.generate()}/edit")
+  end
+
   test "the new-file button reveals an inline draft row", %{conn: conn, project: project} do
     view = open_editor(conn, project)
 
