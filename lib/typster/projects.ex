@@ -84,6 +84,69 @@ defmodule Typster.Projects do
     |> Repo.insert()
   end
 
+  @doc """
+  Deep-copies `source` into a brand-new project owned by the scope's user:
+  files (with their folder hierarchy) and assets (duplicating the underlying
+  S3 objects under fresh keys). Collaborators, the share link, and revision
+  history deliberately start clean on the copy.
+
+  Does **not** authorize against `source` — the caller must have already
+  established read access (e.g. via a share-link token in
+  `Typster.Sharing.fork_via_link/3`, or ownership).
+
+  Returns `{:ok, project}`, `{:error, changeset}` for an invalid name, or
+  `{:error, :asset_copy_failed}` when an S3 object copy fails (the whole fork
+  rolls back — no half-copied project is left behind).
+  """
+  def fork_project(%Scope{user: user}, %Project{} = source, attrs) do
+    Repo.transaction(fn ->
+      case %Project{user_id: user.id} |> Project.changeset(attrs) |> Repo.insert() do
+        {:ok, fork} ->
+          copy_files!(source.id, fork.id)
+
+          case Typster.Assets.copy_project_assets(source.id, fork.id) do
+            :ok -> fork
+            {:error, _reason} -> Repo.rollback(:asset_copy_failed)
+          end
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  # Copies every file row, then re-links the parent hierarchy through an
+  # old-id → new-id map. Two passes (insert flat, then set parents) so the
+  # copy never depends on insertion order.
+  defp copy_files!(source_id, fork_id) do
+    files =
+      from(f in Typster.Projects.File,
+        where: f.project_id == ^source_id,
+        order_by: [asc: f.path]
+      )
+      |> Repo.all()
+
+    id_map =
+      Map.new(files, fn f ->
+        copy =
+          Repo.insert!(%Typster.Projects.File{
+            project_id: fork_id,
+            path: f.path,
+            content: f.content,
+            pinned: f.pinned
+          })
+
+        {f.id, copy.id}
+      end)
+
+    for f <- files, f.parent_id != nil do
+      from(c in Typster.Projects.File, where: c.id == ^Map.fetch!(id_map, f.id))
+      |> Repo.update_all(set: [parent_id: Map.fetch!(id_map, f.parent_id)])
+    end
+
+    :ok
+  end
+
   def update_project(%Scope{} = scope, %Project{} = project, attrs) do
     project = get_project!(scope, project.id)
 

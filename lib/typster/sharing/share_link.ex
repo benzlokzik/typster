@@ -3,8 +3,13 @@ defmodule Typster.Sharing.ShareLink do
   A public share link for a project.
 
   One link exists per project. The `token` and `project_id` are set
-  programmatically (never cast from user params); only `scope` and
-  `allow_download` are user-editable.
+  programmatically (never cast from user params); only `scope`,
+  `allow_download`, `allow_fork`, and `open_edit` are user-editable.
+
+  `allow_fork` lets any signed-in visitor clone the project under their own
+  account. `open_edit` auto-joins visitors as accepted `:editor` collaborators
+  — a Pro capability, additionally gated by the **owner's** entitlement at
+  join time (see `Typster.Sharing.join_via_link/2`). Both default to off.
   """
   use Ecto.Schema
   import Ecto.Changeset
@@ -17,6 +22,8 @@ defmodule Typster.Sharing.ShareLink do
           token: String.t() | nil,
           scope: :read | :output | :full,
           allow_download: boolean(),
+          allow_fork: boolean(),
+          open_edit: boolean(),
           project_id: binary() | nil,
           project: Typster.Projects.Project.t() | Ecto.Association.NotLoaded.t() | nil,
           inserted_at: DateTime.t() | nil,
@@ -27,6 +34,8 @@ defmodule Typster.Sharing.ShareLink do
     field :token, :string
     field :scope, Ecto.Enum, values: [:read, :output, :full], default: :read
     field :allow_download, :boolean, default: true
+    field :allow_fork, :boolean, default: false
+    field :open_edit, :boolean, default: false
     belongs_to :project, Typster.Projects.Project
     timestamps(type: :utc_datetime)
   end
@@ -39,8 +48,8 @@ defmodule Typster.Sharing.ShareLink do
   """
   def changeset(share_link, attrs) do
     share_link
-    |> cast(attrs, [:scope, :allow_download])
-    |> validate_required([:scope, :allow_download])
+    |> cast(attrs, [:scope, :allow_download, :allow_fork, :open_edit])
+    |> validate_required([:scope, :allow_download, :allow_fork, :open_edit])
   end
 
   @doc """

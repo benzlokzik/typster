@@ -13,6 +13,7 @@ defmodule Typster.Sharing do
   alias Typster.Accounts.User
   alias Typster.Projects
   alias Typster.Repo
+  alias Typster.Sharing.Collaboration
   alias Typster.Sharing.Collaborator
   alias Typster.Sharing.Notifier
   alias Typster.Sharing.ShareLink
@@ -113,6 +114,97 @@ defmodule Typster.Sharing do
     |> where([f], f.project_id == ^project_id)
     |> order_by([f], asc: f.path)
     |> Repo.all()
+  end
+
+  ## Link-authorized fork & join
+
+  @doc """
+  PUBLIC (token): clones the link's project for the signed-in visitor.
+
+  The token **plus** the link's `allow_fork` policy authorize the copy — no
+  project-level access is required (that is the whole point: the visitor is a
+  stranger). Free feature; available on every plan.
+
+  Returns `{:ok, project}`, `{:error, changeset}` for a bad name,
+  `{:error, :forbidden}` when the owner has not enabled copying,
+  `{:error, :not_found}` for an unknown token or anonymous visitor.
+  """
+  def fork_via_link(%Scope{user: %User{}} = scope, token, attrs) when is_binary(token) do
+    case get_link_by_token(token) do
+      nil -> {:error, :not_found}
+      %ShareLink{allow_fork: true} = link -> Projects.fork_project(scope, link.project, attrs)
+      %ShareLink{} -> {:error, :forbidden}
+    end
+  end
+
+  def fork_via_link(_scope, _token, _attrs), do: {:error, :not_found}
+
+  @doc """
+  PUBLIC (token): joins the signed-in visitor as an accepted collaborator on
+  the link's project.
+
+  Whether a link may hand out seats is decided by
+  `Typster.Sharing.Collaboration` — the Pro-only policy (the link's `open_edit`
+  flag **and** the **owner's** `:share_open_collaboration` entitlement; the
+  sharer's plan decides, exactly like the embed sandbox). The open-core build
+  always denies. Idempotent: re-joining is a no-op success, and a prior
+  email invite is simply accepted in place — keeping the role the owner chose
+  there rather than force-promoting to `:editor`.
+
+  Returns `{:ok, collaborator}`, `{:ok, :owner}` when the visitor already owns
+  the project, `{:error, :forbidden}` when the policy or entitlement is off,
+  `{:error, :not_found}` for an unknown token or anonymous visitor.
+  """
+  def join_via_link(%Scope{user: %User{} = user}, token) when is_binary(token) do
+    case get_link_by_token(token) do
+      nil ->
+        {:error, :not_found}
+
+      %ShareLink{} = link ->
+        cond do
+          link.project.user_id == user.id ->
+            {:ok, :owner}
+
+          not Collaboration.open_edit?(owner_scope(link), link) ->
+            {:error, :forbidden}
+
+          true ->
+            upsert_link_collaborator(link.project_id, user)
+        end
+    end
+  end
+
+  def join_via_link(_scope, _token), do: {:error, :not_found}
+
+  # Reuses a prior invite row (matched by account or email, so we never trip
+  # the [project_id, email] unique index) and accepts it; otherwise inserts a
+  # fresh accepted :editor row.
+  defp upsert_link_collaborator(project_id, user) do
+    email = String.downcase(user.email)
+
+    existing =
+      Repo.one(
+        from(c in Collaborator,
+          where:
+            c.project_id == ^project_id and
+              (c.user_id == ^user.id or fragment("lower(?)", c.email) == ^email),
+          limit: 1
+        )
+      )
+
+    case existing do
+      %Collaborator{status: :accepted, user_id: user_id} = collaborator
+      when user_id == user.id ->
+        {:ok, collaborator}
+
+      %Collaborator{} = collaborator ->
+        collaborator |> Collaborator.accept_changeset(user.id) |> Repo.update()
+
+      nil ->
+        %Collaborator{project_id: project_id, user_id: user.id, status: :accepted}
+        |> Collaborator.changeset(%{email: user.email, role: :editor})
+        |> Repo.insert()
+    end
   end
 
   ## Collaborators
