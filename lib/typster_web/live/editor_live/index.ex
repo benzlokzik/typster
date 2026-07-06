@@ -265,7 +265,7 @@ defmodule TypsterWeb.EditorLive.Index do
   # a non-owner no-ops here instead of reaching `Sharing.*` (which would raise on
   # the owner-only `Projects.get_project!`). Must precede the specific handlers.
   def handle_event(event, _params, %{assigns: %{owner?: false}} = socket)
-      when event in ~w(share_scope share_rotate share_toggle_download share_invite share_remove_collab) do
+      when event in ~w(share_scope share_rotate share_toggle_download share_toggle_fork share_toggle_open_edit share_invite share_remove_collab) do
     {:noreply, socket}
   end
 
@@ -318,6 +318,27 @@ defmodule TypsterWeb.EditorLive.Index do
     case socket.assigns.share_link do
       nil -> {:noreply, socket}
       link -> {:noreply, update_share_link(socket, %{allow_download: !link.allow_download})}
+    end
+  end
+
+  @impl true
+  def handle_event("share_toggle_fork", _params, socket) do
+    case socket.assigns.share_link do
+      nil -> {:noreply, socket}
+      link -> {:noreply, update_share_link(socket, %{allow_fork: !link.allow_fork})}
+    end
+  end
+
+  # The flag can be flipped by any owner, but it only has effect when the
+  # owner's plan carries :share_open_collaboration (the join path re-checks via
+  # Typster.Sharing.Collaboration) — so Free owners just see the locked row.
+  @impl true
+  def handle_event("share_toggle_open_edit", _params, socket) do
+    with link when not is_nil(link) <- socket.assigns.share_link,
+         true <- Features.can?(socket.assigns.current_scope, :share_open_collaboration) do
+      {:noreply, update_share_link(socket, %{open_edit: !link.open_edit})}
+    else
+      _ -> {:noreply, socket}
     end
   end
 

@@ -1884,6 +1884,27 @@
   background: var(--surface);
 }
 
+/* fork-a-copy modal on the public shared view */
+.share-public__fork-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--mk-ink, #0b0b0f) 45%, transparent);
+  backdrop-filter: blur(2px);
+}
+.share-public__fork-overlay .share-public__panel {
+  text-align: left;
+  justify-items: stretch;
+  width: min(380px, calc(100vw - 32px));
+}
+.share-public__fork-overlay h2 {
+  font: 600 16px var(--font-sans);
+  color: var(--text);
+  margin: 0;
+}
+
 /* invalid / expired link panel */
 .share-public--invalid {
   place-items: center;

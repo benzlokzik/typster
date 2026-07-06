@@ -1290,6 +1290,40 @@
               </div>
               <div class="switch"></div>
             </div>
+            <div
+              id="share-toggle-fork"
+              class={["toggle-row", @share_link && @share_link.allow_fork && "on"]}
+              phx-click="share_toggle_fork"
+            >
+              <div class="meta">
+                <div class="h">{gettext("share.adv.fork")}</div>
+                <div class="d">{gettext("share.adv.fork_sub")}</div>
+              </div>
+              <div class="switch"></div>
+            </div>
+            <%= if Features.can?(@current_scope, :share_open_collaboration) do %>
+              <div
+                id="share-toggle-open-edit"
+                class={["toggle-row", @share_link && @share_link.open_edit && "on"]}
+                phx-click="share_toggle_open_edit"
+              >
+                <div class="meta">
+                  <div class="h">{gettext("share.adv.open_edit")}</div>
+                  <div class="d">{gettext("share.adv.open_edit_sub")}</div>
+                </div>
+                <div class="switch"></div>
+              </div>
+            <% else %>
+              <div class="toggle-row" id="share-toggle-open-edit-locked">
+                <div class="meta">
+                  <div class="h">
+                    {gettext("share.adv.open_edit")} <span class="pro-badge">PRO</span>
+                  </div>
+                  <div class="d">{gettext("share.adv.open_edit_sub")}</div>
+                </div>
+                <div class="ic"><.icon name="hero-lock-closed" class="size-3.5" /></div>
+              </div>
+            <% end %>
             <div :if={!Features.can?(@current_scope, :share_advanced_link)} class="locked-section">
               <button type="button" class="lock-shield">
                 <.icon name="hero-lock-closed" class="size-3" /> {gettext("share.upgrade.unlock")}
