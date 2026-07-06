@@ -101,18 +101,21 @@ defmodule Typster.Projects do
   def fork_project(%Scope{user: user}, %Project{} = source, attrs) do
     Repo.transaction(fn ->
       case %Project{user_id: user.id} |> Project.changeset(attrs) |> Repo.insert() do
-        {:ok, fork} ->
-          copy_files!(source.id, fork.id)
-
-          case Typster.Assets.copy_project_assets(source.id, fork.id) do
-            :ok -> fork
-            {:error, _reason} -> Repo.rollback(:asset_copy_failed)
-          end
-
-        {:error, changeset} ->
-          Repo.rollback(changeset)
+        {:ok, fork} -> copy_project_contents!(source.id, fork)
+        {:error, changeset} -> Repo.rollback(changeset)
       end
     end)
+  end
+
+  # Inside the fork transaction: copy files, then assets; a failed S3 copy
+  # rolls the whole fork back.
+  defp copy_project_contents!(source_id, fork) do
+    copy_files!(source_id, fork.id)
+
+    case Typster.Assets.copy_project_assets(source_id, fork.id) do
+      :ok -> fork
+      {:error, _reason} -> Repo.rollback(:asset_copy_failed)
+    end
   end
 
   # Copies every file row, then re-links the parent hierarchy through an

@@ -26,52 +26,56 @@ defmodule TypsterWeb.SharedProjectLive do
          assign(socket, link: nil, project: nil, page_title: gettext("share.public.invalid"))}
 
       link ->
-        files = Sharing.files_for_link(link)
-        entry = pick_entry(files, params["file"])
-        embed? = socket.assigns.live_action == :embed
-        # The owner's plan — not the visitor's — decides the embed capabilities
-        # and whether `open_edit` may hand out collaborator seats. Resolve it
-        # only when a policy actually needs it.
-        owner_scope =
-          if embed? or link.open_edit, do: Sharing.owner_scope(link), else: nil
-
-        policy = Embed.policy(owner_scope, params)
-
-        # Join/fork actions live on the `/p/:slug` page only: the embed renders
-        # statically inside third-party iframes (no LiveView socket to push
-        # events over), so it keeps its plain-anchor CTA instead.
-        can_join? =
-          not embed? and Typster.Sharing.Collaboration.open_edit?(owner_scope, link)
-
-        can_fork? = not embed? and link.allow_fork
-
-        # Count this open once per page load — on the dead render, which happens
-        # exactly once for both the embed (socket-less) and the `/p` view (whose
-        # connected mount we skip). No-op unless the Pro analytics code is present.
-        if not connected?(socket), do: Typster.Analytics.record(link.token)
-
-        {:ok,
-         socket
-         |> assign(:link, link)
-         |> assign(:project, link.project)
-         |> assign(:scope_kind, link.scope)
-         |> assign(:embed?, embed?)
-         |> assign(:embed_theme, embed_theme(params["theme"]))
-         |> assign(:show_preview?, params["preview"] != "0")
-         |> assign(:editable?, policy.editable)
-         |> assign(:unbranded?, policy.unbranded)
-         |> assign(:cta_mode, policy.cta.mode)
-         |> assign(:entry, entry)
-         |> assign(:content, (entry && entry.content) || "")
-         |> assign(:language, entry_language(entry))
-         |> assign(:project_sources, project_sources(files))
-         |> assign(:can_join?, can_join?)
-         |> assign(:can_fork?, can_fork?)
-         |> assign(:fork_open?, false)
-         |> assign(:notice, nil)
-         |> assign(:fork_form, to_form(%{"name" => copy_name(link.project.name)}, as: :fork))
-         |> assign(:page_title, link.project.name)}
+        mount_link(socket, link, params)
     end
+  end
+
+  defp mount_link(socket, link, params) do
+    files = Sharing.files_for_link(link)
+    entry = pick_entry(files, params["file"])
+    embed? = socket.assigns.live_action == :embed
+    # The owner's plan — not the visitor's — decides the embed capabilities
+    # and whether `open_edit` may hand out collaborator seats. Resolve it
+    # only when a policy actually needs it.
+    owner_scope =
+      if embed? or link.open_edit, do: Sharing.owner_scope(link), else: nil
+
+    policy = Embed.policy(owner_scope, params)
+
+    # Join/fork actions live on the `/p/:slug` page only: the embed renders
+    # statically inside third-party iframes (no LiveView socket to push
+    # events over), so it keeps its plain-anchor CTA instead.
+    can_join? =
+      not embed? and Typster.Sharing.Collaboration.open_edit?(owner_scope, link)
+
+    can_fork? = not embed? and link.allow_fork
+
+    # Count this open once per page load — on the dead render, which happens
+    # exactly once for both the embed (socket-less) and the `/p` view (whose
+    # connected mount we skip). No-op unless the Pro analytics code is present.
+    if not connected?(socket), do: Typster.Analytics.record(link.token)
+
+    {:ok,
+     socket
+     |> assign(:link, link)
+     |> assign(:project, link.project)
+     |> assign(:scope_kind, link.scope)
+     |> assign(:embed?, embed?)
+     |> assign(:embed_theme, embed_theme(params["theme"]))
+     |> assign(:show_preview?, params["preview"] != "0")
+     |> assign(:editable?, policy.editable)
+     |> assign(:unbranded?, policy.unbranded)
+     |> assign(:cta_mode, policy.cta.mode)
+     |> assign(:entry, entry)
+     |> assign(:content, (entry && entry.content) || "")
+     |> assign(:language, entry_language(entry))
+     |> assign(:project_sources, project_sources(files))
+     |> assign(:can_join?, can_join?)
+     |> assign(:can_fork?, can_fork?)
+     |> assign(:fork_open?, false)
+     |> assign(:notice, nil)
+     |> assign(:fork_form, to_form(%{"name" => copy_name(link.project.name)}, as: :fork))
+     |> assign(:page_title, link.project.name)}
   end
 
   # The embed honors `?theme=light|dark` (anything else inherits the host theme).
