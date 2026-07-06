@@ -15,7 +15,24 @@ defmodule TypsterWeb.EditorLive.Index do
   @impl true
   def mount(%{"id" => project_id}, _session, socket) do
     scope = socket.assigns.current_scope
-    project = Projects.get_editable_project!(scope, project_id)
+
+    # Non-bang lookup: strangers hitting a project URL they can't edit get a
+    # friendly redirect, not a 500. One generic message for "doesn't exist"
+    # and "no access" — the response must not leak which one it was.
+    case Projects.get_editable_project(scope, project_id) do
+      nil ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("editor.project_unavailable"))
+         |> push_navigate(to: ~p"/projects")}
+
+      project ->
+        mount_project(socket, scope, project)
+    end
+  end
+
+  defp mount_project(socket, scope, project) do
+    project_id = project.id
     file_tree = Files.get_file_tree(scope, project_id)
     assets = Assets.list_assets(scope, project_id)
     main_file = initial_file(file_tree)
