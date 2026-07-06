@@ -122,7 +122,29 @@ defmodule TypsterWeb.SharedProjectLiveTest do
       assert path =~ ~r"^/projects/[0-9a-f-]+/edit$"
     end
 
-    test "anonymous visitors are pointed at log-in instead", %{
+    test "an empty name shows the inline error and keeps the modal open", %{
+      conn: conn,
+      scope: scope,
+      link: link
+    } do
+      {:ok, link} = Sharing.update_link(scope, link, %{allow_fork: true})
+      visitor = Typster.AccountsFixtures.user_fixture()
+      conn = log_in_user(conn, visitor)
+
+      {:ok, view, _html} = live(conn, ~p"/p/shared?#{[key: link.token]}")
+
+      view |> element("#shared-fork-open") |> render_click()
+
+      view
+      |> form("#shared-fork-form", fork: %{name: ""})
+      |> render_submit()
+
+      # Inline error under the field — no dialog, no closed modal.
+      assert has_element?(view, "#shared-fork-error")
+      assert has_element?(view, "#shared-fork-form")
+    end
+
+    test "anonymous visitors get the sign-in step in the same modal", %{
       conn: conn,
       scope: scope,
       link: link
@@ -131,8 +153,12 @@ defmodule TypsterWeb.SharedProjectLiveTest do
 
       {:ok, view, _html} = live(conn, ~p"/p/shared?#{[key: link.token]}")
 
-      assert has_element?(view, "#shared-fork-login")
-      refute has_element?(view, "#shared-fork-open")
+      # Same button, same promise — the modal handles authentication.
+      assert has_element?(view, "#shared-fork-open")
+      view |> element("#shared-fork-open") |> render_click()
+
+      assert has_element?(view, ~s|#shared-fork-login[href="/users/log-in"]|)
+      refute has_element?(view, "#shared-fork-form")
     end
 
     test "no copy affordance while allow_fork is off (the default)", %{
