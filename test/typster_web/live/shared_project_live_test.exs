@@ -34,10 +34,10 @@ defmodule TypsterWeb.SharedProjectLiveTest do
       # Top bar shows the project name and the read-only pill.
       assert has_element?(view, ".embed-bar .slug", project.name)
       assert has_element?(view, ".ro-pill")
-      # Open-in-Typster CTA in the footer. On the top-level /p page it
-      # navigates in place (no target).
-      assert has_element?(view, ".embed-foot__cta")
-      refute has_element?(view, ~s|.embed-foot__cta[target="_blank"]|)
+      # No footer CTA on the top-level /p page — its actions (copy/join)
+      # already live in the top bar, and the editor URL would bounce
+      # everyone but the owner.
+      refute has_element?(view, ".embed-foot__cta")
     end
   end
 
@@ -70,16 +70,20 @@ defmodule TypsterWeb.SharedProjectLiveTest do
   end
 
   describe "/embed/:token" do
-    test "mounts the embed variant", %{conn: conn, link: link} do
+    test "mounts the embed variant", %{conn: conn, link: link, project: project} do
       {:ok, view, _html} = live(conn, ~p"/embed/#{link.token}")
 
       assert has_element?(view, ".share-public--embed")
       assert has_element?(view, ".embed-comp")
 
-      # The CTA must escape the host iframe: new top-level window on our site.
+      # The CTA must escape the host iframe to a new top-level window on our
+      # site — onto the public share page (the editor would bounce anyone
+      # without edit access), keyed by the link token.
+      slug = Sharing.slug(project)
+
       assert has_element?(
                view,
-               ~s|a.embed-foot__cta[target="_blank"][rel="noopener"][href="/projects/#{link.project_id}/edit"]|
+               ~s|a.embed-foot__cta[target="_blank"][rel="noopener"][href="/p/#{slug}?key=#{link.token}"]|
              )
     end
   end
@@ -122,7 +126,29 @@ defmodule TypsterWeb.SharedProjectLiveTest do
       assert path =~ ~r"^/projects/[0-9a-f-]+/edit$"
     end
 
-    test "anonymous visitors are pointed at log-in instead", %{
+    test "an empty name shows the inline error and keeps the modal open", %{
+      conn: conn,
+      scope: scope,
+      link: link
+    } do
+      {:ok, link} = Sharing.update_link(scope, link, %{allow_fork: true})
+      visitor = Typster.AccountsFixtures.user_fixture()
+      conn = log_in_user(conn, visitor)
+
+      {:ok, view, _html} = live(conn, ~p"/p/shared?#{[key: link.token]}")
+
+      view |> element("#shared-fork-open") |> render_click()
+
+      view
+      |> form("#shared-fork-form", fork: %{name: ""})
+      |> render_submit()
+
+      # Inline error under the field — no dialog, no closed modal.
+      assert has_element?(view, "#shared-fork-error")
+      assert has_element?(view, "#shared-fork-form")
+    end
+
+    test "anonymous visitors get the sign-in step in the same modal", %{
       conn: conn,
       scope: scope,
       link: link
@@ -131,8 +157,12 @@ defmodule TypsterWeb.SharedProjectLiveTest do
 
       {:ok, view, _html} = live(conn, ~p"/p/shared?#{[key: link.token]}")
 
-      assert has_element?(view, "#shared-fork-login")
-      refute has_element?(view, "#shared-fork-open")
+      # Same button, same promise — the modal handles authentication.
+      assert has_element?(view, "#shared-fork-open")
+      view |> element("#shared-fork-open") |> render_click()
+
+      assert has_element?(view, ~s|#shared-fork-login[href="/users/log-in"]|)
+      refute has_element?(view, "#shared-fork-form")
     end
 
     test "no copy affordance while allow_fork is off (the default)", %{

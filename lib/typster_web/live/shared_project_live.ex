@@ -73,6 +73,9 @@ defmodule TypsterWeb.SharedProjectLive do
      |> assign(:can_join?, can_join?)
      |> assign(:can_fork?, can_fork?)
      |> assign(:fork_open?, false)
+     |> assign(:fork_error, nil)
+     |> assign(:fork_failed?, false)
+     |> assign(:fork_stats, if(can_fork?, do: Sharing.fork_stats(link)))
      |> assign(:notice, nil)
      |> assign(:fork_form, to_form(%{"name" => copy_name(link.project.name)}, as: :fork))
      |> assign(:page_title, link.project.name)}
@@ -120,26 +123,23 @@ defmodule TypsterWeb.SharedProjectLive do
           <span class="slug truncate">{@project.name}</span>
           <span :if={@entry} class="file truncate">· {@entry.path}</span>
           <span class="spacer"></span>
-          <%= if @can_fork? do %>
-            <%= if @current_scope && @current_scope.user do %>
-              <button
-                type="button"
-                id="shared-fork-open"
-                class="ts-btn ts-btn--ghost ts-btn--sm"
-                phx-click="open_fork"
-              >
-                <.icon name="hero-document-duplicate" class="size-3.5" /> {gettext("share.join.fork")}
-              </button>
-            <% else %>
-              <.link
-                navigate={~p"/users/log-in"}
-                id="shared-fork-login"
-                class="ts-btn ts-btn--ghost ts-btn--sm"
-              >
-                <.icon name="hero-document-duplicate" class="size-3.5" /> {gettext("share.join.fork")}
-              </.link>
-            <% end %>
-          <% end %>
+          <%!-- Copy is the visitor's main action when the owner allows it, so
+                it takes primary; when "Edit" is also granted, editing wins
+                primary and copy demotes to ghost. Anonymous visitors get the
+                same button, same promise — the modal shows the sign-in step. --%>
+          <button
+            :if={@can_fork?}
+            type="button"
+            id="shared-fork-open"
+            class={[
+              "ts-btn",
+              "ts-btn--sm",
+              if(@can_join?, do: "ts-btn--ghost", else: "ts-btn--primary")
+            ]}
+            phx-click="open_fork"
+          >
+            <.icon name="hero-document-duplicate" class="size-3.5" /> {gettext("share.join.fork")}
+          </button>
           <%= if @can_join? do %>
             <%= if @current_scope && @current_scope.user do %>
               <button
@@ -160,11 +160,24 @@ defmodule TypsterWeb.SharedProjectLive do
               </.link>
             <% end %>
           <% end %>
-          <span class={["ro-pill", scope_pill_tone(@scope_kind), @editable? && "ro-pill--edit"]}>
+          <%!-- With action buttons alongside, the pill demotes to icon-only
+                (its label moves into the tooltip) so the bar stays quiet. --%>
+          <span
+            class={[
+              "ro-pill",
+              scope_pill_tone(@scope_kind),
+              @editable? && "ro-pill--edit",
+              (@can_fork? or @can_join?) && "ro-pill--compact"
+            ]}
+            title={if(@editable?, do: gettext("share.scope.sandbox"), else: scope_label(@scope_kind))}
+          >
             <.icon
               name={if(@editable?, do: "hero-pencil-square", else: "hero-eye")}
               class="size-3"
-            /> {if(@editable?, do: gettext("share.scope.sandbox"), else: scope_label(@scope_kind))}
+            />
+            <span :if={not (@can_fork? or @can_join?)}>
+              {if(@editable?, do: gettext("share.scope.sandbox"), else: scope_label(@scope_kind))}
+            </span>
           </span>
         </div>
 
@@ -173,31 +186,93 @@ defmodule TypsterWeb.SharedProjectLive do
           <span class="truncate">{@notice}</span>
         </div>
 
+        <%!-- Copy modal — one modal, four internal states (form / invalid /
+              busy / failed) plus the anonymous sign-in step. Success is a
+              redirect + flash toast in the copy's editor, not a fifth state.
+              ⎋ and backdrop click cancel; on mobile it becomes a bottom sheet
+              (CSS only). --%>
         <div
           :if={@fork_open?}
-          class="share-public__fork-overlay"
+          id="shared-fork-overlay"
+          class="fk-overlay"
           phx-window-keydown="close_fork"
           phx-key="escape"
         >
-          <div class="share-public__panel">
-            <h2>{gettext("share.join.fork_title")}</h2>
-            <p>{gettext("share.join.fork_sub")}</p>
-            <.form for={@fork_form} id="shared-fork-form" phx-submit="fork">
-              <.input
-                field={@fork_form[:name]}
-                type="text"
-                label={gettext("share.join.fork_name")}
-                autofocus
-              />
-              <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end;">
-                <button type="button" class="ts-btn ts-btn--ghost ts-btn--sm" phx-click="close_fork">
-                  {gettext("share.join.fork_cancel")}
-                </button>
-                <button type="submit" class="ts-btn ts-btn--primary ts-btn--sm">
-                  {gettext("share.join.fork_confirm")}
-                </button>
+          <div class="fk-modal" phx-click-away="close_fork">
+            <div class="fk-head">
+              <div class="t">
+                <div class="ttl">{gettext("share.join.fork_title")}</div>
+                <div :if={@current_scope && @current_scope.user} class="sub">
+                  {gettext("share.join.fork_sub")}
+                </div>
               </div>
-            </.form>
+              <button
+                type="button"
+                class="x"
+                phx-click="close_fork"
+                aria-label={gettext("share.join.fork_cancel")}
+              >
+                <.icon name="hero-x-mark" class="size-3.5" />
+              </button>
+            </div>
+
+            <%= if @current_scope && @current_scope.user do %>
+              <.form for={@fork_form} id="shared-fork-form" phx-submit="fork">
+                <div class="fk-body">
+                  <div class="fk-label">{gettext("share.join.fork_name")}</div>
+                  <.input field={@fork_form[:name]} type="text" autofocus />
+                  <div :if={@fork_error} id="shared-fork-error" class="fk-err">
+                    <.icon name="hero-exclamation-triangle" class="size-3" /> {@fork_error}
+                  </div>
+                  <div :if={@fork_stats && !@fork_failed?} class="fk-meta">
+                    <.icon name="hero-folder" class="size-3" /> {fork_meta(@fork_stats)}
+                  </div>
+                  <div :if={@fork_failed?} id="shared-fork-failed" class="fk-fail" role="alert">
+                    <.icon name="hero-exclamation-triangle" class="size-3.5" />
+                    <div class="m">{gettext("share.join.fork_failed")}</div>
+                  </div>
+                </div>
+                <div class="fk-foot">
+                  <button type="button" class="cancel" phx-click="close_fork">
+                    {gettext("share.join.fork_cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    class="ts-btn ts-btn--primary ts-btn--sm"
+                    phx-disable-with={gettext("share.fork.busy")}
+                  >
+                    <%= if @fork_failed? do %>
+                      <.icon name="hero-arrow-path" class="size-3" /> {gettext("share.fork.retry")}
+                    <% else %>
+                      <.icon name="hero-document-duplicate" class="size-3" /> {gettext(
+                        "share.join.fork_confirm"
+                      )}
+                    <% end %>
+                  </button>
+                </div>
+              </.form>
+            <% else %>
+              <div class="fk-anon">
+                <div class="badge"><.icon name="hero-document-duplicate" class="size-5" /></div>
+                <div class="h">{gettext("share.fork.anon_title")}</div>
+                <div class="p">
+                  {gettext("share.fork.anon_body", name: @project.name)}
+                </div>
+              </div>
+              <div class="fk-anon-foot">
+                <.link
+                  navigate={~p"/users/log-in"}
+                  id="shared-fork-login"
+                  class="ts-btn ts-btn--primary"
+                >
+                  {gettext("share.fork.anon_cta")}
+                </.link>
+                <.link navigate={~p"/users/register"} class="ts-btn ts-btn--ghost">
+                  {gettext("share.fork.anon_alt")}
+                </.link>
+              </div>
+              <div class="fk-anon-note">{gettext("share.fork.anon_note")}</div>
+            <% end %>
           </div>
         </div>
 
@@ -214,6 +289,9 @@ defmodule TypsterWeb.SharedProjectLive do
             data-project-sources={Jason.encode!(@project_sources)}
             data-project-assets="[]"
           >
+          </div>
+          <div :if={@can_fork? and not @editable?} class="fk-lock-hint">
+            <.icon name="hero-lock-closed" class="size-3" /> {gettext("share.fork.lock_hint")}
           </div>
         </section>
 
@@ -266,23 +344,23 @@ defmodule TypsterWeb.SharedProjectLive do
               >
                 {gettext("share.embed.cta_signup")}
               </a>
-            <% :fork -> %>
-              <a
-                href={~p"/projects/#{@project.id}/edit"}
-                target={@embed? && "_blank"}
-                rel={@embed? && "noopener"}
-                class="embed-foot__cta"
-              >
-                {gettext("share.embed.cta_fork")}
-              </a>
             <% _ -> %>
+              <%!-- :open / :fork land on the public share page, where the
+                    copy/join actions live — NOT the editor, which bounces
+                    everyone but the owner/collaborators with "project
+                    unavailable". Embed-only: the /p page has nothing to
+                    open (its actions are already in the top bar). --%>
               <a
-                href={~p"/projects/#{@project.id}/edit"}
-                target={@embed? && "_blank"}
-                rel={@embed? && "noopener"}
+                :if={@embed?}
+                href={~p"/p/#{Sharing.slug(@project)}?#{[key: @link.token]}"}
+                target="_blank"
+                rel="noopener"
                 class="embed-foot__cta"
               >
-                {gettext("share.public.open_in_typster")}
+                {if(@cta_mode == :fork,
+                  do: gettext("share.embed.cta_fork"),
+                  else: gettext("share.public.open_in_typster")
+                )}
               </a>
           <% end %>
         </div>
@@ -293,11 +371,11 @@ defmodule TypsterWeb.SharedProjectLive do
 
   @impl true
   def handle_event("open_fork", _params, %{assigns: %{can_fork?: true}} = socket) do
-    {:noreply, assign(socket, :fork_open?, true)}
+    {:noreply, assign(socket, fork_open?: true, fork_error: nil, fork_failed?: false)}
   end
 
   def handle_event("close_fork", _params, socket) do
-    {:noreply, assign(socket, :fork_open?, false)}
+    {:noreply, assign(socket, fork_open?: false, fork_error: nil, fork_failed?: false)}
   end
 
   def handle_event(
@@ -318,13 +396,12 @@ defmodule TypsterWeb.SharedProjectLive do
         {:noreply,
          socket
          |> assign(:fork_form, to_form(%{"name" => name}, as: :fork))
-         |> assign(:notice, gettext("share.join.fork_invalid_name"))}
+         |> assign(fork_error: gettext("share.join.fork_invalid_name"), fork_failed?: false)}
 
       {:error, _reason} ->
-        {:noreply,
-         socket
-         |> assign(:fork_open?, false)
-         |> assign(:notice, gettext("share.join.fork_failed"))}
+        # Stay in the modal: the fail slab explains, the CTA becomes "Try
+        # again". Nothing was created, the original is untouched.
+        {:noreply, assign(socket, fork_error: nil, fork_failed?: true)}
     end
   end
 
@@ -371,6 +448,25 @@ defmodule TypsterWeb.SharedProjectLive do
   defp entry_language(%{path: path}), do: Files.editor_language(path)
 
   defp copy_name(name), do: gettext("share.join.copy_of", name: name)
+
+  # "12 files · 4 assets · 3.4 MB — copying takes a few seconds". The size
+  # segment drops out below 1 KB rather than showing a noisy "0.0 KB".
+  defp fork_meta(%{files: files, assets: assets, bytes: bytes}) do
+    what =
+      [
+        ngettext("share.fork.meta_files.one", "share.fork.meta_files.other", files),
+        ngettext("share.fork.meta_assets.one", "share.fork.meta_assets.other", assets),
+        format_bytes(bytes)
+      ]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join(" · ")
+
+    gettext("share.fork.meta", what: what)
+  end
+
+  defp format_bytes(bytes) when bytes >= 1_048_576, do: "#{Float.round(bytes / 1_048_576, 1)} MB"
+  defp format_bytes(bytes) when bytes >= 1024, do: "#{Float.round(bytes / 1024, 1)} KB"
+  defp format_bytes(_), do: nil
 
   defp project_sources(files) do
     files

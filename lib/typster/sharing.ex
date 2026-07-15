@@ -116,6 +116,43 @@ defmodule Typster.Sharing do
     |> Repo.all()
   end
 
+  @doc """
+  URL slug for a project's public share page (`/p/:slug`). Cosmetic only —
+  the `key` query param is what authorizes the view.
+  """
+  def slug(%{name: name}) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
+    |> String.trim("-")
+    |> case do
+      "" -> "project"
+      slug -> slug
+    end
+  end
+
+  @doc """
+  PUBLIC: what a fork of the link's project would copy — file and asset counts
+  plus total asset bytes. Powers the copy modal's "what you get" meta line.
+  """
+  def fork_stats(%ShareLink{project_id: project_id}) do
+    files =
+      Repo.aggregate(
+        from(f in Typster.Projects.File, where: f.project_id == ^project_id),
+        :count
+      )
+
+    {assets, bytes} =
+      Repo.one(
+        from(a in Typster.Assets.Asset,
+          where: a.project_id == ^project_id,
+          select: {count(a.id), coalesce(sum(a.size), 0)}
+        )
+      )
+
+    %{files: files, assets: assets, bytes: bytes}
+  end
+
   ## Link-authorized fork & join
 
   @doc """
